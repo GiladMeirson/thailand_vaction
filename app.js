@@ -162,7 +162,11 @@ function dueInfo(sid) {
 }
 
 /* ---------- כפתורי פעולה למשימות ---------- */
-function addDays(iso, n) { const d = new Date(iso + "T00:00:00"); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); }
+/* לא toISOString — הוא ממיר ל-UTC ומזיז את התאריך יום אחורה בישראל */
+function addDays(iso, n) {
+  const d = new Date(iso + "T00:00:00"); d.setDate(d.getDate() + n);
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
 
 /* קישורים דינמיים — נבנים לפי התאריכים, חלוקת הלילות והמלונות שנבחרו */
 function actUrl(act) {
@@ -378,12 +382,27 @@ function renderOverview() {
   $("#tripStart").value = state.tripStart || "";
   $("#tripEnd").value = state.tripEnd || "";
 
+  const dn = $("#dateNights");
+  if (state.tripStart && state.tripEnd) {
+    const diff = Math.round((new Date(state.tripEnd) - new Date(state.tripStart)) / 864e5);
+    if (diff < 1) { dn.hidden = false; dn.innerHTML = `⚠️ תאריך החזרה לפני היציאה`; }
+    else {
+      const n = nights();
+      dn.hidden = false;
+      dn.innerHTML = `סה"כ <b class="num">${diff}</b> לילות · <span class="num">${n.phuket}</span> פוקט + <span class="num">${n.aonang}</span> אאו נאנג`;
+    }
+  } else dn.hidden = true;
+
   $("#howtoCard").hidden = !!state.hideHowto;
 }
 
 $("#howtoClose").addEventListener("click", () => { state.hideHowto = true; save(); renderOverview(); });
-$("#tripStart").addEventListener("change", e => { state.tripStart = e.target.value; save(); renderOverview(); renderWxTrip(); renderTasksArea(); });
-$("#tripEnd").addEventListener("change", e => { state.tripEnd = e.target.value; save(); renderOverview(); renderWxTrip(); renderTasksArea(); });
+function onDatesChanged() {
+  save(); renderOverview(); renderWxTrip(); renderTasksArea();
+  renderLegs(); renderHotels(); renderBudget(); // הלילות והעלויות נגזרים מהתאריכים
+}
+$("#tripStart").addEventListener("change", e => { state.tripStart = e.target.value; onDatesChanged(); });
+$("#tripEnd").addEventListener("change", e => { state.tripEnd = e.target.value; onDatesChanged(); });
 
 function renderEmergency() {
   $("#emgList").innerHTML = EMERGENCY.map(e => `
@@ -417,7 +436,7 @@ const WX_ICONS = {
   sun: '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="var(--warm)" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="var(--warm)" stroke="none"/><path d="M12 2.5v2.6M12 18.9v2.6M2.5 12h2.6M18.9 12h2.6M5 5l1.9 1.9M17.1 17.1L19 19M19 5l-1.9 1.9M6.9 17.1L5 19"/></svg>',
   partly: '<svg class="ic" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="9" cy="8.6" r="3.4" fill="var(--warm)"/><path d="M8.2 17.6h8.6a3.2 3.2 0 0 0 .4-6.4 4.6 4.6 0 0 0-9-.5 2.7 2.7 0 0 0 0 6.9z" fill="var(--muted)"/></svg>',
   cloud: '<svg class="ic" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 16.5h9.5a3.4 3.4 0 0 0 .4-6.8 5 5 0 0 0-9.8-.5 2.9 2.9 0 0 0-.1 7.3z" fill="var(--muted)"/></svg>',
-  rain: '<svg class="ic" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 14h9.5a3.4 3.4 0 0 0 .4-6.8 5 5 0 0 0-9.8-.5A2.9 2.9 0 0 0 7 14z" fill="var(--muted)"/><path d="M8.8 16.6l-1 2.6M12.8 16.6l-1 2.6M16.8 16.6l-1 2.6" stroke="var(--accent-ink)" stroke-width="1.8" stroke-linecap="round"/></svg>',
+  rain: '<svg class="ic" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 14h9.5a3.4 3.4 0 0 0 .4-6.8 5 5 0 0 0-9.8-.5A2.9 2.9 0 0 0 7 14z" fill="var(--muted)"/><path d="M8.8 16.6l-1 2.6M12.8 16.6l-1 2.6M16.8 16.6l-1 2.6" stroke="var(--sea-ink)" stroke-width="1.8" stroke-linecap="round"/></svg>',
   storm: '<svg class="ic" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 13.5h9.5a3.4 3.4 0 0 0 .4-6.8 5 5 0 0 0-9.8-.5 2.9 2.9 0 0 0-.1 7.3z" fill="var(--muted)"/><path d="M13.2 13l-2.7 4.2h2.4l-1.5 3.8 4.7-5.3h-2.5l1.7-2.7z" fill="var(--warn)"/></svg>'
 };
 const iconByP = p => p <= .45 ? WX_ICONS.sun : p <= .58 ? WX_ICONS.partly : p <= .72 ? WX_ICONS.rain : WX_ICONS.storm;
@@ -447,7 +466,7 @@ function renderWxTrip() {
       <p class="wxt-note">התאריכים משפיעים גם על הספירה לאחור ועל חישוב הלילות.</p>`;
     $("#wxSuggest").addEventListener("click", () => {
       state.tripStart = "2026-10-25"; state.tripEnd = "2026-11-07";
-      save(); renderOverview(); renderWxTrip(); renderTasksArea(); toast("נקבע טווח לדוגמה — אפשר לשנות");
+      onDatesChanged(); toast("נקבע טווח לדוגמה — אפשר לשנות");
     });
     return;
   }
@@ -520,8 +539,20 @@ async function loadTripForecast() {
 }
 
 /* ---------- מסלול ---------- */
+/* סה"כ לילות נגזר מהתאריכים שנבחרו; 13 כברירת מחדל עד שיש תאריכים */
+function totalNights() {
+  if (state.tripStart && state.tripEnd) {
+    const n = Math.round((new Date(state.tripEnd) - new Date(state.tripStart)) / 864e5);
+    if (n >= 2 && n <= 40) return n;
+  }
+  return 13;
+}
+/* "8+5" = יותר פוקט, "7+6" = חלוקה מאוזנת — הערכים נשמרים כמזהים גם כשהסה"כ שונה מ-13 */
 function nights() {
-  return state.split === "7+6" ? { phuket: 7, aonang: 6 } : { phuket: 8, aonang: 5 };
+  const total = totalNights();
+  const half = Math.floor(total / 2);
+  const aonang = state.split === "7+6" ? half : Math.max(1, half - 1);
+  return { phuket: total - aonang, aonang, total };
 }
 
 const IC = {
@@ -548,8 +579,12 @@ function renderLegs() {
       <span class="bd"><b>${esc(l.t)}</b><div class="d">${esc(l.d)}</div></span>
       ${l.dur ? `<span class="dur">${esc(l.dur)}</span>` : ""}</li>`).join("");
 
-  $$("#splitToggle button").forEach(b =>
-    b.classList.toggle("active", b.dataset.split === state.split));
+  const half = Math.floor(n.total / 2);
+  $$("#splitToggle button").forEach(b => {
+    const ao = b.dataset.split === "7+6" ? half : Math.max(1, half - 1);
+    b.textContent = `${n.total - ao} לילות פוקט + ${ao} אאו נאנג`;
+    b.classList.toggle("active", b.dataset.split === state.split);
+  });
 }
 
 $$("#splitToggle button").forEach(b => b.addEventListener("click", () => {
@@ -633,9 +668,9 @@ function renderSchemap() {
 
   const detail = mapView !== "overview";
   const dots = places.map(p => {
-    const col = { hotel: "var(--accent)", att: "var(--warm)", med: "var(--crit)" }[p.kind];
+    const col = { hotel: "var(--map-hotel)", att: "var(--map-att)", med: "var(--map-med)" }[p.kind];
     const r = p.kind === "att" ? 14 : 19;
-    const ring = p.chosen ? `<circle cx="${p.x}" cy="${p.y}" r="${r + 11}" fill="none" stroke="var(--accent)" stroke-width="5"/>` : "";
+    const ring = p.chosen ? `<circle cx="${p.x}" cy="${p.y}" r="${r + 11}" fill="none" stroke="var(--map-hotel)" stroke-width="5"/>` : "";
     const cross = p.kind === "med" ? `<path d="M${p.x - 7} ${p.y}h14M${p.x} ${p.y - 7}v14" stroke="#fff" stroke-width="4.5"/>` : "";
     const label = detail && p.short
       ? `<text class="mklabel" x="${p.x + r + 8}" y="${p.y + 8}" font-size="36">${esc(p.short)}</text>` : "";
@@ -653,17 +688,17 @@ function renderSchemap() {
     const l1 = px(98.34, 7.92), l2 = px(98.99, 8.10), sea = px(98.52, 7.83);
     labels = `<text x="${l1.x}" y="${l1.y}" font-size="34" fill="var(--muted)">פוקט</text>
       <text x="${l2.x}" y="${l2.y}" font-size="34" fill="var(--muted)">קראבי</text>
-      <text x="${sea.x}" y="${sea.y}" font-size="30" fill="var(--accent-ink)" opacity=".65">הים האנדמני</text>`;
+      <text x="${sea.x}" y="${sea.y}" font-size="30" fill="var(--sea-ink)" opacity=".8">הים האנדמני</text>`;
   } else if (mapView === "aonang") {
     const s = px(98.70, 8.00);
-    labels = `<text x="${s.x}" y="${s.y}" font-size="30" fill="var(--accent-ink)" opacity=".6">הים האנדמני</text>`;
+    labels = `<text x="${s.x}" y="${s.y}" font-size="30" fill="var(--sea-ink)" opacity=".75">הים האנדמני</text>`;
   } else {
     const s = px(98.245, 7.77);
-    labels = `<text x="${s.x}" y="${s.y}" font-size="30" fill="var(--accent-ink)" opacity=".6">הים האנדמני</text>`;
+    labels = `<text x="${s.x}" y="${s.y}" font-size="30" fill="var(--sea-ink)" opacity=".75">הים האנדמני</text>`;
   }
 
   $("#schemap").innerHTML = `<svg viewBox="0 0 ${W} ${H}" aria-label="מפת המסלול">
-    <rect x="${-W}" y="${-H}" width="${W * 3}" height="${H * 3}" fill="var(--accent-soft)"/>
+    <rect x="${-W}" y="${-H}" width="${W * 3}" height="${H * 3}" fill="var(--sea)"/>
     <path d="${poly(GEO.phuketIsland)}" fill="var(--surface2)" stroke="var(--line)" stroke-width="3"/>
     <path d="${poly(GEO.mainland)}" fill="var(--surface2)" stroke="var(--line)" stroke-width="3"/>
     ${islands}${labels}${dots}</svg>
@@ -671,9 +706,9 @@ function renderSchemap() {
   attachSchemapPanZoom(W, H);
 
   $("#mapLegend").innerHTML = `
-    <span class="k"><i class="swatch" style="background:var(--accent)"></i>מלונות</span>
-    <span class="k"><i class="swatch" style="background:var(--warm)"></i>אטרקציות</span>
-    <span class="k"><i class="swatch" style="background:var(--crit)"></i>בתי חולים</span>`;
+    <span class="k"><i class="swatch" style="background:var(--map-hotel)"></i>מלונות</span>
+    <span class="k"><i class="swatch" style="background:var(--map-att)"></i>אטרקציות</span>
+    <span class="k"><i class="swatch" style="background:var(--map-med)"></i>בתי חולים</span>`;
 
   const open = id => { const p = places.find(q => q.id === id); if (p) showPlaceSheet(p); };
   $$("#schemap .mk").forEach(g => {
@@ -794,7 +829,7 @@ function initLeaflet() {
     $("#mapNote").textContent = "מפה מלאה (OpenStreetMap). הקשה על נקודה — פרטים; הכפתורים למעלה ממקדים ומסננים.";
     const map = L.map(box, { scrollWheelZoom: true }).setView([7.95, 98.55], 9);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "© OpenStreetMap" }).addTo(map);
-    const colors = { hotel: "#00879E", att: "#D97742", med: "#B3362B" };
+    const colors = { hotel: "#2E6650", att: "#C05B38", med: "#B3362B" };
     const groups = { hotel: L.layerGroup(), att: L.layerGroup(), med: L.layerGroup() };
     mapPlaces().forEach(p => {
       const m = L.circleMarker([p.lat, p.lng], {
@@ -815,7 +850,7 @@ function initLeaflet() {
 function refreshMap() {
   if (leafState) {
     Object.values(leafState.groups).forEach(g => g.clearLayers());
-    const colors = { hotel: "#00879E", att: "#D97742", med: "#B3362B" };
+    const colors = { hotel: "#2E6650", att: "#C05B38", med: "#B3362B" };
     mapPlaces().forEach(p => {
       const m = L.circleMarker([p.lat, p.lng], {
         radius: p.kind === "att" ? 6 : 8, color: "#fff", weight: 1.5,
@@ -978,6 +1013,10 @@ function budgetRow(b) {
       return { ...b, low, typ: (low + high) / 2, high, note: `לפי ${chosen.name} · ${nn} לילות` };
     }
     return { ...b, note: `טרם נבחר מלון — טווח כללי ל-${nn} לילות` };
+  }
+  if (b.perDay) {
+    const days = n.total + 1, f = days / b.perDay;
+    return { ...b, low: b.low * f, typ: b.typ * f, high: b.high * f, note: `${b.note} · לפי ${days} ימים` };
   }
   return b;
 }

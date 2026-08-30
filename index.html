@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="חמ&quot;ל התכנון לטיול לתאילנד — משימות, מסלול, מלונות, מזג אוויר ותקציב במקום אחד">
-<meta name="theme-color" content="#F7F4EE" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0E1B1E" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F3EEE3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#111813" media="(prefers-color-scheme: dark)">
 <title>חמ"ל תאילנד</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Suez+One&family=IBM+Plex+Sans+Hebrew:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;900&family=Heebo:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="stylesheet" href="styles.css">
 </head>
@@ -32,6 +32,7 @@
       <div class="datebox">
         <label>יציאה <input type="date" id="tripStart"></label>
         <label>חזרה <input type="date" id="tripEnd"></label>
+        <span class="date-nights" id="dateNights" hidden></span>
       </div>
     </div>
 
@@ -45,11 +46,6 @@
     </div>
 
     <div class="card">
-      <h2>מזג אוויר לתאריכים שלכם <span class="sub">אומדן אקלימי · מתעדכן לפי הבחירה</span></h2>
-      <div id="wxTrip"></div>
-    </div>
-
-    <div class="card">
       <h2>איפה אנחנו עומדים</h2>
       <div class="progress-wrap" style="margin-top:10px">
         <div class="ring" id="ringBox"></div>
@@ -58,6 +54,11 @@
           <ul class="next-tasks" id="nextTasks"></ul>
         </div>
       </div>
+    </div>
+
+    <div class="card">
+      <h2>מזג אוויר לתאריכים שלכם <span class="sub">אומדן אקלימי · מתעדכן לפי הבחירה</span></h2>
+      <div id="wxTrip"></div>
     </div>
 
     <div class="card">
@@ -107,16 +108,16 @@
 
   <!-- ============ משימות ============ -->
   <section class="view" id="view-tasks">
-    <div class="card" style="border-color:var(--warm)">
+    <div class="card nownext" id="nowNextCard">
+      <h2>עכשיו בתור</h2>
+      <div id="nowNext"></div>
+    </div>
+    <div class="card">
       <h2>למה עכשיו?</h2>
       <p style="font-size:13px; color:var(--ink2); margin:6px 0 0">
         היציאה בעוד כחודשיים, ונובמבר הוא תחילת עונת השיא בצד אנדמן — מלונות וטיסות מתייקרים ונחטפים מכאן והלאה.
         <b>שלב 0 ושלב 1 צריכים לקרות בשבועיים הקרובים.</b> הסדר בנוי לפי תלות: תאריכים ← טיסה בינלאומית ← פנימיות ← מלונות.
       </p>
-    </div>
-    <div class="card nownext" id="nowNextCard">
-      <h2>עכשיו בתור</h2>
-      <div id="nowNext"></div>
     </div>
     <div class="tasks-toolbar">
       <label class="toggle-pill"><input type="checkbox" id="onlyOpen"><span>הסתר מה שבוצע</span></label>
