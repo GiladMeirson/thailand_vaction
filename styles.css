@@ -501,3 +501,18 @@ details.stage-acc[open]::details-content,details.att-acc[open]::details-content{
 .pick.empty{background:transparent; border:1.5px dashed var(--line); color:var(--muted); font-size:13px}
 .picks-total{margin-top:10px; font-size:13.5px; color:var(--ink2); background:var(--good-soft); border-radius:9px; padding:8px 12px}
 .hotels-toolbar{display:flex; justify-content:center; margin-top:14px}
+
+/* ===== גרסה 6: דדליינים וכפתורי פעולה למשימות ===== */
+details.stage-acc summary .stitle .when.soon{color:var(--warn); font-weight:700}
+details.stage-acc summary .stitle .when.overdue{color:var(--crit); font-weight:700}
+.task-links{display:flex; gap:6px; flex-wrap:wrap; margin-top:8px}
+.tlink{
+  background:var(--surface2); border:1px solid var(--line); border-radius:8px; padding:4px 11px;
+  font-size:12.3px; font-weight:600; color:var(--accent-ink); text-decoration:none;
+  display:inline-flex; align-items:center; gap:4px; cursor:pointer; line-height:1.5;
+}
+@media (hover:hover){ .tlink:hover{border-color:var(--accent); background:var(--accent-soft)} }
+.tlink:active{transform:scale(.96)}
+.nn-due{display:block; margin-top:4px; font-size:12.5px; font-weight:600; color:var(--muted)}
+.nn-due.soon{color:var(--warn)}
+.nn-due.overdue{color:var(--crit)}

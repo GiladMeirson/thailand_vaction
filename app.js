@@ -145,6 +145,59 @@ function settleTasks() {
 }
 function buzz() { try { navigator.vibrate && navigator.vibrate(8); } catch (e) { } }
 
+/* ---------- דדליינים לפי תאריך היציאה ---------- */
+const STAGE_DUE = { s0: 45, s1: 35, s2: 25, s3: 14, s4: 2 }; // כמה ימים לפני היציאה השלב צריך להיסגר
+
+function dueInfo(sid) {
+  if (!state.tripStart || STAGE_DUE[sid] == null) return null;
+  const d = new Date(state.tripStart + "T00:00:00");
+  if (isNaN(d)) return null;
+  d.setDate(d.getDate() - STAGE_DUE[sid]);
+  const days = Math.round((d - new Date().setHours(0, 0, 0, 0)) / 864e5);
+  const dateTxt = d.getDate() + "." + (d.getMonth() + 1);
+  if (days < 0) return { cls: "overdue", days, txt: `עד ${dateTxt} · באיחור ${days === -1 ? "יום" : -days + " ימים"}` };
+  if (days === 0) return { cls: "overdue", days, txt: "עד היום!" };
+  if (days === 1) return { cls: "soon", days, txt: `עד מחר (${dateTxt})` };
+  return { cls: days <= 7 ? "soon" : "", days, txt: `עד ${dateTxt} · בעוד ${days} ימים` };
+}
+
+/* ---------- כפתורי פעולה למשימות ---------- */
+function addDays(iso, n) { const d = new Date(iso + "T00:00:00"); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); }
+
+/* קישורים דינמיים — נבנים לפי התאריכים, חלוקת הלילות והמלונות שנבחרו */
+function actUrl(act) {
+  const s = state.tripStart, e = state.tripEnd, n = nights();
+  const gf = q => "https://www.google.com/travel/flights?q=" + encodeURIComponent(q);
+  const bk = (ss, ci, co) => "https://www.booking.com/searchresults.he.il.html?ss=" + encodeURIComponent(ss)
+    + "&group_adults=2&no_rooms=1&group_children=1&age=1" + (ci && co ? `&checkin=${ci}&checkout=${co}` : "");
+  const hotel = base => HOTELS.find(h => h.id === state.hotelChoice[base]);
+  switch (act) {
+    case "flIntl": return gf(s && e ? `flights from TLV to BKK on ${s} through ${e}` : "flights from TLV to BKK");
+    case "flOut": return gf(s ? `flights from BKK to HKT on ${s}` : "flights from BKK to HKT");
+    case "flBack": return gf(e ? `flights from KBV to BKK on ${e}` : "flights from KBV to BKK");
+    case "bkPhuket": { const h = hotel("phuket");
+      return bk(h ? h.name + " Phuket" : "Kata Beach Phuket", s, s && addDays(s, n.phuket)); }
+    case "bkAonang": { const h = hotel("aonang");
+      return bk(h ? h.name + " Ao Nang" : "Ao Nang Krabi", s && addDays(s, n.phuket), s && addDays(s, n.phuket + n.aonang)); }
+    case "bkBkk": return bk("Suvarnabhumi Airport Bangkok", s, s && addDays(s, 1));
+    default: return "#";
+  }
+}
+
+function taskLinksHtml(t) {
+  if (!t.links || !t.links.length) return "";
+  return `<span class="task-links">` + t.links.map(li => li.go
+    ? `<button type="button" class="tlink" data-go="${li.go}">${esc(li.l)}</button>`
+    : `<a class="tlink" target="_blank" rel="noopener" href="${esc(li.act ? actUrl(li.act) : li.u)}">${esc(li.l)} ↗</a>`
+  ).join("") + `</span>`;
+}
+
+function wireGoLinks(root) {
+  root.querySelectorAll("[data-go]").forEach(b => b.addEventListener("click", ev => {
+    ev.preventDefault(); ev.stopPropagation(); gotoView(b.dataset.go);
+  }));
+}
+
 /* ---------- עכשיו בתור ---------- */
 function renderNowNext() {
   const open = allTasksFlat().filter(t => !isDone(t));
@@ -154,15 +207,22 @@ function renderNowNext() {
     return;
   }
   const [first, ...rest] = open;
+  const di = first.custom ? null : dueInfo(STAGES[first.stage] && STAGES[first.stage].id);
+  const dueHtml = di
+    ? `<span class="nn-due ${di.cls}">⏳ ${esc(di.txt)}</span>`
+    : !state.tripStart
+      ? `<span class="nn-due"><button type="button" class="tlink" data-go="overview">בחרו תאריכי טיול לקבלת דדליינים</button></span>`
+      : "";
   box.innerHTML = `
     <div class="nn-first">
       <span class="seq">${esc(first.seq)}</span>
-      <span class="txt"><b>${esc(first.t)}</b>${first.n ? `<span class="n">${esc(first.n)}</span>` : ""}</span>
+      <span class="txt"><b>${esc(first.t)}</b>${first.n ? `<span class="n">${esc(first.n)}</span>` : ""}${dueHtml}${taskLinksHtml(first)}</span>
       <button class="nn-done" id="nnDone">סיימתי ✓</button>
     </div>
     ${rest.length ? `<ul class="nn-rest">${rest.slice(0, 2).map(t =>
       `<li><span class="seq">${esc(t.seq)}</span><span>אחר כך: ${esc(t.t)}</span></li>`).join("")}</ul>` : ""}`;
   $("#nnDone").addEventListener("click", () => { completeTask(first); toast("יפה! הלאה 💪"); });
+  wireGoLinks(box);
 }
 
 /* ---------- שלבים כאקורדיון ---------- */
@@ -188,7 +248,7 @@ function renderStages() {
     return `<label class="task ${checked ? "done" : ""}">
       <input type="checkbox" ${t.custom ? `data-custom="${t.id}"` : `data-task="${t.id}"`} ${checked ? "checked" : ""}>
       <span class="seq">${esc(seq)}</span>
-      <span><span class="t">${esc(t.t)}</span>${t.n ? `<div class="n">${esc(t.n)}</div>` : ""}</span>
+      <span><span class="t">${esc(t.t)}</span>${t.n ? `<div class="n">${esc(t.n)}</div>` : ""}${checked ? "" : taskLinksHtml(t)}</span>
       ${delBtn ? `<button class="del" data-del="${t.id}" aria-label="מחיקה">✕</button>` : ""}
     </label>`;
   };
@@ -197,11 +257,12 @@ function renderStages() {
     const done = s.tasks.filter(t => state.tasks[t.id]).length;
     const st = stageState(si, currentIdx);
     const isOpen = stageOpenMap[s.id] ?? (st === "current");
-    const when = st === "done" ? "הושלם ✓" : (s.urgent ? "בשבועיים הקרובים" : si === 2 ? "אחרי סגירת טיסות" : si === 3 ? "חודש לפני" : si === 4 ? "שבוע לפני" : "");
+    const di = dueInfo(s.id);
+    const when = st === "done" ? "הושלם ✓" : di ? di.txt : (s.urgent ? "בשבועיים הקרובים" : si === 2 ? "אחרי סגירת טיסות" : si === 3 ? "חודש לפני" : si === 4 ? "שבוע לפני" : "");
     return `<details class="stage-acc" data-sid="${s.id}" data-state="${st}" ${isOpen ? "open" : ""}>
       <summary>
         <span class="snum num">${si}</span>
-        <span class="stitle"><b>${esc(s.name.replace(/^שלב \d — /, ""))}</b><span class="when">${esc(when)}</span></span>
+        <span class="stitle"><b>${esc(s.name.replace(/^שלב \d — /, ""))}</b><span class="when ${st !== "done" && di ? di.cls : ""}">${esc(when)}</span></span>
         ${s.urgent && st !== "done" ? '<span class="pill warm">דחוף</span>' : ""}
         <span class="sprog"><span class="cnt">${done}/${s.tasks.length}</span>
           <span class="sbar"><i style="width:${s.tasks.length ? Math.round(done / s.tasks.length * 100) : 0}%"></i></span></span>
@@ -267,6 +328,7 @@ function renderStages() {
   };
   $("#addTaskBtn").addEventListener("click", add);
   $("#newTask").addEventListener("keydown", e => { if (e.key === "Enter") add(); });
+  wireGoLinks(box);
 }
 
 function renderTasksArea() { renderNowNext(); renderStages(); }
@@ -320,8 +382,8 @@ function renderOverview() {
 }
 
 $("#howtoClose").addEventListener("click", () => { state.hideHowto = true; save(); renderOverview(); });
-$("#tripStart").addEventListener("change", e => { state.tripStart = e.target.value; save(); renderOverview(); renderWxTrip(); });
-$("#tripEnd").addEventListener("change", e => { state.tripEnd = e.target.value; save(); renderOverview(); renderWxTrip(); });
+$("#tripStart").addEventListener("change", e => { state.tripStart = e.target.value; save(); renderOverview(); renderWxTrip(); renderTasksArea(); });
+$("#tripEnd").addEventListener("change", e => { state.tripEnd = e.target.value; save(); renderOverview(); renderWxTrip(); renderTasksArea(); });
 
 function renderEmergency() {
   $("#emgList").innerHTML = EMERGENCY.map(e => `
@@ -385,7 +447,7 @@ function renderWxTrip() {
       <p class="wxt-note">התאריכים משפיעים גם על הספירה לאחור ועל חישוב הלילות.</p>`;
     $("#wxSuggest").addEventListener("click", () => {
       state.tripStart = "2026-10-25"; state.tripEnd = "2026-11-07";
-      save(); renderOverview(); renderWxTrip(); toast("נקבע טווח לדוגמה — אפשר לשנות");
+      save(); renderOverview(); renderWxTrip(); renderTasksArea(); toast("נקבע טווח לדוגמה — אפשר לשנות");
     });
     return;
   }
@@ -492,7 +554,7 @@ function renderLegs() {
 
 $$("#splitToggle button").forEach(b => b.addEventListener("click", () => {
   state.split = b.dataset.split;
-  save(); renderLegs(); renderHotels(); renderBudget(); renderOverview();
+  save(); renderLegs(); renderHotels(); renderBudget(); renderOverview(); renderTasksArea();
 }));
 
 /* ---------- מפה ---------- */
@@ -898,7 +960,7 @@ function renderHotels() {
   $$("#hotelsBox [data-choose]").forEach(b => b.addEventListener("click", () => {
     const base = b.dataset.base;
     state.hotelChoice[base] = state.hotelChoice[base] === b.dataset.choose ? null : b.dataset.choose;
-    save(); renderHotels(); renderBudget(); renderOverview(); refreshMap();
+    save(); renderHotels(); renderBudget(); renderOverview(); refreshMap(); renderTasksArea();
     if (state.hotelChoice[base]) { buzz(); toast("המלון נבחר — התקציב התעדכן לפי הלילות"); }
   }));
   $$("#hotelsBox [data-onmap]").forEach(b => b.addEventListener("click", () =>
