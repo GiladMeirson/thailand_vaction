@@ -506,6 +506,21 @@ details.stage-acc[open]::details-content,details.att-acc[open]::details-content{
 .picks-total{margin-top:10px; font-size:13.5px; color:var(--ink2); background:var(--good-soft); border-radius:9px; padding:8px 12px}
 .hotels-toolbar{display:flex; justify-content:center; margin-top:14px}
 
+/* ===== גרסה 6: דדליינים וכפתורי פעולה למשימות ===== */
+details.stage-acc summary .stitle .when.soon{color:var(--warn); font-weight:700}
+details.stage-acc summary .stitle .when.overdue{color:var(--crit); font-weight:700}
+.task-links{display:flex; gap:6px; flex-wrap:wrap; margin-top:8px}
+.tlink{
+  background:var(--surface2); border:1px solid var(--line); border-radius:8px; padding:4px 11px;
+  font-size:12.3px; font-weight:600; color:var(--accent-ink); text-decoration:none;
+  display:inline-flex; align-items:center; gap:4px; cursor:pointer; line-height:1.5;
+}
+@media (hover:hover){ .tlink:hover{border-color:var(--accent); background:var(--accent-soft)} }
+.tlink:active{transform:scale(.96)}
+.nn-due{display:block; margin-top:4px; font-size:12.5px; font-weight:600; color:var(--muted)}
+.nn-due.soon{color:var(--warn)}
+.nn-due.overdue{color:var(--crit)}
+
 </style>
 <div id="app">
   <header class="top">
@@ -767,43 +782,43 @@ const STAGES = [
   { id:"s0", name:"שלב 0 — חוסמים", why:"הכול תלוי בתאריכים ובדרכונים. אין טעם להשוות טיסות בלי תאריכים, ואין טעם לקנות טיסה בלי דרכון בתוקף. לביצוע בשבועיים הקרובים!", urgent:true, tasks:[
     { id:"t01", t:"לדבר עם רועי (הבוס של שיר) — אישור חופשה", n:"קובע את התאריכים המדויקים, כל השאר נגזר מזה. דורש זמן תגובה מהמעסיק" },
     { id:"t02", t:"לבדוק אישור חופש שלך ולוודא שהחפיפה עובדת", n:"" },
-    { id:"t03", t:"דרכון לתינוקת", n:"אם עדיין אין — להתחיל מיד, זה חוסם מוחלט" },
-    { id:"t04", t:"בדיקת תוקף הדרכונים שלכם", n:"תאילנד דורשת 6 חודשים לפחות מיום הכניסה. חידוש לוקח שבועות" },
+    { id:"t03", t:"דרכון לתינוקת", n:"אם עדיין אין — להתחיל מיד, זה חוסם מוחלט", links:[{l:"תור ללשכה — MyVisit", u:"https://myvisit.com"}] },
+    { id:"t04", t:"בדיקת תוקף הדרכונים שלכם", n:"תאילנד דורשת 6 חודשים לפחות מיום הכניסה. חידוש לוקח שבועות", links:[{l:"חידוש דרכון — gov.il", u:"https://www.gov.il/he/search?query=%D7%97%D7%99%D7%93%D7%95%D7%A9%20%D7%93%D7%A8%D7%9B%D7%95%D7%9F"}] },
     { id:"t05", t:"סגירת טווח תאריכים מדויק", n:"הפלט של שתי המשימות הראשונות — ולעדכן אותו למעלה בלשונית הסקירה" },
-    { id:"t06", t:"אימות פטור ויזה לישראלים", n:"יש פטור לשהות קצרה — לאמת מול הנציגות שהוא עדיין בתוקף" }
+    { id:"t06", t:"אימות פטור ויזה לישראלים", n:"יש פטור לשהות קצרה — לאמת מול הנציגות שהוא עדיין בתוקף", links:[{l:"שגרירות תאילנד בת\"א", u:"https://telaviv.thaiembassy.org"}] }
   ]},
   { id:"s1", name:"שלב 1 — הזמנות שמתייקרות", why:"הסדר חשוב: קודם הטיסה הבינלאומית (מכתיבה שעות נחיתה), אז הפנימיות (מתחברות אליה), ורק אז המלונות (הלילות נגזרים מהטיסות).", urgent:true, tasks:[
     { id:"t11", t:"לדבר עם אילנה — טיסות עובדים ל-TLV↔BKK", n:"לבדוק לפני השוואת מחירים רגילה — יכול לחסוך אלפי שקלים" },
-    { id:"t12", t:"טיסה בינלאומית TLV↔BKK", n:"ישיר ~‎$950–1,100 לאדם, עם עצירה ~‎$730–900. לשים לב לשעת הנחיתה בבנגקוק" },
-    { id:"t13", t:"טיסות פנימיות — בנפרד ובאופן פתוח", n:"BKK→HKT (פנימה לפוקט) ו-KBV→BKK (החוצה מקראבי) · ‎~$45–60 לאדם לכיוון" },
+    { id:"t12", t:"טיסה בינלאומית TLV↔BKK", n:"ישיר ~‎$950–1,100 לאדם, עם עצירה ~‎$730–900. לשים לב לשעת הנחיתה בבנגקוק", links:[{l:"Google Flights · TLV↔BKK", act:"flIntl"}] },
+    { id:"t13", t:"טיסות פנימיות — בנפרד ובאופן פתוח", n:"BKK→HKT (פנימה לפוקט) ו-KBV→BKK (החוצה מקראבי) · ‎~$45–60 לאדם לכיוון", links:[{l:"BKK→HKT", act:"flOut"},{l:"KBV→BKK", act:"flBack"}] },
     { id:"t14", t:"לבקש עריסת טיסה (Bassinet) ולוודא רישום התינוקת ככרטיס Infant", n:"לרוב עד ~11 ק\"ג — לבדוק מגבלת משקל מול חברת התעופה" },
-    { id:"t15", t:"החלטה על חלוקת הלילות — 8+5 או 7+6", n:"אפשר לשחק עם זה בלשונית המסלול" },
-    { id:"t16", t:"מלון בפוקט", n:"Katathani או SAii Laguna. לבקש חדר בלי מדרגות + מיטת תינוק. עדיף ביטול חינם" },
-    { id:"t17", t:"מלון באאו נאנג", n:"Centara Ao Nang / Avani Cliff — זה הראשון שייגמר, לסגור קודם!" },
-    { id:"t18", t:"החלטה: לילה בבנגקוק ליד השדה — כן/לא", n:"רק אם הנחיתה בערב או בלילה. לא לגרור תינוקת בקונקשן לילי צמוד" }
+    { id:"t15", t:"החלטה על חלוקת הלילות — 8+5 או 7+6", n:"אפשר לשחק עם זה בלשונית המסלול", links:[{l:"ללשונית המסלול", go:"route"}] },
+    { id:"t16", t:"מלון בפוקט", n:"Katathani או SAii Laguna. לבקש חדר בלי מדרגות + מיטת תינוק. עדיף ביטול חינם", links:[{l:"Booking עם התאריכים", act:"bkPhuket"},{l:"השוואת המלונות", go:"hotels"}] },
+    { id:"t17", t:"מלון באאו נאנג", n:"Centara Ao Nang / Avani Cliff — זה הראשון שייגמר, לסגור קודם!", links:[{l:"Booking עם התאריכים", act:"bkAonang"},{l:"השוואת המלונות", go:"hotels"}] },
+    { id:"t18", t:"החלטה: לילה בבנגקוק ליד השדה — כן/לא", n:"רק אם הנחיתה בערב או בלילה. לא לגרור תינוקת בקונקשן לילי צמוד", links:[{l:"מלונות ליד השדה", act:"bkBkk"}] }
   ]},
   { id:"s2", name:"שלב 2 — ביטוח ובריאות", why:"הביטוח דורש תאריכים ופרטי טיסה, לכן אחרי שלב 1 — אבל לא לדחות, חייב להיות תקף מרגע היציאה.", tasks:[
-    { id:"t21", t:"ביטוח נסיעות ל-3 נפשות", n:"לוודא במפורש שהתינוקת מכוסה + כיסוי ביטול. ‎~₪600–800 למשפחה ל-14 יום" },
+    { id:"t21", t:"ביטוח נסיעות ל-3 נפשות", n:"לוודא במפורש שהתינוקת מכוסה + כיסוי ביטול. ‎~₪600–800 למשפחה ל-14 יום", links:[{l:"השוואת ביטוחים", u:"https://www.google.com/search?q=%D7%91%D7%99%D7%98%D7%95%D7%97%20%D7%A0%D7%A1%D7%99%D7%A2%D7%95%D7%AA%20%D7%AA%D7%90%D7%99%D7%9C%D7%A0%D7%93%20%D7%94%D7%A9%D7%95%D7%95%D7%90%D7%94%20%D7%AA%D7%99%D7%A0%D7%95%D7%A7"}] },
     { id:"t22", t:"ייעוץ בטיפת חלב / רופא ילדים", n:"חיסונים והמלצות לתינוקת באזור טרופי" },
     { id:"t23", t:"חיסונים למבוגרים", n:"הפטיטיס A/B, טטנוס — לפי המרפאה. חלקם דורשים זמן מראש" },
     { id:"t24", t:"ערכת תרופות מהארץ", n:"אקמול/נורופן לתינוקות, תרופות קיבה, חומר חיטוי, קרם הגנה לתינוקות, דוחה יתושים מותאם" },
-    { id:"t25", t:"לשמור בטלפון: בתי החולים + מספר החירום של הביטוח", n:"הכול מרוכז בלשונית הסקירה כאן" }
+    { id:"t25", t:"לשמור בטלפון: בתי החולים + מספר החירום של הביטוח", n:"הכול מרוכז בלשונית הסקירה כאן", links:[{l:"לרשימת החירום", go:"overview"}] }
   ]},
   { id:"s3", name:"שלב 3 — לוגיסטיקה על הקרקע", why:"בערך חודש לפני היציאה.", tasks:[
-    { id:"t31", t:"הזמנת הסעה פוקט → אאו נאנג", n:"רכב פרטי ~3 שעות, ‎~฿3,000–3,500. לוודא במפורש כיסא בטיחות (‎+฿300) — לא מובן מאליו בתאילנד" },
-    { id:"t32", t:"הסעות שדה ↔ מלון", n:"HKT→קאטה ‎~฿1,000. גם כאן — כיסא בטיחות מראש" },
+    { id:"t31", t:"הזמנת הסעה פוקט → אאו נאנג", n:"רכב פרטי ~3 שעות, ‎~฿3,000–3,500. לוודא במפורש כיסא בטיחות (‎+฿300) — לא מובן מאליו בתאילנד", links:[{l:"12Go · פוקט→קראבי", u:"https://12go.asia/en/travel/phuket/krabi"}] },
+    { id:"t32", t:"הסעות שדה ↔ מלון", n:"HKT→קאטה ‎~฿1,000. גם כאן — כיסא בטיחות מראש", links:[{l:"חיפוש הסעה עם כיסא", u:"https://www.google.com/search?q=phuket+airport+private+transfer+baby+car+seat"}] },
     { id:"t33", t:"אישור סופי מול המלונות", n:"מיטת תינוק, קומקום בחדר, חדר נגיש בלי מדרגות / ליד מעלית" },
-    { id:"t34", t:"בניית לוח זמנים יומי גמיש", n:"עם תינוקת — פעילות אחת ביום מקסימום. אפשר לסמן כוכב באטרקציות כאן" },
-    { id:"t35", t:"סגירת תקציב", n:"בלשונית התקציב — ולעדכן שם כל תשלום" },
-    { id:"t36", t:"eSIM לשני הטלפונים", n:"Airalo ‎~$20 ל-15 יום ללא הגבלה — לקנות מראש, זול מרואמינג" },
+    { id:"t34", t:"בניית לוח זמנים יומי גמיש", n:"עם תינוקת — פעילות אחת ביום מקסימום. אפשר לסמן כוכב באטרקציות כאן", links:[{l:"לאטרקציות", go:"route"}] },
+    { id:"t35", t:"סגירת תקציב", n:"בלשונית התקציב — ולעדכן שם כל תשלום", links:[{l:"ללשונית התקציב", go:"budget"}] },
+    { id:"t36", t:"eSIM לשני הטלפונים", n:"Airalo ‎~$20 ל-15 יום ללא הגבלה — לקנות מראש, זול מרואמינג", links:[{l:"Airalo תאילנד", u:"https://www.airalo.com/thailand-esim"}] },
     { id:"t37", t:"כרטיס אשראי בלי עמלות חו\"ל + מזומן בבאט", n:"" },
-    { id:"t38", t:"להוריד את Grab / Bolt", n:"המוניות של תאילנד — חוסך ויכוחי מחיר" }
+    { id:"t38", t:"להוריד את Grab / Bolt", n:"המוניות של תאילנד — חוסך ויכוחי מחיר", links:[{l:"Grab", u:"https://www.grab.com/th/en/"},{l:"Bolt", u:"https://bolt.eu/he/"}] }
   ]},
   { id:"s4", name:"שלב 4 — שבוע לפני", why:"", tasks:[
     { id:"t41", t:"צילום/סריקה של דרכונים, ביטוח, אישורי טיסה ומלון", n:"בענן וגם שמור בנייד" },
     { id:"t42", t:"אריזה", n:"מצע החתלה, מנשא (חשוב יותר מעגלה!), כובע, בגדים קלים, מטרייה קטנה" },
     { id:"t43", t:"צ'ק-אין מקוון לטיסה", n:"" },
-    { id:"t44", t:"הורדת מפות אופליין של פוקט וקראבי", n:"Google Maps → Offline maps" },
+    { id:"t44", t:"הורדת מפות אופליין של פוקט וקראבי", n:"Google Maps → Offline maps", links:[{l:"מדריך מפות אופליין", u:"https://support.google.com/maps/answer/6291838"}] },
     { id:"t45", t:"לוודא שהתינוקת מופיעה בכרטיס כ-Infant", n:"" }
   ]}
 ];
@@ -1055,6 +1070,59 @@ function settleTasks() {
 }
 function buzz() { try { navigator.vibrate && navigator.vibrate(8); } catch (e) { } }
 
+/* ---------- דדליינים לפי תאריך היציאה ---------- */
+const STAGE_DUE = { s0: 45, s1: 35, s2: 25, s3: 14, s4: 2 }; // כמה ימים לפני היציאה השלב צריך להיסגר
+
+function dueInfo(sid) {
+  if (!state.tripStart || STAGE_DUE[sid] == null) return null;
+  const d = new Date(state.tripStart + "T00:00:00");
+  if (isNaN(d)) return null;
+  d.setDate(d.getDate() - STAGE_DUE[sid]);
+  const days = Math.round((d - new Date().setHours(0, 0, 0, 0)) / 864e5);
+  const dateTxt = d.getDate() + "." + (d.getMonth() + 1);
+  if (days < 0) return { cls: "overdue", days, txt: `עד ${dateTxt} · באיחור ${days === -1 ? "יום" : -days + " ימים"}` };
+  if (days === 0) return { cls: "overdue", days, txt: "עד היום!" };
+  if (days === 1) return { cls: "soon", days, txt: `עד מחר (${dateTxt})` };
+  return { cls: days <= 7 ? "soon" : "", days, txt: `עד ${dateTxt} · בעוד ${days} ימים` };
+}
+
+/* ---------- כפתורי פעולה למשימות ---------- */
+function addDays(iso, n) { const d = new Date(iso + "T00:00:00"); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); }
+
+/* קישורים דינמיים — נבנים לפי התאריכים, חלוקת הלילות והמלונות שנבחרו */
+function actUrl(act) {
+  const s = state.tripStart, e = state.tripEnd, n = nights();
+  const gf = q => "https://www.google.com/travel/flights?q=" + encodeURIComponent(q);
+  const bk = (ss, ci, co) => "https://www.booking.com/searchresults.he.il.html?ss=" + encodeURIComponent(ss)
+    + "&group_adults=2&no_rooms=1&group_children=1&age=1" + (ci && co ? `&checkin=${ci}&checkout=${co}` : "");
+  const hotel = base => HOTELS.find(h => h.id === state.hotelChoice[base]);
+  switch (act) {
+    case "flIntl": return gf(s && e ? `flights from TLV to BKK on ${s} through ${e}` : "flights from TLV to BKK");
+    case "flOut": return gf(s ? `flights from BKK to HKT on ${s}` : "flights from BKK to HKT");
+    case "flBack": return gf(e ? `flights from KBV to BKK on ${e}` : "flights from KBV to BKK");
+    case "bkPhuket": { const h = hotel("phuket");
+      return bk(h ? h.name + " Phuket" : "Kata Beach Phuket", s, s && addDays(s, n.phuket)); }
+    case "bkAonang": { const h = hotel("aonang");
+      return bk(h ? h.name + " Ao Nang" : "Ao Nang Krabi", s && addDays(s, n.phuket), s && addDays(s, n.phuket + n.aonang)); }
+    case "bkBkk": return bk("Suvarnabhumi Airport Bangkok", s, s && addDays(s, 1));
+    default: return "#";
+  }
+}
+
+function taskLinksHtml(t) {
+  if (!t.links || !t.links.length) return "";
+  return `<span class="task-links">` + t.links.map(li => li.go
+    ? `<button type="button" class="tlink" data-go="${li.go}">${esc(li.l)}</button>`
+    : `<a class="tlink" target="_blank" rel="noopener" href="${esc(li.act ? actUrl(li.act) : li.u)}">${esc(li.l)} ↗</a>`
+  ).join("") + `</span>`;
+}
+
+function wireGoLinks(root) {
+  root.querySelectorAll("[data-go]").forEach(b => b.addEventListener("click", ev => {
+    ev.preventDefault(); ev.stopPropagation(); gotoView(b.dataset.go);
+  }));
+}
+
 /* ---------- עכשיו בתור ---------- */
 function renderNowNext() {
   const open = allTasksFlat().filter(t => !isDone(t));
@@ -1064,15 +1132,22 @@ function renderNowNext() {
     return;
   }
   const [first, ...rest] = open;
+  const di = first.custom ? null : dueInfo(STAGES[first.stage] && STAGES[first.stage].id);
+  const dueHtml = di
+    ? `<span class="nn-due ${di.cls}">⏳ ${esc(di.txt)}</span>`
+    : !state.tripStart
+      ? `<span class="nn-due"><button type="button" class="tlink" data-go="overview">בחרו תאריכי טיול לקבלת דדליינים</button></span>`
+      : "";
   box.innerHTML = `
     <div class="nn-first">
       <span class="seq">${esc(first.seq)}</span>
-      <span class="txt"><b>${esc(first.t)}</b>${first.n ? `<span class="n">${esc(first.n)}</span>` : ""}</span>
+      <span class="txt"><b>${esc(first.t)}</b>${first.n ? `<span class="n">${esc(first.n)}</span>` : ""}${dueHtml}${taskLinksHtml(first)}</span>
       <button class="nn-done" id="nnDone">סיימתי ✓</button>
     </div>
     ${rest.length ? `<ul class="nn-rest">${rest.slice(0, 2).map(t =>
       `<li><span class="seq">${esc(t.seq)}</span><span>אחר כך: ${esc(t.t)}</span></li>`).join("")}</ul>` : ""}`;
   $("#nnDone").addEventListener("click", () => { completeTask(first); toast("יפה! הלאה 💪"); });
+  wireGoLinks(box);
 }
 
 /* ---------- שלבים כאקורדיון ---------- */
@@ -1098,7 +1173,7 @@ function renderStages() {
     return `<label class="task ${checked ? "done" : ""}">
       <input type="checkbox" ${t.custom ? `data-custom="${t.id}"` : `data-task="${t.id}"`} ${checked ? "checked" : ""}>
       <span class="seq">${esc(seq)}</span>
-      <span><span class="t">${esc(t.t)}</span>${t.n ? `<div class="n">${esc(t.n)}</div>` : ""}</span>
+      <span><span class="t">${esc(t.t)}</span>${t.n ? `<div class="n">${esc(t.n)}</div>` : ""}${checked ? "" : taskLinksHtml(t)}</span>
       ${delBtn ? `<button class="del" data-del="${t.id}" aria-label="מחיקה">✕</button>` : ""}
     </label>`;
   };
@@ -1107,11 +1182,12 @@ function renderStages() {
     const done = s.tasks.filter(t => state.tasks[t.id]).length;
     const st = stageState(si, currentIdx);
     const isOpen = stageOpenMap[s.id] ?? (st === "current");
-    const when = st === "done" ? "הושלם ✓" : (s.urgent ? "בשבועיים הקרובים" : si === 2 ? "אחרי סגירת טיסות" : si === 3 ? "חודש לפני" : si === 4 ? "שבוע לפני" : "");
+    const di = dueInfo(s.id);
+    const when = st === "done" ? "הושלם ✓" : di ? di.txt : (s.urgent ? "בשבועיים הקרובים" : si === 2 ? "אחרי סגירת טיסות" : si === 3 ? "חודש לפני" : si === 4 ? "שבוע לפני" : "");
     return `<details class="stage-acc" data-sid="${s.id}" data-state="${st}" ${isOpen ? "open" : ""}>
       <summary>
         <span class="snum num">${si}</span>
-        <span class="stitle"><b>${esc(s.name.replace(/^שלב \d — /, ""))}</b><span class="when">${esc(when)}</span></span>
+        <span class="stitle"><b>${esc(s.name.replace(/^שלב \d — /, ""))}</b><span class="when ${st !== "done" && di ? di.cls : ""}">${esc(when)}</span></span>
         ${s.urgent && st !== "done" ? '<span class="pill warm">דחוף</span>' : ""}
         <span class="sprog"><span class="cnt">${done}/${s.tasks.length}</span>
           <span class="sbar"><i style="width:${s.tasks.length ? Math.round(done / s.tasks.length * 100) : 0}%"></i></span></span>
@@ -1177,6 +1253,7 @@ function renderStages() {
   };
   $("#addTaskBtn").addEventListener("click", add);
   $("#newTask").addEventListener("keydown", e => { if (e.key === "Enter") add(); });
+  wireGoLinks(box);
 }
 
 function renderTasksArea() { renderNowNext(); renderStages(); }
@@ -1230,8 +1307,8 @@ function renderOverview() {
 }
 
 $("#howtoClose").addEventListener("click", () => { state.hideHowto = true; save(); renderOverview(); });
-$("#tripStart").addEventListener("change", e => { state.tripStart = e.target.value; save(); renderOverview(); renderWxTrip(); });
-$("#tripEnd").addEventListener("change", e => { state.tripEnd = e.target.value; save(); renderOverview(); renderWxTrip(); });
+$("#tripStart").addEventListener("change", e => { state.tripStart = e.target.value; save(); renderOverview(); renderWxTrip(); renderTasksArea(); });
+$("#tripEnd").addEventListener("change", e => { state.tripEnd = e.target.value; save(); renderOverview(); renderWxTrip(); renderTasksArea(); });
 
 function renderEmergency() {
   $("#emgList").innerHTML = EMERGENCY.map(e => `
@@ -1295,7 +1372,7 @@ function renderWxTrip() {
       <p class="wxt-note">התאריכים משפיעים גם על הספירה לאחור ועל חישוב הלילות.</p>`;
     $("#wxSuggest").addEventListener("click", () => {
       state.tripStart = "2026-10-25"; state.tripEnd = "2026-11-07";
-      save(); renderOverview(); renderWxTrip(); toast("נקבע טווח לדוגמה — אפשר לשנות");
+      save(); renderOverview(); renderWxTrip(); renderTasksArea(); toast("נקבע טווח לדוגמה — אפשר לשנות");
     });
     return;
   }
@@ -1402,7 +1479,7 @@ function renderLegs() {
 
 $$("#splitToggle button").forEach(b => b.addEventListener("click", () => {
   state.split = b.dataset.split;
-  save(); renderLegs(); renderHotels(); renderBudget(); renderOverview();
+  save(); renderLegs(); renderHotels(); renderBudget(); renderOverview(); renderTasksArea();
 }));
 
 /* ---------- מפה ---------- */
@@ -1808,7 +1885,7 @@ function renderHotels() {
   $$("#hotelsBox [data-choose]").forEach(b => b.addEventListener("click", () => {
     const base = b.dataset.base;
     state.hotelChoice[base] = state.hotelChoice[base] === b.dataset.choose ? null : b.dataset.choose;
-    save(); renderHotels(); renderBudget(); renderOverview(); refreshMap();
+    save(); renderHotels(); renderBudget(); renderOverview(); refreshMap(); renderTasksArea();
     if (state.hotelChoice[base]) { buzz(); toast("המלון נבחר — התקציב התעדכן לפי הלילות"); }
   }));
   $$("#hotelsBox [data-onmap]").forEach(b => b.addEventListener("click", () =>
