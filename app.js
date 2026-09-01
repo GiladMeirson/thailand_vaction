@@ -28,14 +28,14 @@ const LS_KEY = "thailand-hamal-v1";
 
 function defaultState() {
   return {
-    v: 1, updatedAt: "",
+    v: 2, updatedAt: "",
     tasks: {},            // taskId -> true (בוצע)
     custom: [],           // [{id,t,done}]
     hotelChoice: { phuket: null, aonang: null },
     split: "8+5",
     payments: {},         // budgetId -> {amount, note}
     saved: {},            // attractionId -> true
-    tripStart: "", tripEnd: "",
+    tripStart: "2026-10-31", tripEnd: "2026-11-15", // לפי הטיסות שנקנו (LY083/LY082)
     hideHowto: false
   };
 }
@@ -43,12 +43,15 @@ function defaultState() {
 function migrate(o) {
   const d = defaultState();
   if (!o || typeof o !== "object") return d;
-  return {
+  const m = {
     ...d, ...o,
     tasks: o.tasks || {}, custom: Array.isArray(o.custom) ? o.custom : [],
     hotelChoice: { ...d.hotelChoice, ...(o.hotelChoice || {}) },
     payments: o.payments || {}, saved: o.saved || {}
   };
+  // v<2: הטיסות נקנו (1.9.2026) — התאריכים נקבעים לפיהן בכל המכשירים
+  if (!o.v || o.v < 2) { m.v = 2; m.tripStart = d.tripStart; m.tripEnd = d.tripEnd; }
+  return m;
 }
 
 let state = defaultState();
@@ -56,6 +59,14 @@ try {
   const raw = localStorage.getItem(LS_KEY);
   if (raw) state = migrate(JSON.parse(raw));
 } catch (e) { /* אחסון לא זמין — ממשיכים בזיכרון */ }
+
+/* קאש מהריפו: build.mjs מטמיע את thailand-trip-data.json כ-SEED_STATE — נטען אם עדכני מהמקומי */
+try {
+  if (window.SEED_STATE) {
+    const s = migrate(window.SEED_STATE);
+    if (s.updatedAt && (!state.updatedAt || s.updatedAt > state.updatedAt)) state = s;
+  }
+} catch (e) { }
 
 /* ---------- סנכרון ענן (Artifact db) ---------- */
 let dbDoc = null, cloudTimer = null;
@@ -389,7 +400,7 @@ function renderOverview() {
     else {
       const n = nights();
       dn.hidden = false;
-      dn.innerHTML = `סה"כ <b class="num">${diff}</b> לילות · <span class="num">${n.phuket}</span> פוקט + <span class="num">${n.aonang}</span> אאו נאנג`;
+      dn.innerHTML = `<b class="num">${n.total}</b> לילות מלון · <span class="num">${n.phuket}</span> פוקט + <span class="num">${n.aonang}</span> אאו נאנג`;
     }
   } else dn.hidden = true;
 
@@ -403,6 +414,117 @@ function onDatesChanged() {
 }
 $("#tripStart").addEventListener("change", e => { state.tripStart = e.target.value; onDatesChanged(); });
 $("#tripEnd").addEventListener("change", e => { state.tripEnd = e.target.value; onDatesChanged(); });
+
+/* ---------- כרטיסי הטיסה ---------- */
+function renderFlights() {
+  const box = $("#flightsBox");
+  if (!box || typeof FLIGHTS === "undefined") return;
+  const ftD = iso => new Date(iso + "T00:00:00").toLocaleDateString("he-IL", { weekday: "short", day: "numeric", month: "numeric" });
+  const PLANE = '<svg viewBox="0 0 24 24" width="21" height="21" fill="currentColor" aria-hidden="true"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg>';
+
+  const leg = L => `
+  <article class="fticket">
+    <div class="ft-top">
+      <span class="ft-dirtag">${esc(L.dir)}</span>
+      <span class="ft-no num">${esc(L.no)}</span>
+      <span class="ft-airline">${esc(FLIGHTS.airline)}</span>
+    </div>
+    <div class="ft-route">
+      <div class="ft-ep">
+        <div class="ft-code">${esc(L.from.code)}</div>
+        <div class="ft-time num">${esc(L.depTime)}</div>
+        <div class="ft-edate">${ftD(L.depDate)}</div>
+        <div class="ft-city">${esc(L.from.city)} · ${esc(L.from.term)}</div>
+      </div>
+      <div class="ft-path" role="img" aria-label="טיסה ישירה, ${esc(L.dur)} שעות">
+        <i class="ft-pin ft-pin-a"></i><i class="ft-pin ft-pin-b"></i>
+        <span class="ft-fly">${PLANE}</span>
+        <span class="ft-dur num">${esc(L.dur)}${L.direct ? " · ישירה" : ""}</span>
+      </div>
+      <div class="ft-ep ft-to">
+        <div class="ft-code">${esc(L.to.code)}</div>
+        <div class="ft-time num">${esc(L.arrTime)}</div>
+        <div class="ft-edate">${ftD(L.arrDate)}${L.arrNote ? ` <b>${esc(L.arrNote)}</b>` : ""}</div>
+        <div class="ft-city">${esc(L.to.city)} · ${esc(L.to.term)}</div>
+      </div>
+    </div>
+    <div class="ft-tear" aria-hidden="true"></div>
+    <div class="ft-stub">
+      <div class="ft-fact"><span>מושבים</span><b class="num">${esc(L.seats)}</b></div>
+      <div class="ft-fact"><span>מחלקה</span><b>${esc(L.cls)}</b></div>
+      <div class="ft-fact"><span>מטוס</span><b>${esc(L.plane)}</b></div>
+      <div class="ft-fact"><span>כבודה</span><b>${esc(L.bags)}</b></div>
+      <div class="ft-fact"><span>ארוחות</span><b>${esc(L.meal)}</b></div>
+      <span class="ft-barcode" aria-hidden="true"></span>
+    </div>
+  </article>`;
+
+  box.innerHTML = `
+    <div class="eyebrow ft-eyebrow">✈ הטיסות שלכם · הזמנה <b class="num">${esc(FLIGHTS.ref)}</b> · סטטוס: מאושר ✓</div>
+    ${FLIGHTS.legs.map(leg).join("")}
+    <div class="fticket ft-passcard">
+      <div class="ft-pass">${FLIGHTS.pax.map(p => `<span class="ft-chip">${esc(p.name)}</span>`).join("")}</div>
+      <details class="ft-tickets"><summary>מספרי כרטיסים ומושבים ${CHEV}</summary>
+        <ul>${FLIGHTS.pax.map(p => `<li><span>${esc(p.name)} · מושב הלוך ${esc(p.seat)}</span><b class="num">${esc(p.ticket)}</b></li>`).join("")}</ul>
+      </details>
+      <p class="ft-note">צ'ק-אין אונליין נפתח 24 שעות לפני ההמראה. לא לשכוח: עריסת טיסה (Bassinet) לארבל + מושבים לטיסת החזור.</p>
+    </div>`;
+}
+
+/* ---------- השוואת יעדים + בייביסיטר (מחקר ספטמבר 2026) ---------- */
+function renderDests() {
+  const box = $("#destsBox");
+  if (!box || typeof DESTS === "undefined") return;
+  const bar = v => `<span class="dbar"><i style="width:${v * 10}%"></i></span><b class="num dnum">${v}</b>`;
+  box.innerHTML = DESTS.map(d => `
+    <div class="dest ${d.good ? "pick" : ""}">
+      <div class="d-head"><b>${esc(d.n)}</b><span class="d-call ${d.good ? "ok" : ""}">${esc(d.call)}</span></div>
+      <div class="d-scores">
+        <span class="d-lbl">משפחה</span>${bar(d.family)}
+        <span class="d-lbl">זוגיות</span>${bar(d.couple)}
+        <span class="d-lbl">מזג אוויר</span>${bar(d.wx)}
+      </div>
+      <p class="d-why">${esc(d.why)}</p>
+    </div>`).join("") + `<p class="d-skip">${esc(DESTS_SKIP)}</p>`;
+
+  const rr = $("#recRoute");
+  if (rr) rr.innerHTML = `
+    <div class="eyebrow">המבנה המומלץ · 13 לילות</div>
+    <div class="rr-line">
+      <span class="rr-stop"><b class="num">7</b> פוקט · באנג טאו</span><span class="rr-arrow">🚗 3 ש'</span>
+      <span class="rr-stop"><b class="num">4</b> אאו נאנג</span><span class="rr-arrow">✈ 1:25</span>
+      <span class="rr-stop"><b class="num">2</b> בנגקוק</span><span class="rr-arrow">✈ 23:55 הביתה</span>
+    </div>
+    <p class="rr-why">למה ככה: נחיתה 13:50 → פנימית לפוקט עוד באותו יום (במיטה ב-21:30 בערך). באנג טאו — 25 דק' מהשדה, חוף רדוד,
+    בייביסיטריות ומועדוני חוף במרחק הליכה. מסיימים בבנגקוק כי הטיסה הביתה ממריאה 23:55 — בלי קונקשן צמוד עם תינוקת ביום
+    האחרון, עם רפואה הכי טובה שיש, וערב גגות זוגי אחד גדול. <b>החלופה השמרנית:</b> להישאר 7+6 פוקט–אאו נאנג ולטוס
+    KBV→BKK ב-14.11 בבוקר מוקדם (באפר של יום שלם עד 23:55).</p>`;
+}
+
+function renderNovTable() {
+  const box = $("#novTable");
+  if (!box || typeof NOV_WINDOW === "undefined") return;
+  const heat = m => m <= 100 ? "h1" : m <= 140 ? "h2" : m <= 180 ? "h3" : "h4";
+  box.innerHTML = `<div class="nov-scroll"><table class="nov">
+    <thead><tr><th>יעד</th>${NOV_WINDOW.years.map(y => `<th class="num">${y}</th>`).join("")}<th>ממוצע</th></tr></thead>
+    <tbody>${NOV_WINDOW.dests.map(d => `<tr>
+      <th>${esc(d.n)}<small>${esc(d.days)}</small></th>
+      ${d.mm.map(m => `<td class="num ${heat(m)}">${m}</td>`).join("")}
+      <td class="num ${heat(d.mean)}"><b>${d.mean}</b></td></tr>`).join("")}</tbody></table></div>`;
+}
+
+function renderSitters() {
+  const box = $("#sittersBox");
+  if (!box || typeof SITTERS === "undefined") return;
+  box.innerHTML = SITTERS.map(s => `
+    <div class="sit-area">
+      <div class="sit-name">${esc(s.area)}</div>
+      ${s.items.map(i => `<div class="sit-row">
+        <b>${i.u ? `<a href="${esc(i.u)}" target="_blank" rel="noopener">${esc(i.n)} ↗</a>` : esc(i.n)}</b>
+        <span>${esc(i.d)}</span></div>`).join("")}
+      ${s.night ? `<div class="sit-night">🌙 ${esc(s.night)}</div>` : ""}
+    </div>`).join("");
+}
 
 function renderEmergency() {
   $("#emgList").innerHTML = EMERGENCY.map(e => `
@@ -539,10 +661,17 @@ async function loadTripForecast() {
 }
 
 /* ---------- מסלול ---------- */
-/* סה"כ לילות נגזר מהתאריכים שנבחרו; 13 כברירת מחדל עד שיש תאריכים */
+/* סה"כ לילות מלון נגזר מהתאריכים; 13 כברירת מחדל עד שיש תאריכים */
 function totalNights() {
   if (state.tripStart && state.tripEnd) {
-    const n = Math.round((new Date(state.tripEnd) - new Date(state.tripStart)) / 864e5);
+    let s = state.tripStart, e = state.tripEnd;
+    // כשהתאריכים הם תאריכי הטיסות: ההלוך ממריא בלילה (לנים במטוס) והחזור ממריא ב-23:55 —
+    // לילות המלון נספרים מיום הנחיתה עד יום ההמראה חזרה
+    if (typeof FLIGHTS !== "undefined") {
+      if (s === FLIGHTS.legs[0].depDate) s = FLIGHTS.legs[0].arrDate;
+      if (e === FLIGHTS.legs[1].arrDate) e = FLIGHTS.legs[1].depDate;
+    }
+    const n = Math.round((new Date(e) - new Date(s)) / 864e5);
     if (n >= 2 && n <= 40) return n;
   }
   return 13;
@@ -565,14 +694,13 @@ const IC = {
 function renderLegs() {
   const n = nights();
   const legs = [
-    { ic: "plane", t: "טיסה בינלאומית · ת\"א → בנגקוק", d: "ישיר (אל על) או קונקשן: איסטנבול / דובאי / דוחא", dur: "11–16 ש'" },
-    { ic: "moon", t: "אם הנחיתה בערב/לילה: לילה ליד השדה", d: "לא לגרור תינוקת בקונקשן לילי — ממשיכים בבוקר", dur: "לילה" },
-    { ic: "plane", t: "טיסה פנימית · בנגקוק → פוקט (HKT)", d: "תדירות גבוהה: Thai / Bangkok Airways / AirAsia", dur: "‎~1:20" },
+    { ic: "plane", t: "✓ אל על LY083 · ת\"א → בנגקוק", d: "מוצ\"ש 31.10 · המראה 21:40, נחיתה 13:50 למחרת · ישיר · הוזמן!", dur: "11:10" },
+    { ic: "plane", t: "טיסה פנימית · בנגקוק → פוקט (HKT)", d: "נחיתה 13:50 → פנימית ~17:30–18:30 מספיקה בנוח (Thai / AirAsia / VietJet)", dur: "‎~1:25" },
     { ic: "bed", t: `בסיס 1 · פוקט`, d: "חופים, שווקי לילה, קאטה נוי / באנג טאו", dur: n.phuket + " לילות", base: true },
     { ic: "car", t: "מעבר יבשתי · פוקט → אאו נאנג", d: "רכב פרטי עם כיסא בטיחות, כביש טוב, אפשר לעצור באמצע", dur: "‎~3 ש'" },
     { ic: "bed", t: `בסיס 2 · אאו נאנג (קראבי)`, d: "חוף, Walking Street, שוק לילה, נוף צוקים — הכול בהליכה", dur: n.aonang + " לילות", base: true },
-    { ic: "plane", t: "טיסה פנימית · קראבי (KBV) → בנגקוק", d: "בלי לחזור לפוקט — חוסך 3 שעות", dur: "‎~1:20" },
-    { ic: "plane", t: "טיסה בינלאומית · בנגקוק → ת\"א", d: "הביתה עם מלא תמונות", dur: "" }
+    { ic: "plane", t: "טיסה פנימית · קראבי (KBV) → בנגקוק", d: "בלי לחזור לפוקט — חוסך 3 שעות. מומלץ יום-יומיים לפני הטיסה הביתה (ראו \"מבנה מומלץ\" למטה)", dur: "‎~1:25" },
+    { ic: "plane", t: "✓ אל על LY082 · בנגקוק → ת\"א", d: "שבת 14.11 · המראה 23:55, נחיתה 06:20 · ישיר · הוזמן!", dur: "11:25" }
   ];
   $("#legsBox").innerHTML = legs.map(l => `
     <li class="leg ${l.base ? "base" : ""}"><span class="ic">${IC[l.ic]}</span>
@@ -1292,6 +1420,10 @@ function renderAll() {
 }
 
 renderEmergency();
+renderFlights();
+renderDests();
+renderNovTable();
+renderSitters();
 renderRainChart();
 renderAll();
 initCloud();

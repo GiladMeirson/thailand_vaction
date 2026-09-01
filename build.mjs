@@ -17,12 +17,19 @@ const body = html.match(/<body>([\s\S]*?)<\/body>/)[1]
   .replace(/<script src="app\.js"><\/script>\s*/, "")
   .trim();
 
+// קאש המצב מהריפו — מוטמע כ-SEED_STATE כדי שכל מחשב יפתח עם הנתונים האחרונים שנשמרו
+let seed = "";
+try {
+  const j = JSON.parse(readFileSync("thailand-trip-data.json", "utf8"));
+  seed = `<script>window.SEED_STATE=${JSON.stringify(j).replace(/</g, "\\u003c")}</script>\n`;
+} catch (e) { /* אין קובץ עדיין — מדלגים */ }
+
 const out = `${head}
 <style>
 ${css}
 </style>
 ${body}
-<script>
+${seed}<script>
 ${data}
 </script>
 <script>

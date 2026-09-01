@@ -14,7 +14,7 @@
 <body>
 <div id="app">
   <header class="top">
-    <h1 class="brand">חמ"ל תאילנד<small>פוקט → אאו נאנג · סוף אוקטובר–נובמבר 2026</small></h1>
+    <h1 class="brand">חמ"ל תאילנד<small>‎31.10 – 15.11.2026 · הטיסות סגורות ✈</small></h1>
     <span class="sync" id="syncBadge"><span class="dot"></span><span id="syncTxt">מקומי</span></span>
   </header>
 
@@ -23,7 +23,7 @@
     <div class="hero">
       <div class="eyebrow">המסלול</div>
       <div class="route">ת"א ✈ בנגקוק ✈ פוקט 🚗 אאו נאנג ✈ הביתה</div>
-      <div class="meta">2 מבוגרים + תינוקת בת שנה · 12–16 יום · צד אנדמן בלבד (נובמבר = תחילת העונה היבשה)</div>
+      <div class="meta">2 מבוגרים + תינוקת בת שנה · ‎13 לילות בתאילנד · אל על ישיר, הלוך 31.10 · חזור 14.11</div>
       <div class="count-row">
         <div class="count"><b class="num" id="cDays">—</b><span>ימים ליציאה</span></div>
         <div class="count"><b class="num" id="cTasks">—</b><span>משימות פתוחות</span></div>
@@ -35,6 +35,8 @@
         <span class="date-nights" id="dateNights" hidden></span>
       </div>
     </div>
+
+    <div id="flightsBox"></div>
 
     <div class="card howto" id="howtoCard" hidden>
       <h2>איך משתמשים בזה <button class="dismiss" id="howtoClose" aria-label="סגירה">✕</button></h2>
@@ -95,8 +97,8 @@
         </div>
       </div>
       <p style="font-size:12.5px; color:var(--ink2); margin:10px 0 0">
-        סוף אוקטובר הוא עדיין מעבר בין העונות (מקלחות אחר-צהריים קצרות), ומתחילת נובמבר זה משתפר משמעותית.
-        הגרף המלא של "למה אנדמן ולא סמוי" נמצא בלשונית <b>מסלול</b>.
+        בתאריכים שלכם (1–14.11) הצד האנדמני נכנס לעונה היבשה — גשם קצר של אחה"צ וים שנרגע.
+        ההשוואה המלאה בין היעדים (כולל קוסמוי, עם נתוני אמת שנה-בשנה) נמצאת בלשונית <b>מסלול</b>.
       </p>
     </div>
 
@@ -137,7 +139,21 @@
       <ul class="legs" id="legsBox"></ul>
       <p style="font-size:12.5px; color:var(--ink2); margin:8px 0 0">
         💡 לקנות את הפנימיות <b>בנפרד ופתוח</b>: פנימה לפוקט (HKT), החוצה מקראבי (KBV) — חוסך 3 שעות נסיעה חזרה בסוף.
-        אם הנחיתה בבנגקוק בערב/לילה — עדיף לילה ליד השדה ולהמשיך בבוקר.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>אז איפה כן? השוואת היעדים <span class="sub">מחקר ספטמבר 2026 · משפחה · זוגיות · מזג אוויר</span></h2>
+      <div id="destsBox"></div>
+      <div class="rec-route" id="recRoute"></div>
+    </div>
+
+    <div class="card">
+      <h2>ערב זוגי: בייביסיטר לארבל <span class="sub">שירותים מאומתים לתיירים · ספט' 2026</span></h2>
+      <div id="sittersBox"></div>
+      <p style="font-size:12px; color:var(--muted); margin:10px 0 0">
+        טיפ: את הערב הזוגי הראשון עושים במסעדה של המלון עצמו — ארבל במרחק 3 דקות, ואתם בודקים את הסיטרית בתנאים קלים.
+        תמיד לבקש דוברת אנגלית עם עזרה ראשונה, ולהשאיר מספר וואטסאפ.
       </p>
     </div>
 
@@ -172,15 +188,19 @@
     </div>
 
     <div class="card">
-      <h2>למה אנדמן ולא קוסמוי? <span class="sub">משקעים חודשיים, ממוצע רב-שנתי</span></h2>
+      <h2>ומה עם קוסמוי? הנתונים האמיתיים <span class="sub">ממוצע חודשי + מה קרה בפועל ב-1–14.11</span></h2>
       <div id="rainchart"></div>
       <div class="chart-legend">
         <span class="k"><i class="swatch" style="background:var(--chart-a)"></i>פוקט (אנדמן)</span>
         <span class="k"><i class="swatch" style="background:var(--chart-b)"></i>קוסמוי (המפרץ)</span>
       </div>
-      <p style="font-size:12.5px; color:var(--ink2); margin:8px 0 0">
-        בנובמבר פוקט יורדת ל-‎178 מ"מ ובירידה חדה, בעוד קוסמוי בשיא של ‎445 מ"מ — פי 2.5.
-        לכן סמוי, פנגן וקוטאו ירדו מהתכנון, וכל הטיול בצד אנדמן.
+      <div class="eyebrow" style="margin-top:14px">גשם בפועל בתאריכים שלכם (1–14.11), מ"מ לפי שנה</div>
+      <div id="novTable"></div>
+      <p style="font-size:12.5px; color:var(--ink2); margin:10px 0 0">
+        לגבי "כמעט לא ירד גשם בסמוי בנובמבר": נובמבר 2025 באמת היה מתון יחסית בתחילתו — אבל עדיין עם ‎10+ ימי גשם,
+        ובכל שנה מאז 2000 היו לפחות 7 ימי גשם בחלון הזה. נובמבר הוא <b>החודש הגשום ביותר</b> של סמוי (המונסון עובר לצד המפרץ),
+        כשהגשם שם ממושך ואפור — לא מטח של אחה"צ. בצד אנדמן זה הפוך: הגשם קצר, והים דווקא נרגע.
+        זה לא שסמוי "אסורה" — זה פשוט הימור מול הסיכויים, ובחודש אחר (פברואר–אפריל) היא בחירה מעולה.
       </p>
     </div>
   </section>
@@ -220,8 +240,9 @@
     <div class="card">
       <h2>גיבוי וסנכרון בין מחשבים</h2>
       <p style="font-size:13.5px; color:var(--ink2); margin:6px 0 0">
-        הנתונים נשמרים אוטומטית במכשיר, ובענן כשפותחים דרך הקישור. בנוסף אפשר לחבר קובץ
-        <b>thailand-trip-data.json</b> בתיקיית הפרויקט — כל סימון יישמר אליו אוטומטית, ודרך OneDrive הוא יגיע לכל מחשב.
+        מקור האמת הוא הקובץ <b>thailand-trip-data.json</b> בתיקיית הפרויקט (שמור ב-git וב-OneDrive — מגיע לכל מחשב).
+        לוחצים "חיבור קובץ" פעם אחת בכל מחשב, ומאז כל סימון נשמר אליו אוטומטית.
+        במקביל יש סנכרון ענן כשפותחים דרך הקישור (בשביל הטלפון), ושמירה מקומית בדפדפן כגיבוי חירום.
       </p>
       <div class="io-row">
         <button id="btnConnectFile" class="primary">חיבור קובץ שמירה אוטומטית</button>

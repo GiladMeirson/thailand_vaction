@@ -548,10 +548,166 @@ details.stage-acc summary .stitle .when.overdue{color:var(--crit); font-weight:7
 }
 .datebox .date-nights b{color:#E9C982; font-size:13.5px; font-weight:700}
 
+/* ===== גרסה 7 — כרטיסי טיסה ===== */
+#flightsBox{margin-top:16px}
+.ft-eyebrow{margin:0 2px 8px; display:flex; align-items:center; gap:5px}
+.ft-eyebrow b{color:var(--accent-ink)}
+.fticket{
+  background:var(--surface); border-radius:var(--r); box-shadow:var(--shadow);
+  position:relative; overflow:hidden; margin-bottom:12px;
+  transition:transform .25s var(--ease), box-shadow .25s var(--ease);
+}
+@media (hover:hover){ .fticket:hover{transform:translateY(-2px); box-shadow:0 2px 4px rgba(62,50,30,.06),0 10px 26px rgba(62,50,30,.12)} }
+.ft-top{
+  display:flex; align-items:center; gap:10px; padding:9px 16px;
+  background:linear-gradient(115deg,var(--deep),var(--deep2)); color:var(--on-deep);
+}
+.ft-dirtag{font-size:11px; font-weight:700; background:rgba(255,253,244,.16); border-radius:99px; padding:2px 11px; letter-spacing:.3px}
+.ft-no{font-family:"Frank Ruhl Libre","Heebo",serif; font-weight:700; font-size:15.5px; color:#E9C982; letter-spacing:.6px}
+.ft-airline{margin-inline-start:auto; font-size:11px; color:var(--on-deep2)}
+
+/* המסלול: קוד־שדה גדול משני הצדדים, ביניהם נתיב הטיסה */
+.ft-route{display:grid; grid-template-columns:auto 1fr auto; gap:12px; padding:14px 16px 12px; align-items:start}
+.ft-ep{min-width:0}
+.ft-to{text-align:left}
+.ft-code{font-family:"Frank Ruhl Libre","Heebo",serif; font-weight:900; font-size:31px; line-height:1; letter-spacing:1px; color:var(--ink)}
+.ft-time{font-size:16.5px; font-weight:700; color:var(--accent-ink); margin-top:3px}
+.ft-edate{font-size:11.5px; font-weight:600; color:var(--ink2); margin-top:1px}
+.ft-edate b{color:var(--warn); font-size:10px; vertical-align:top}
+.ft-city{font-size:11px; color:var(--muted); margin-top:2px}
+
+/* נתיב הטיסה + מטוס מונפש */
+.ft-path{position:relative; height:52px; align-self:center; min-width:90px}
+.ft-path::before{
+  content:""; position:absolute; inset-inline:6px; top:50%; height:2px; translate:0 -50%;
+  background:repeating-linear-gradient(90deg,var(--line) 0 7px,transparent 7px 13px);
+  animation:ft-wind 1.1s linear infinite;
+}
+.ft-pin{position:absolute; top:50%; width:7px; height:7px; border-radius:50%; translate:0 -50%; z-index:1}
+.ft-pin-a{right:0; background:var(--chart-a)}
+.ft-pin-b{left:0; background:var(--accent)}
+.ft-fly{position:absolute; inset:0; pointer-events:none; animation:ft-fly 6.5s cubic-bezier(.45,.05,.55,.95) infinite}
+.ft-fly svg{
+  position:absolute; right:0; top:50%; translate:0 -50%; rotate:-90deg;
+  color:var(--chart-a); filter:drop-shadow(0 2px 3px rgba(30,40,30,.25));
+  animation:ft-bob 1.5s ease-in-out infinite;
+}
+.ft-dur{
+  position:absolute; bottom:0; right:50%; translate:50% 0; white-space:nowrap;
+  font-size:10.5px; font-weight:600; color:var(--muted); background:var(--surface); padding:0 6px;
+}
+@keyframes ft-wind{to{background-position:-13px 0}}
+@keyframes ft-fly{
+  0%{transform:translateX(0); opacity:0}
+  9%{opacity:1}
+  91%{opacity:1}
+  100%{transform:translateX(calc(-100% + 25px)); opacity:0}
+}
+@keyframes ft-bob{0%,100%{translate:0 -50%}50%{translate:0 calc(-50% - 3px)}}
+
+/* קו התלישה בין הכרטיס לספח */
+.ft-tear{position:relative; border-top:2px dashed var(--line)}
+.ft-tear::before,.ft-tear::after{
+  content:""; position:absolute; top:-11px; width:20px; height:20px; border-radius:50%;
+  background:var(--bg); box-shadow:inset 0 1px 3px rgba(62,50,30,.10);
+}
+.ft-tear::before{right:-10px}
+.ft-tear::after{left:-10px}
+
+/* הספח: פרטים + ברקוד */
+.ft-stub{display:flex; flex-wrap:wrap; gap:6px 18px; padding:10px 18px 13px; align-items:center}
+.ft-fact{display:flex; flex-direction:column; font-size:12.5px}
+.ft-fact span{font-size:10px; color:var(--muted)}
+.ft-fact b{font-weight:600; color:var(--ink2)}
+.ft-barcode{
+  margin-inline-start:auto; width:72px; height:26px; opacity:.5;
+  background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 4px,var(--ink) 4px 5px,transparent 5px 9px,var(--ink) 9px 12px,transparent 12px 14px);
+}
+
+/* כרטיס הנוסעים */
+.ft-passcard{padding:12px 16px}
+.ft-pass{display:flex; flex-wrap:wrap; gap:8px}
+.ft-chip{background:var(--surface2); border-radius:99px; padding:5px 13px; font-size:12.5px; font-weight:600; color:var(--ink2)}
+.ft-tickets{margin-top:9px; font-size:12.5px}
+.ft-tickets summary{cursor:pointer; list-style:none; color:var(--accent-ink); font-weight:600; display:flex; align-items:center; gap:4px; width:max-content}
+.ft-tickets summary::-webkit-details-marker{display:none}
+.ft-tickets[open] summary .chev{transform:rotate(180deg)}
+.ft-tickets ul{list-style:none; margin:7px 0 0; padding:0}
+.ft-tickets li{display:flex; justify-content:space-between; flex-wrap:wrap; gap:4px 10px; padding:4px 0; border-bottom:1px dashed var(--line)}
+.ft-tickets li:last-child{border-bottom:none}
+.ft-note{font-size:12px; color:var(--muted); margin:9px 0 0}
+@media (max-width:430px){
+  .ft-code{font-size:25px}
+  .ft-route{gap:8px; padding:12px 13px 10px}
+  .ft-path{min-width:66px}
+}
+@media (prefers-reduced-motion:reduce){
+  .ft-fly,.ft-fly svg,.ft-path::before{animation:none}
+  .ft-fly svg{right:50%; translate:50% -50%}
+}
+
+/* ===== גרסה 7 — השוואת יעדים ===== */
+#destsBox{margin-top:12px}
+.dest{padding:12px 0; border-bottom:1px dashed var(--line)}
+.dest:first-child{padding-top:4px}
+.dest.pick{position:relative}
+.d-head{display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap}
+.d-head b{font-size:14.5px}
+.d-call{font-size:11px; font-weight:700; border-radius:99px; padding:3px 10px; background:var(--surface2); color:var(--ink2); white-space:nowrap}
+.d-call.ok{background:var(--good-soft); color:var(--good)}
+.d-scores{
+  display:grid; grid-template-columns:auto 1fr auto auto 1fr auto auto 1fr auto;
+  gap:4px 7px; align-items:center; margin-top:8px;
+}
+.d-lbl{font-size:10.5px; color:var(--muted); white-space:nowrap}
+.dbar{height:6px; border-radius:99px; background:var(--surface2); overflow:hidden; min-width:34px}
+.dbar i{display:block; height:100%; border-radius:99px; background:linear-gradient(90deg,var(--chart-a),var(--good))}
+.dnum{font-size:11px; font-weight:700; color:var(--ink2)}
+.d-why{font-size:12.5px; color:var(--ink2); margin:7px 0 0; line-height:1.5}
+.d-skip{font-size:12px; color:var(--muted); margin:10px 0 0}
+@media (max-width:560px){
+  .d-scores{grid-template-columns:auto 1fr auto}
+}
+
+/* המבנה המומלץ */
+.rec-route{margin-top:14px; background:var(--good-soft); border-radius:14px; padding:12px 14px}
+.rr-line{display:flex; flex-wrap:wrap; align-items:center; gap:6px 8px; margin-top:8px}
+.rr-stop{
+  background:var(--surface); border-radius:99px; padding:5px 13px;
+  font-size:13px; font-weight:600; color:var(--ink); box-shadow:var(--shadow); white-space:nowrap;
+}
+.rr-stop b{color:var(--good); font-size:15px; margin-inline-end:2px}
+.rr-arrow{font-size:11px; color:var(--muted); white-space:nowrap}
+.rr-why{font-size:12.5px; color:var(--ink2); margin:10px 0 0; line-height:1.55}
+
+/* טבלת הגשם 1–14.11 */
+.nov-scroll{overflow-x:auto; margin-top:8px}
+table.nov{border-collapse:collapse; width:100%; min-width:430px; font-size:12.5px}
+table.nov th,table.nov td{padding:6px 8px; text-align:center}
+table.nov thead th{font-size:11px; color:var(--muted); font-weight:600; border-bottom:1px solid var(--line)}
+table.nov tbody th{text-align:right; font-weight:700; color:var(--ink); white-space:nowrap}
+table.nov tbody th small{display:block; font-size:10px; color:var(--muted); font-weight:500; white-space:normal; max-width:150px}
+table.nov td{border-radius:8px; font-weight:600}
+table.nov td.h1{background:var(--good-soft); color:var(--good)}
+table.nov td.h2{background:var(--warm-soft); color:var(--warm)}
+table.nov td.h3{background:var(--warn-soft); color:var(--warn)}
+table.nov td.h4{background:var(--crit-soft); color:var(--crit)}
+
+/* בייביסיטר */
+#sittersBox{margin-top:6px}
+.sit-area{padding:11px 0; border-bottom:1px dashed var(--line)}
+.sit-area:last-child{border-bottom:none}
+.sit-name{font-family:"Frank Ruhl Libre","Heebo",serif; font-weight:700; font-size:14.5px; color:var(--ink)}
+.sit-row{display:flex; flex-direction:column; gap:1px; margin-top:7px; font-size:12.5px}
+.sit-row b{font-weight:600}
+.sit-row b a{text-decoration:none}
+.sit-row span{color:var(--ink2)}
+.sit-night{margin-top:8px; font-size:12px; color:var(--sea-ink); background:var(--sea); border-radius:10px; padding:7px 11px; line-height:1.5}
+
 </style>
 <div id="app">
   <header class="top">
-    <h1 class="brand">חמ"ל תאילנד<small>פוקט → אאו נאנג · סוף אוקטובר–נובמבר 2026</small></h1>
+    <h1 class="brand">חמ"ל תאילנד<small>‎31.10 – 15.11.2026 · הטיסות סגורות ✈</small></h1>
     <span class="sync" id="syncBadge"><span class="dot"></span><span id="syncTxt">מקומי</span></span>
   </header>
 
@@ -560,7 +716,7 @@ details.stage-acc summary .stitle .when.overdue{color:var(--crit); font-weight:7
     <div class="hero">
       <div class="eyebrow">המסלול</div>
       <div class="route">ת"א ✈ בנגקוק ✈ פוקט 🚗 אאו נאנג ✈ הביתה</div>
-      <div class="meta">2 מבוגרים + תינוקת בת שנה · 12–16 יום · צד אנדמן בלבד (נובמבר = תחילת העונה היבשה)</div>
+      <div class="meta">2 מבוגרים + תינוקת בת שנה · ‎13 לילות בתאילנד · אל על ישיר, הלוך 31.10 · חזור 14.11</div>
       <div class="count-row">
         <div class="count"><b class="num" id="cDays">—</b><span>ימים ליציאה</span></div>
         <div class="count"><b class="num" id="cTasks">—</b><span>משימות פתוחות</span></div>
@@ -572,6 +728,8 @@ details.stage-acc summary .stitle .when.overdue{color:var(--crit); font-weight:7
         <span class="date-nights" id="dateNights" hidden></span>
       </div>
     </div>
+
+    <div id="flightsBox"></div>
 
     <div class="card howto" id="howtoCard" hidden>
       <h2>איך משתמשים בזה <button class="dismiss" id="howtoClose" aria-label="סגירה">✕</button></h2>
@@ -632,8 +790,8 @@ details.stage-acc summary .stitle .when.overdue{color:var(--crit); font-weight:7
         </div>
       </div>
       <p style="font-size:12.5px; color:var(--ink2); margin:10px 0 0">
-        סוף אוקטובר הוא עדיין מעבר בין העונות (מקלחות אחר-צהריים קצרות), ומתחילת נובמבר זה משתפר משמעותית.
-        הגרף המלא של "למה אנדמן ולא סמוי" נמצא בלשונית <b>מסלול</b>.
+        בתאריכים שלכם (1–14.11) הצד האנדמני נכנס לעונה היבשה — גשם קצר של אחה"צ וים שנרגע.
+        ההשוואה המלאה בין היעדים (כולל קוסמוי, עם נתוני אמת שנה-בשנה) נמצאת בלשונית <b>מסלול</b>.
       </p>
     </div>
 
@@ -674,7 +832,21 @@ details.stage-acc summary .stitle .when.overdue{color:var(--crit); font-weight:7
       <ul class="legs" id="legsBox"></ul>
       <p style="font-size:12.5px; color:var(--ink2); margin:8px 0 0">
         💡 לקנות את הפנימיות <b>בנפרד ופתוח</b>: פנימה לפוקט (HKT), החוצה מקראבי (KBV) — חוסך 3 שעות נסיעה חזרה בסוף.
-        אם הנחיתה בבנגקוק בערב/לילה — עדיף לילה ליד השדה ולהמשיך בבוקר.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>אז איפה כן? השוואת היעדים <span class="sub">מחקר ספטמבר 2026 · משפחה · זוגיות · מזג אוויר</span></h2>
+      <div id="destsBox"></div>
+      <div class="rec-route" id="recRoute"></div>
+    </div>
+
+    <div class="card">
+      <h2>ערב זוגי: בייביסיטר לארבל <span class="sub">שירותים מאומתים לתיירים · ספט' 2026</span></h2>
+      <div id="sittersBox"></div>
+      <p style="font-size:12px; color:var(--muted); margin:10px 0 0">
+        טיפ: את הערב הזוגי הראשון עושים במסעדה של המלון עצמו — ארבל במרחק 3 דקות, ואתם בודקים את הסיטרית בתנאים קלים.
+        תמיד לבקש דוברת אנגלית עם עזרה ראשונה, ולהשאיר מספר וואטסאפ.
       </p>
     </div>
 
@@ -709,15 +881,19 @@ details.stage-acc summary .stitle .when.overdue{color:var(--crit); font-weight:7
     </div>
 
     <div class="card">
-      <h2>למה אנדמן ולא קוסמוי? <span class="sub">משקעים חודשיים, ממוצע רב-שנתי</span></h2>
+      <h2>ומה עם קוסמוי? הנתונים האמיתיים <span class="sub">ממוצע חודשי + מה קרה בפועל ב-1–14.11</span></h2>
       <div id="rainchart"></div>
       <div class="chart-legend">
         <span class="k"><i class="swatch" style="background:var(--chart-a)"></i>פוקט (אנדמן)</span>
         <span class="k"><i class="swatch" style="background:var(--chart-b)"></i>קוסמוי (המפרץ)</span>
       </div>
-      <p style="font-size:12.5px; color:var(--ink2); margin:8px 0 0">
-        בנובמבר פוקט יורדת ל-‎178 מ"מ ובירידה חדה, בעוד קוסמוי בשיא של ‎445 מ"מ — פי 2.5.
-        לכן סמוי, פנגן וקוטאו ירדו מהתכנון, וכל הטיול בצד אנדמן.
+      <div class="eyebrow" style="margin-top:14px">גשם בפועל בתאריכים שלכם (1–14.11), מ"מ לפי שנה</div>
+      <div id="novTable"></div>
+      <p style="font-size:12.5px; color:var(--ink2); margin:10px 0 0">
+        לגבי "כמעט לא ירד גשם בסמוי בנובמבר": נובמבר 2025 באמת היה מתון יחסית בתחילתו — אבל עדיין עם ‎10+ ימי גשם,
+        ובכל שנה מאז 2000 היו לפחות 7 ימי גשם בחלון הזה. נובמבר הוא <b>החודש הגשום ביותר</b> של סמוי (המונסון עובר לצד המפרץ),
+        כשהגשם שם ממושך ואפור — לא מטח של אחה"צ. בצד אנדמן זה הפוך: הגשם קצר, והים דווקא נרגע.
+        זה לא שסמוי "אסורה" — זה פשוט הימור מול הסיכויים, ובחודש אחר (פברואר–אפריל) היא בחירה מעולה.
       </p>
     </div>
   </section>
@@ -757,8 +933,9 @@ details.stage-acc summary .stitle .when.overdue{color:var(--crit); font-weight:7
     <div class="card">
       <h2>גיבוי וסנכרון בין מחשבים</h2>
       <p style="font-size:13.5px; color:var(--ink2); margin:6px 0 0">
-        הנתונים נשמרים אוטומטית במכשיר, ובענן כשפותחים דרך הקישור. בנוסף אפשר לחבר קובץ
-        <b>thailand-trip-data.json</b> בתיקיית הפרויקט — כל סימון יישמר אליו אוטומטית, ודרך OneDrive הוא יגיע לכל מחשב.
+        מקור האמת הוא הקובץ <b>thailand-trip-data.json</b> בתיקיית הפרויקט (שמור ב-git וב-OneDrive — מגיע לכל מחשב).
+        לוחצים "חיבור קובץ" פעם אחת בכל מחשב, ומאז כל סימון נשמר אליו אוטומטית.
+        במקביל יש סנכרון ענן כשפותחים דרך הקישור (בשביל הטלפון), ושמירה מקומית בדפדפן כגיבוי חירום.
       </p>
       <div class="io-row">
         <button id="btnConnectFile" class="primary">חיבור קובץ שמירה אוטומטית</button>
@@ -796,15 +973,95 @@ details.stage-acc summary .stitle .when.overdue{color:var(--crit); font-weight:7
 <div class="toast" id="toast"></div>
 <div class="charttip" id="charttip"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>window.SEED_STATE={"v":2,"updatedAt":"","tasks":{},"custom":[],"hotelChoice":{"phuket":null,"aonang":null},"split":"8+5","payments":{},"saved":{},"tripStart":"2026-10-31","tripEnd":"2026-11-15","hideHowto":false}</script>
 <script>
 /* ================= DATA (מחקר: אוגוסט 2026) ================= */
 const RATES = { usd: 2.98, thb: 0.089, note: "שער: ‎$1 ≈ ₪2.98 · ‎฿1 ≈ ₪0.089 (סוף אוגוסט 2026)" };
+
+/* הטיסות שנרכשו — אל על, הזמנה 923R6Y (E-tickets 1.9.2026) */
+const FLIGHTS = {
+  ref: "923R6Y",
+  airline: "EL AL · אל על",
+  pax: [
+    { name: "גלעד מאירסון", ticket: "114-5237866339", seat: "45G" },
+    { name: "שיר מאירסון", ticket: "114-5237866340", seat: "45F" },
+    { name: "ארבל מרים מאירסון", ticket: "114-5237866341", seat: "על הברכיים 👶" }
+  ],
+  legs: [
+    {
+      no: "LY 083", dir: "הלוך",
+      from: { code: "TLV", city: "תל אביב", term: "טרמינל 3" },
+      to: { code: "BKK", city: "בנגקוק", term: "סוברנבומי" },
+      depDate: "2026-10-31", depTime: "21:40",
+      arrDate: "2026-11-01", arrTime: "13:50", arrNote: "+1",
+      dur: "11:10", direct: true, cls: "תיירים (S)",
+      plane: "בואינג 777-200/300", meal: "ארוחה חמה + ארוחת בוקר",
+      bags: "מזוודה אחת לכל נוסע", seats: "45G · 45F"
+    },
+    {
+      no: "LY 082", dir: "חזור",
+      from: { code: "BKK", city: "בנגקוק", term: "סוברנבומי" },
+      to: { code: "TLV", city: "תל אביב", term: "טרמינל 3" },
+      depDate: "2026-11-14", depTime: "23:55",
+      arrDate: "2026-11-15", arrTime: "06:20", arrNote: "+1",
+      dur: "11:25", direct: true, cls: "תיירים (L)",
+      plane: "בואינג 777-200/300", meal: "ארוחה חמה + ארוחת בוקר",
+      bags: "מזוודה אחת לכל נוסע", seats: "טרם נבחרו"
+    }
+  ]
+};
 
 const RAIN = {
   months: ["ינו","פבר","מרץ","אפר","מאי","יונ","יול","אוג","ספט","אוק","נוב","דצמ"],
   phuket: [50,24,81,135,237,249,240,309,350,336,178,82],
   samui:  [127,64,116,83,132,134,117,102,118,295,445,263]
 };
+
+/* גשם בפועל בחלון הטיול המדויק — 1–14 בנובמבר, מ"מ (ארכיון ERA5 של Open-Meteo, נשלף ספט' 2026).
+   רשת ERA5 מעט ממתנת ערכים מוחלטים באיים קטנים — הדפוס בין שנים/יעדים הוא האמין. */
+const NOV_WINDOW = {
+  years: [2021, 2022, 2023, 2024, 2025],
+  dests: [
+    { id: "samui",   n: "קוסמוי",   mm: [252, 170, 168, 173, 107], mean: 163, days: "10–14 ימי גשם, ממושך לאורך היום" },
+    { id: "aonang",  n: "אאו נאנג", mm: [197, 139, 125, 121, 73],  mean: 117, days: "‎58% מהגשם ב-12:00–18:00 · הים הכי רגוע" },
+    { id: "phuket",  n: "פוקט",     mm: [161, 177, 152, 96, 94],   mean: 108, days: "ממטרים קצרים אחה\"צ, שמש בין לבין" },
+    { id: "khaolak", n: "קאו לאק",  mm: [194, 135, 202, 154, 143], mean: 106, days: "בקרים שמשיים כמעט מובטחים" }
+  ]
+};
+
+/* השוואת יעדים — מחקר רשת ספטמבר 2026 (משפחה עם תינוקת + זמן זוגי + סיכון מזג אוויר בנובמבר) */
+const DESTS = [
+  { n: "פוקט — באנג טאו/לגונה", family: 9, couple: 9.5, wx: 7, call: "העוגן · רוב הלילות", good: true,
+    why: "חופים רדודים ורגועים מנובמבר (באנג טאו, נאי יאנג), בתי החולים הטובים בדרום (Bangkok Hospital Phuket), 25 דק' מהשדה, שפע סוכנויות בייביסיטר ומועדוני חוף במרחק הליכה לערב זוגי" },
+  { n: "אאו נאנג / קראבי", family: 8, couple: 7, wx: 7, call: "נשאר · אבל 4 לילות במקום 6", good: true,
+    why: "הים הכי שטוח ורגוע לתינוקת מכל היעדים (מפרץ מוגן, גלים ‎<0.6 מ'), עיירה קומפקטית והכול בהליכה. בייביסיטר רק דרך המלון, וסצנת הערב קטנה — לכן מקצרים" },
+  { n: "בנגקוק — בסוף הטיול", family: 7, couple: 9, wx: 8, call: "להוסיף 2 לילות בסוף", good: true,
+    why: "הטיסה הביתה ממריאה 23:55 — סיום בבנגקוק מוחק את לחץ הקונקשן עם תינוקת. רפואה ברמה עולמית, מלונות עם בייביסיטר מוסדר, וערב גגות רומנטי אחד גדול" },
+  { n: "קאו לאק", family: 8.5, couple: 5.5, wx: 6.5, call: "חלופה שקטה לאאו נאנג",
+    why: "רצועת הריזורטים הכי מותאמת לפעוטות בתאילנד, ים נרגע כבר בתחילת נובמבר — אבל אין בית חולים אמיתי (פוקט במרחק 1.5–2 ש') וכמעט אין לאן לצאת בערב" },
+  { n: "קוסמוי", family: 8, couple: 9, wx: 3, call: "לא בנובמבר · לשמור לפברואר–אפריל",
+    why: "תשתית הזוגיות הכי טובה באיים (סוכנויות נני מוסמכות-החייאה, מסעדות על החוף) — אבל נובמבר הוא החודש הגשום בשנתה: גשם ממושך, עונת שיטפונות, ומוקד מדוזות הקופסה של תאילנד" }
+];
+const DESTS_SKIP = "נפסלו גם: חוא הין (יבש אבל ים עכור של המפרץ), קו יאו נוי (אין בי\"ח — עדיף כטיול יום מפוקט), צ'אנג מאי (פסטיבל הפנסים 24–25.11 — אחרי שתטוסו הביתה).";
+
+/* בייביסיטר וערב זוגי — לפי אזור (מחקר ספטמבר 2026) */
+const SITTERS = [
+  { area: "פוקט", items: [
+    { n: "Phuket Nanny Services", d: "‎฿350 לשעה (‎฿500 אחרי 21:00). ערב זוגי 19:00–23:00 ≈ ‎₪200–270", u: "https://phuketnannyservices.com/pricing/" },
+    { n: "Little Ducky Babysitting", d: "סיטריות מקומיות בבאנג טאו, קאטה, קמאלה, פאטונג", u: "https://www.phuketbabysitter.com/" },
+    { n: "בתי מלון עם שירות בייביסיטר", d: "Mövenpick באנג טאו, Katathani, Holiday Inn פאטונג — ‎฿300–500 לשעה דרך הקבלה" }
+  ], night: "לאן יוצאים: Xana Beach Club (לגונה — חוזרים ברגל למלון!), Catch Beach Club, שקיעה ב-Café del Mar קמאלה" },
+  { area: "אאו נאנג", items: [
+    { n: "דרך המלון בלבד", d: "Holiday Inn Resort Krabi — שירות נני מוסדר · Centara Grand — בייביסיטר בתשלום. אין סוכנות עצמאית אמינה באזור" }
+  ], night: "לאן יוצאים: Lae Lay Grill (שקיעה מהמדרון + שאטל חינם), The Hilltop (שולחנות זוגיים), The Grotto על החוף" },
+  { area: "בנגקוק", items: [
+    { n: "ThaiKidsHome", d: "הספק המאומת של מלונות מריוט, דוברי אנגלית, גילאי 0–3", u: "https://www.thaikidshome.com/" },
+    { n: "מלונות מומלצים עם בייביסיטר", d: "Marriott Marquis Queen's Park · Siam Kempinski · Peninsula" }
+  ], night: "לאן יוצאים: מסעדת גג (רופטופ) — הערב הזוגי הגדול של הטיול, כשארבל עם סיטר במלון" },
+  { area: "קוסמוי (לטיול הבא)", items: [
+    { n: "Nanny Service Koh Samui", d: "‎฿400 לשעה, מוסמכות החייאה ועזרה ראשונה של Bangkok Hospital — הסיבה לחזור לסמוי בפברואר–אפריל", u: "https://www.nannyservicekohsamui.com/" }
+  ], night: "" }
+];
 
 const STAGES = [
   { id:"s0", name:"שלב 0 — חוסמים", why:"הכול תלוי בתאריכים ובדרכונים. אין טעם להשוות טיסות בלי תאריכים, ואין טעם לקנות טיסה בלי דרכון בתוקף. לביצוע בשבועיים הקרובים!", urgent:true, tasks:[
@@ -823,7 +1080,7 @@ const STAGES = [
     { id:"t15", t:"החלטה על חלוקת הלילות בין פוקט לאאו נאנג", n:"יותר פוקט או חלוקה מאוזנת — אפשר לשחק עם זה בלשונית המסלול, המספרים מתעדכנים לפי התאריכים שבחרתם", links:[{l:"ללשונית המסלול", go:"route"}] },
     { id:"t16", t:"מלון בפוקט", n:"Katathani או SAii Laguna. לבקש חדר בלי מדרגות + מיטת תינוק. עדיף ביטול חינם", links:[{l:"Booking עם התאריכים", act:"bkPhuket"},{l:"השוואת המלונות", go:"hotels"}] },
     { id:"t17", t:"מלון באאו נאנג", n:"Centara Ao Nang / Avani Cliff — זה הראשון שייגמר, לסגור קודם!", links:[{l:"Booking עם התאריכים", act:"bkAonang"},{l:"השוואת המלונות", go:"hotels"}] },
-    { id:"t18", t:"החלטה: לילה בבנגקוק ליד השדה — כן/לא", n:"רק אם הנחיתה בערב או בלילה. לא לגרור תינוקת בקונקשן לילי צמוד", links:[{l:"מלונות ליד השדה", act:"bkBkk"}] }
+    { id:"t18", t:"החלטה: לסיים עם 2 לילות בבנגקוק (מומלץ) או להישאר 7+6", n:"הטיסה הביתה ממריאה 23:55 — סיום בבנגקוק מוריד את לחץ הקונקשן ביום האחרון ונותן ערב זוגי עם בייביסיטר מהמלון. ההשוואה המלאה בלשונית המסלול", links:[{l:"להשוואת היעדים", go:"route"},{l:"מלונות בבנגקוק", act:"bkBkk"}] }
   ]},
   { id:"s2", name:"שלב 2 — ביטוח ובריאות", why:"הביטוח דורש תאריכים ופרטי טיסה, לכן אחרי שלב 1 — אבל לא לדחות, חייב להיות תקף מרגע היציאה.", tasks:[
     { id:"t21", t:"ביטוח נסיעות ל-3 נפשות", n:"לוודא במפורש שהתינוקת מכוסה + כיסוי ביטול. ‎~₪600–800 למשפחה ל-14 יום", links:[{l:"השוואת ביטוחים", u:"https://www.google.com/search?q=%D7%91%D7%99%D7%98%D7%95%D7%97%20%D7%A0%D7%A1%D7%99%D7%A2%D7%95%D7%AA%20%D7%AA%D7%90%D7%99%D7%9C%D7%A0%D7%93%20%D7%94%D7%A9%D7%95%D7%95%D7%90%D7%94%20%D7%AA%D7%99%D7%A0%D7%95%D7%A7"}] },
@@ -982,14 +1239,14 @@ const LS_KEY = "thailand-hamal-v1";
 
 function defaultState() {
   return {
-    v: 1, updatedAt: "",
+    v: 2, updatedAt: "",
     tasks: {},            // taskId -> true (בוצע)
     custom: [],           // [{id,t,done}]
     hotelChoice: { phuket: null, aonang: null },
     split: "8+5",
     payments: {},         // budgetId -> {amount, note}
     saved: {},            // attractionId -> true
-    tripStart: "", tripEnd: "",
+    tripStart: "2026-10-31", tripEnd: "2026-11-15", // לפי הטיסות שנקנו (LY083/LY082)
     hideHowto: false
   };
 }
@@ -997,12 +1254,15 @@ function defaultState() {
 function migrate(o) {
   const d = defaultState();
   if (!o || typeof o !== "object") return d;
-  return {
+  const m = {
     ...d, ...o,
     tasks: o.tasks || {}, custom: Array.isArray(o.custom) ? o.custom : [],
     hotelChoice: { ...d.hotelChoice, ...(o.hotelChoice || {}) },
     payments: o.payments || {}, saved: o.saved || {}
   };
+  // v<2: הטיסות נקנו (1.9.2026) — התאריכים נקבעים לפיהן בכל המכשירים
+  if (!o.v || o.v < 2) { m.v = 2; m.tripStart = d.tripStart; m.tripEnd = d.tripEnd; }
+  return m;
 }
 
 let state = defaultState();
@@ -1010,6 +1270,14 @@ try {
   const raw = localStorage.getItem(LS_KEY);
   if (raw) state = migrate(JSON.parse(raw));
 } catch (e) { /* אחסון לא זמין — ממשיכים בזיכרון */ }
+
+/* קאש מהריפו: build.mjs מטמיע את thailand-trip-data.json כ-SEED_STATE — נטען אם עדכני מהמקומי */
+try {
+  if (window.SEED_STATE) {
+    const s = migrate(window.SEED_STATE);
+    if (s.updatedAt && (!state.updatedAt || s.updatedAt > state.updatedAt)) state = s;
+  }
+} catch (e) { }
 
 /* ---------- סנכרון ענן (Artifact db) ---------- */
 let dbDoc = null, cloudTimer = null;
@@ -1343,7 +1611,7 @@ function renderOverview() {
     else {
       const n = nights();
       dn.hidden = false;
-      dn.innerHTML = `סה"כ <b class="num">${diff}</b> לילות · <span class="num">${n.phuket}</span> פוקט + <span class="num">${n.aonang}</span> אאו נאנג`;
+      dn.innerHTML = `<b class="num">${n.total}</b> לילות מלון · <span class="num">${n.phuket}</span> פוקט + <span class="num">${n.aonang}</span> אאו נאנג`;
     }
   } else dn.hidden = true;
 
@@ -1357,6 +1625,117 @@ function onDatesChanged() {
 }
 $("#tripStart").addEventListener("change", e => { state.tripStart = e.target.value; onDatesChanged(); });
 $("#tripEnd").addEventListener("change", e => { state.tripEnd = e.target.value; onDatesChanged(); });
+
+/* ---------- כרטיסי הטיסה ---------- */
+function renderFlights() {
+  const box = $("#flightsBox");
+  if (!box || typeof FLIGHTS === "undefined") return;
+  const ftD = iso => new Date(iso + "T00:00:00").toLocaleDateString("he-IL", { weekday: "short", day: "numeric", month: "numeric" });
+  const PLANE = '<svg viewBox="0 0 24 24" width="21" height="21" fill="currentColor" aria-hidden="true"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg>';
+
+  const leg = L => `
+  <article class="fticket">
+    <div class="ft-top">
+      <span class="ft-dirtag">${esc(L.dir)}</span>
+      <span class="ft-no num">${esc(L.no)}</span>
+      <span class="ft-airline">${esc(FLIGHTS.airline)}</span>
+    </div>
+    <div class="ft-route">
+      <div class="ft-ep">
+        <div class="ft-code">${esc(L.from.code)}</div>
+        <div class="ft-time num">${esc(L.depTime)}</div>
+        <div class="ft-edate">${ftD(L.depDate)}</div>
+        <div class="ft-city">${esc(L.from.city)} · ${esc(L.from.term)}</div>
+      </div>
+      <div class="ft-path" role="img" aria-label="טיסה ישירה, ${esc(L.dur)} שעות">
+        <i class="ft-pin ft-pin-a"></i><i class="ft-pin ft-pin-b"></i>
+        <span class="ft-fly">${PLANE}</span>
+        <span class="ft-dur num">${esc(L.dur)}${L.direct ? " · ישירה" : ""}</span>
+      </div>
+      <div class="ft-ep ft-to">
+        <div class="ft-code">${esc(L.to.code)}</div>
+        <div class="ft-time num">${esc(L.arrTime)}</div>
+        <div class="ft-edate">${ftD(L.arrDate)}${L.arrNote ? ` <b>${esc(L.arrNote)}</b>` : ""}</div>
+        <div class="ft-city">${esc(L.to.city)} · ${esc(L.to.term)}</div>
+      </div>
+    </div>
+    <div class="ft-tear" aria-hidden="true"></div>
+    <div class="ft-stub">
+      <div class="ft-fact"><span>מושבים</span><b class="num">${esc(L.seats)}</b></div>
+      <div class="ft-fact"><span>מחלקה</span><b>${esc(L.cls)}</b></div>
+      <div class="ft-fact"><span>מטוס</span><b>${esc(L.plane)}</b></div>
+      <div class="ft-fact"><span>כבודה</span><b>${esc(L.bags)}</b></div>
+      <div class="ft-fact"><span>ארוחות</span><b>${esc(L.meal)}</b></div>
+      <span class="ft-barcode" aria-hidden="true"></span>
+    </div>
+  </article>`;
+
+  box.innerHTML = `
+    <div class="eyebrow ft-eyebrow">✈ הטיסות שלכם · הזמנה <b class="num">${esc(FLIGHTS.ref)}</b> · סטטוס: מאושר ✓</div>
+    ${FLIGHTS.legs.map(leg).join("")}
+    <div class="fticket ft-passcard">
+      <div class="ft-pass">${FLIGHTS.pax.map(p => `<span class="ft-chip">${esc(p.name)}</span>`).join("")}</div>
+      <details class="ft-tickets"><summary>מספרי כרטיסים ומושבים ${CHEV}</summary>
+        <ul>${FLIGHTS.pax.map(p => `<li><span>${esc(p.name)} · מושב הלוך ${esc(p.seat)}</span><b class="num">${esc(p.ticket)}</b></li>`).join("")}</ul>
+      </details>
+      <p class="ft-note">צ'ק-אין אונליין נפתח 24 שעות לפני ההמראה. לא לשכוח: עריסת טיסה (Bassinet) לארבל + מושבים לטיסת החזור.</p>
+    </div>`;
+}
+
+/* ---------- השוואת יעדים + בייביסיטר (מחקר ספטמבר 2026) ---------- */
+function renderDests() {
+  const box = $("#destsBox");
+  if (!box || typeof DESTS === "undefined") return;
+  const bar = v => `<span class="dbar"><i style="width:${v * 10}%"></i></span><b class="num dnum">${v}</b>`;
+  box.innerHTML = DESTS.map(d => `
+    <div class="dest ${d.good ? "pick" : ""}">
+      <div class="d-head"><b>${esc(d.n)}</b><span class="d-call ${d.good ? "ok" : ""}">${esc(d.call)}</span></div>
+      <div class="d-scores">
+        <span class="d-lbl">משפחה</span>${bar(d.family)}
+        <span class="d-lbl">זוגיות</span>${bar(d.couple)}
+        <span class="d-lbl">מזג אוויר</span>${bar(d.wx)}
+      </div>
+      <p class="d-why">${esc(d.why)}</p>
+    </div>`).join("") + `<p class="d-skip">${esc(DESTS_SKIP)}</p>`;
+
+  const rr = $("#recRoute");
+  if (rr) rr.innerHTML = `
+    <div class="eyebrow">המבנה המומלץ · 13 לילות</div>
+    <div class="rr-line">
+      <span class="rr-stop"><b class="num">7</b> פוקט · באנג טאו</span><span class="rr-arrow">🚗 3 ש'</span>
+      <span class="rr-stop"><b class="num">4</b> אאו נאנג</span><span class="rr-arrow">✈ 1:25</span>
+      <span class="rr-stop"><b class="num">2</b> בנגקוק</span><span class="rr-arrow">✈ 23:55 הביתה</span>
+    </div>
+    <p class="rr-why">למה ככה: נחיתה 13:50 → פנימית לפוקט עוד באותו יום (במיטה ב-21:30 בערך). באנג טאו — 25 דק' מהשדה, חוף רדוד,
+    בייביסיטריות ומועדוני חוף במרחק הליכה. מסיימים בבנגקוק כי הטיסה הביתה ממריאה 23:55 — בלי קונקשן צמוד עם תינוקת ביום
+    האחרון, עם רפואה הכי טובה שיש, וערב גגות זוגי אחד גדול. <b>החלופה השמרנית:</b> להישאר 7+6 פוקט–אאו נאנג ולטוס
+    KBV→BKK ב-14.11 בבוקר מוקדם (באפר של יום שלם עד 23:55).</p>`;
+}
+
+function renderNovTable() {
+  const box = $("#novTable");
+  if (!box || typeof NOV_WINDOW === "undefined") return;
+  const heat = m => m <= 100 ? "h1" : m <= 140 ? "h2" : m <= 180 ? "h3" : "h4";
+  box.innerHTML = `<div class="nov-scroll"><table class="nov">
+    <thead><tr><th>יעד</th>${NOV_WINDOW.years.map(y => `<th class="num">${y}</th>`).join("")}<th>ממוצע</th></tr></thead>
+    <tbody>${NOV_WINDOW.dests.map(d => `<tr>
+      <th>${esc(d.n)}<small>${esc(d.days)}</small></th>
+      ${d.mm.map(m => `<td class="num ${heat(m)}">${m}</td>`).join("")}
+      <td class="num ${heat(d.mean)}"><b>${d.mean}</b></td></tr>`).join("")}</tbody></table></div>`;
+}
+
+function renderSitters() {
+  const box = $("#sittersBox");
+  if (!box || typeof SITTERS === "undefined") return;
+  box.innerHTML = SITTERS.map(s => `
+    <div class="sit-area">
+      <div class="sit-name">${esc(s.area)}</div>
+      ${s.items.map(i => `<div class="sit-row">
+        <b>${i.u ? `<a href="${esc(i.u)}" target="_blank" rel="noopener">${esc(i.n)} ↗</a>` : esc(i.n)}</b>
+        <span>${esc(i.d)}</span></div>`).join("")}
+      ${s.night ? `<div class="sit-night">🌙 ${esc(s.night)}</div>` : ""}
+    </div>`).join("");
+}
 
 function renderEmergency() {
   $("#emgList").innerHTML = EMERGENCY.map(e => `
@@ -1493,10 +1872,17 @@ async function loadTripForecast() {
 }
 
 /* ---------- מסלול ---------- */
-/* סה"כ לילות נגזר מהתאריכים שנבחרו; 13 כברירת מחדל עד שיש תאריכים */
+/* סה"כ לילות מלון נגזר מהתאריכים; 13 כברירת מחדל עד שיש תאריכים */
 function totalNights() {
   if (state.tripStart && state.tripEnd) {
-    const n = Math.round((new Date(state.tripEnd) - new Date(state.tripStart)) / 864e5);
+    let s = state.tripStart, e = state.tripEnd;
+    // כשהתאריכים הם תאריכי הטיסות: ההלוך ממריא בלילה (לנים במטוס) והחזור ממריא ב-23:55 —
+    // לילות המלון נספרים מיום הנחיתה עד יום ההמראה חזרה
+    if (typeof FLIGHTS !== "undefined") {
+      if (s === FLIGHTS.legs[0].depDate) s = FLIGHTS.legs[0].arrDate;
+      if (e === FLIGHTS.legs[1].arrDate) e = FLIGHTS.legs[1].depDate;
+    }
+    const n = Math.round((new Date(e) - new Date(s)) / 864e5);
     if (n >= 2 && n <= 40) return n;
   }
   return 13;
@@ -1519,14 +1905,13 @@ const IC = {
 function renderLegs() {
   const n = nights();
   const legs = [
-    { ic: "plane", t: "טיסה בינלאומית · ת\"א → בנגקוק", d: "ישיר (אל על) או קונקשן: איסטנבול / דובאי / דוחא", dur: "11–16 ש'" },
-    { ic: "moon", t: "אם הנחיתה בערב/לילה: לילה ליד השדה", d: "לא לגרור תינוקת בקונקשן לילי — ממשיכים בבוקר", dur: "לילה" },
-    { ic: "plane", t: "טיסה פנימית · בנגקוק → פוקט (HKT)", d: "תדירות גבוהה: Thai / Bangkok Airways / AirAsia", dur: "‎~1:20" },
+    { ic: "plane", t: "✓ אל על LY083 · ת\"א → בנגקוק", d: "מוצ\"ש 31.10 · המראה 21:40, נחיתה 13:50 למחרת · ישיר · הוזמן!", dur: "11:10" },
+    { ic: "plane", t: "טיסה פנימית · בנגקוק → פוקט (HKT)", d: "נחיתה 13:50 → פנימית ~17:30–18:30 מספיקה בנוח (Thai / AirAsia / VietJet)", dur: "‎~1:25" },
     { ic: "bed", t: `בסיס 1 · פוקט`, d: "חופים, שווקי לילה, קאטה נוי / באנג טאו", dur: n.phuket + " לילות", base: true },
     { ic: "car", t: "מעבר יבשתי · פוקט → אאו נאנג", d: "רכב פרטי עם כיסא בטיחות, כביש טוב, אפשר לעצור באמצע", dur: "‎~3 ש'" },
     { ic: "bed", t: `בסיס 2 · אאו נאנג (קראבי)`, d: "חוף, Walking Street, שוק לילה, נוף צוקים — הכול בהליכה", dur: n.aonang + " לילות", base: true },
-    { ic: "plane", t: "טיסה פנימית · קראבי (KBV) → בנגקוק", d: "בלי לחזור לפוקט — חוסך 3 שעות", dur: "‎~1:20" },
-    { ic: "plane", t: "טיסה בינלאומית · בנגקוק → ת\"א", d: "הביתה עם מלא תמונות", dur: "" }
+    { ic: "plane", t: "טיסה פנימית · קראבי (KBV) → בנגקוק", d: "בלי לחזור לפוקט — חוסך 3 שעות. מומלץ יום-יומיים לפני הטיסה הביתה (ראו \"מבנה מומלץ\" למטה)", dur: "‎~1:25" },
+    { ic: "plane", t: "✓ אל על LY082 · בנגקוק → ת\"א", d: "שבת 14.11 · המראה 23:55, נחיתה 06:20 · ישיר · הוזמן!", dur: "11:25" }
   ];
   $("#legsBox").innerHTML = legs.map(l => `
     <li class="leg ${l.base ? "base" : ""}"><span class="ic">${IC[l.ic]}</span>
@@ -2246,6 +2631,10 @@ function renderAll() {
 }
 
 renderEmergency();
+renderFlights();
+renderDests();
+renderNovTable();
+renderSitters();
 renderRainChart();
 renderAll();
 initCloud();
