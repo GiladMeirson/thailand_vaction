@@ -656,7 +656,7 @@ const GEO = {
 };
 
 const HOTEL_SHORT = {
-  katathani: "Katathani", saii: "SAii", "centara-grand": "Centara", angsana: "Angsana",
+  katathani: "Katathani", "centara-grand": "Centara", angsana: "Angsana",
   dusit: "Dusit", "kata-palm": "Kata Palm", "centara-aonang": "Centara", avani: "Avani", "holiday-inn": "Holiday Inn"
 };
 
@@ -667,8 +667,8 @@ function mapPlaces() {
   const pl = [];
   candidates().forEach(c => pl.push({
     kind: "cand", id: "c_" + c.id, name: c.name, short: c.short || "", cand: c,
-    desc: `מועמד · ${c.room} · $${(+c.usd).toLocaleString("en-US")} ל-${candNights(c)} לילות (${c.src || ""})`,
-    extra: c.area, lat: c.lat, lng: c.lng, placeId: c.placeId, site: c.site, img: c.img && c.img[0], address: c.address
+    desc: `${c.rec ? "מומלץ ✓ · " : ""}מועמד · ${c.room} · $${(+c.usd).toLocaleString("en-US")} ל-${candNights(c)} לילות (${c.src || ""})`,
+    extra: c.area, lat: c.lat, lng: c.lng, placeId: c.placeId, site: c.site, flyall: c.flyall, img: c.img && c.img[0], address: c.address
   }));
   HOTELS.forEach(h => pl.push({
     kind: "hotel", id: "h_" + h.id, name: h.name, short: HOTEL_SHORT[h.id] || "", desc: h.area + (h.rating ? " · דירוג " + h.rating : ""),
@@ -706,6 +706,7 @@ function showPlaceSheet(p) {
       <a target="_blank" rel="noopener" href="${gmapsUrl(p)}">פתיחה ב-Google Maps</a>
       ${p.phone ? `<a href="tel:${p.phone.replace(/\s/g, "")}">חיוג</a>` : ""}
       ${p.site ? `<a target="_blank" rel="noopener" href="${esc(p.site)}">אתר</a>` : ""}
+      ${p.flyall ? `<a class="fa" target="_blank" rel="noopener" href="${esc(p.flyall)}">flyall</a>` : ""}
       ${p.kind === "cand" ? `<a href="#cand-${esc(p.cand.id)}" class="cand-open" data-id="${esc(p.cand.id)}">כל הפרטים</a>` : ""}
     </div>`;
   const co = sh.querySelector(".cand-open");
@@ -897,10 +898,10 @@ const usd = n => "$" + Math.round(n).toLocaleString("en-US");
 function candHtml(c) {
   const nn = candNights(c), total = +c.usd || 0;
   const imgs = (c.img || []).map((src, i) => `<figure><img src="${esc(src)}" alt="" loading="lazy"><figcaption>${i === 0 ? "המלון" : "החדר / הבריכה"}</figcaption></figure>`).join("");
-  return `<details class="cand" id="cand-${esc(c.id)}">
+  return `<details class="cand${c.rec ? " is-rec" : ""}" id="cand-${esc(c.id)}">
     <summary>
       ${c.img && c.img[0] ? `<img src="${esc(c.img[0])}" alt="" loading="lazy">` : `<span class="noimg">🏨</span>`}
-      <span class="t"><b>${esc(c.name)}</b><small>${esc(c.area)}${c.room ? " · " + esc(c.room) : ""}</small></span>
+      <span class="t"><b>${c.rec ? `<i class="rec">מומלץ</i>` : ""}${esc(c.name)}</b><small>${esc(c.area)}${c.room ? " · " + esc(c.room) : ""}</small></span>
       <span class="p"><b>${usd(total)}</b><small>≈ ${ils(total * RATES.usd)}</small></span>
       ${CHEV}
     </summary>
@@ -915,6 +916,7 @@ function candHtml(c) {
       ${c.note ? `<p class="cand-note">${esc(c.note)}</p>` : ""}
       ${imgs ? `<div class="cand-imgs">${imgs}</div>` : ""}
       <div class="links">
+        ${c.flyall ? `<a class="linkbtn fa" target="_blank" rel="noopener" href="${esc(c.flyall)}">✈ flyall · ההצעה</a>` : ""}
         <a class="linkbtn" target="_blank" rel="noopener" href="${gmapsUrl(c)}">📍 Google Maps</a>
         <a class="linkbtn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${c.lat},${c.lng}">ניווט</a>
         ${c.site ? `<a class="linkbtn" target="_blank" rel="noopener" href="${esc(c.site)}">אתר המלון</a>` : ""}

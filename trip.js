@@ -13,7 +13,7 @@
           מוסיפים שורה לכל הוצאה (טיסה, מלון, ביטוח...). paid=true אחרי ששולם בפועל.
    candidates: מועמדים למלונות שמוצגים בדף הראשי (רשימה נפתחת + נקודות זהב על המפה) —
           [{ "id", "base": bangkok/phuket/khaolak, "name", "area", "room", "from", "to", "board", "usd": מחיר כולל לכל הלילות, "src": מקור המחיר,
-             "address", "lat", "lng", "placeId" (אופציונלי), "site", "img": ["img/..."], "note" }]. מוסיפים/מוחקים מועמדים כאן.
+             "address", "lat", "lng", "placeId" (אופציונלי), "site", "flyall": קישור לדף המלון באתר flyall, "rec": true = תג "מומלץ", "img": ["img/..."], "note" }]. מוסיפים/מוחקים מועמדים כאן.
    savedAttractions: מזהי אטרקציות מסומנות בכוכב (ATTS ב-data.js). */
 
 window.TRIP = {
@@ -111,7 +111,7 @@ window.TRIP = {
 
   "hotels": {
     "bangkok": { "name": "", "booked": false, "ref": "", "note": "לילה אחד 1.11→2.11, חייב להיות ליד סוברנבומי" },
-    "phuket":  { "id": "saii", "booked": false, "ref": "", "note": "" },
+    "phuket":  { "id": null, "name": "", "booked": false, "ref": "", "note": "6 לילות 2.11→8.11 — לבחור מבין המועמדים (Marriott Merlin / Centara Grand / Kalima). SAii Laguna ירד מהאופציות 3.9." },
     "second":  { "id": null, "name": "", "booked": false, "ref": "", "note": "קאו לאק · 6 לילות 8.11→14.11 — לבחור ריזורט על החוף ולהזמין" }
   },
 
@@ -134,11 +134,12 @@ window.TRIP = {
     {
       "id": "canalis", "base": "bangkok", "short": "Canalis",
       "name": "Canalis Suvarnabhumi Airport Hotel", "area": "לאט קראבאנג · שאטל חינם לסוברנבומי",
-      "room": "Suite", "from": "2026-11-01", "to": "2026-11-02", "board": "",
+      "room": "Suite", "from": "2026-11-01", "to": "2026-11-02", "board": "ארוחת בוקר (בלי ארוחת בוקר: $116)",
       "usd": 129, "src": "flyall",
       "address": "1599/1 Lat Krabang Soi 13, Lat Krabang Road, Lat Krabang, Bangkok 10520",
       "lat": 13.72238, "lng": 100.77491,
       "site": "https://www.canalissuvarnabhumi.com/",
+      "flyall": "https://flyall.club/hotels/h12591086?name=canalis-suvarnabhumi-airport-hotel-free-shuttle-from-hotel-to-suvarnabhumi-airport&hc=12591086&dcode=BKK&fdate=01/11/26&tdate=02/11/26&isdomestic=false&dport=587136&rooms=1&adt1=2&chd1=1&chdr1a1=1&code=BKK",
       "img": ["img/cand-canalis.jpg", "img/cand-canalis-room.jpg"],
       "note": "לילה אחד בין הנחיתה (13:50) לטיסה ל-PG271 ב-08:00 למחרת — לבדוק שעות השאטל ללילה/בוקר מוקדם."
     },
@@ -150,30 +151,33 @@ window.TRIP = {
       "address": "338/1 Phabaramee Road, Patong Beach, Kathu, Phuket 83150",
       "lat": 7.91732, "lng": 98.28400,
       "site": "https://www.kalimaresort.com/",
+      "flyall": "https://flyall.club/hotels/h4163682/hotel-.aspx?fdate=02/11/26&tdate=08/11/26&isdomestic=false&dport=587950&dcode=HKT&rooms=1&adt1=2&chd1=1&chdr1a1=1",
       "img": ["img/cand-kalima.jpg", "img/cand-kalima-room.jpg"],
       "note": "ריזורט על צלע הגבעה — הרבה מדרגות/מעליות בין הרמות; לבקש חדר קרוב ללובי. אין חוף צמוד (שאטל לפאטונג)."
     },
     {
       "id": "centara-grand", "base": "phuket", "short": "Centara",
       "name": "Centara Grand Beach Resort Phuket", "area": "חוף קארון · על החוף",
-      "room": "Deluxe Suite with Private Pool", "from": "2026-11-02", "to": "2026-11-08", "board": "",
+      "room": "Deluxe Suite with Private Pool", "from": "2026-11-02", "to": "2026-11-08", "board": "ארוחת בוקר",
       "usd": 1738, "src": "flyall",
       "address": "683 Patak Road, Karon Beach, Phuket 83100",
       "lat": 7.857859, "lng": 98.290401, "placeId": "ChIJ_fm1oEElUDAR38X4EWQfkI0",
       "site": "https://www.centarahotelsresorts.com/",
+      "flyall": "https://flyall.club/hotels/h4310879?name=centara-grand-beach-resort-phuket&hc=4310879&dcode=HKT&fdate=02/11/26&tdate=08/11/26&isdomestic=false&dport=587950&rooms=1&adt1=2&chd1=1&chdr1a1=1&code=HKT",
       "img": ["img/centara-grand.jpg"],
       "note": "נהר עצל ומגלשות — נהדר לפעוטות. ביקורות 2025–26 על חדרים מיושנים והרבה מדרגות; אם בוחרים — חדר צמוד למעלית."
     },
     {
-      "id": "merlin", "base": "phuket", "short": "Marriott",
+      "id": "merlin", "base": "phuket", "short": "Marriott", "rec": true,
       "name": "Phuket Marriott Resort & Spa, Merlin Beach", "area": "חוף טרי טראנג · 3 ק\"מ מפאטונג, מפרץ שקט",
       "room": "1 King Bed Guest Room with Pool Access", "from": "2026-11-02", "to": "2026-11-08", "board": "ארוחת בוקר",
-      "usd": 876, "src": "flyall",
+      "usd": 2627, "src": "flyall",
       "address": "99 Muen-Ngoen Road, Tri-Trang Beach, Patong, Kathu, Phuket 83150",
       "lat": 7.88349, "lng": 98.27245,
       "site": "https://www.marriott.com/en-us/hotels/hktmb-phuket-marriott-resort-and-spa-merlin-beach/overview/",
+      "flyall": "https://flyall.club/hotels/h4163568/hotel-.aspx?fdate=02/11/26&tdate=08/11/26&isdomestic=false&dport=587950&dcode=HKT&rooms=1&adt1=2&chd1=1&chdr1a1=1",
       "img": ["img/cand-merlin.jpg", "img/cand-merlin-pool.jpg"],
-      "note": "הזול ברשימה בפער גדול. 3 בריכות + בריכת ילדים עם מגלשות, חוף פרטי עם שונית. מבודד — לפאטונג בשאטל/מונית."
+      "note": "3 בריכות + בריכת ילדים עם מגלשות, חוף פרטי עם שונית. מבודד — לפאטונג בשאטל/מונית."
     },
     {
       "id": "jw-khaolak", "base": "khaolak", "short": "JW Marriott",
@@ -183,6 +187,7 @@ window.TRIP = {
       "address": "41/12 Moo 3, Khuk Khak, Takua Pa, Khao Lak, Phang Nga 82220",
       "lat": 8.70151, "lng": 98.24046, "placeId": "ChIJ5dIlcHXpUDAR1vOwPuNM2Jk",
       "site": "https://www.marriott.com/en-us/hotels/hktkl-jw-marriott-khao-lak-resort-and-spa/overview/",
+      "flyall": "https://flyall.club/hotels/h4858194/hotel-.aspx?fdate=08/11/26&tdate=14/11/26&isdomestic=false&dport=587271&dcode=0&rooms=1&adt1=2&chd1=1&chdr1a1=1",
       "img": ["img/cand-jw.jpg", "img/cand-jw-room.jpg"],
       "note": "הבריכה הארוכה בדרום-מזרח אסיה (‎~2.5 ק\"מ) עוברת ליד הטרסה של חדרי ה-Pool Access. אזור ילדים (Aqua Play) ומועדון ילדים."
     }
