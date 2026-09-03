@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="חמ&quot;ל התכנון לטיול לתאילנד — משימות, מסלול, מלונות, מזג אוויר ותקציב במקום אחד">
+<meta name="description" content="חמ&quot;ל התכנון לטיול לתאילנד — המפה">
 <meta name="theme-color" content="#F3EEE3" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#111813" media="(prefers-color-scheme: dark)">
 <title>חמ"ל תאילנד</title>
@@ -13,163 +13,24 @@
 </head>
 <body>
 <div id="app">
-  <header class="top">
-    <h1 class="brand">חמ"ל תאילנד<small>‎31.10 – 15.11.2026 · הטיסות סגורות ✈</small></h1>
-    <span class="sync" id="syncBadge"><span class="dot"></span><span id="syncTxt">מקומי</span></span>
-  </header>
-
-  <!-- ============ סקירה ============ -->
-  <section class="view active" id="view-overview">
-    <div class="hero">
-      <div class="eyebrow">המסלול</div>
-      <div class="route">ת"א ✈ בנגקוק ✈ פוקט 🚗 אאו נאנג ✈ הביתה</div>
-      <div class="meta">2 מבוגרים + תינוקת בת שנה · ‎13 לילות בתאילנד · אל על ישיר, הלוך 31.10 · חזור 14.11</div>
-      <div class="count-row">
-        <div class="count"><b class="num" id="cDays">—</b><span>ימים ליציאה</span></div>
-        <div class="count"><b class="num" id="cTasks">—</b><span>משימות פתוחות</span></div>
-        <div class="count"><b class="num" id="cPaid">—</b><span>₪ שולם עד כה</span></div>
-      </div>
-      <div class="datebox">
-        <label>יציאה <input type="date" id="tripStart"></label>
-        <label>חזרה <input type="date" id="tripEnd"></label>
-        <span class="date-nights" id="dateNights" hidden></span>
-      </div>
-    </div>
-
-    <div id="flightsBox"></div>
-
-    <div class="card howto" id="howtoCard" hidden>
-      <h2>איך משתמשים בזה <button class="dismiss" id="howtoClose" aria-label="סגירה">✕</button></h2>
-      <ul class="howto-list">
-        <li><b>משימות</b> — מסמנים ✓ ומתקדמים לפי הסדר. הכרטיס העליון תמיד אומר מה הדבר הבא.</li>
-        <li><b>מלונות</b> — לוחצים "בחירה" והתקציב מתעדכן לבד לפי המלון והלילות.</li>
-        <li><b>תקציב</b> — כששילמתם על משהו, מקלידים כמה. הכול נשמר אוטומטית, גם בין מכשירים.</li>
-      </ul>
-    </div>
-
-    <div class="card">
-      <h2>איפה אנחנו עומדים</h2>
-      <div class="progress-wrap" style="margin-top:10px">
-        <div class="ring" id="ringBox"></div>
-        <div style="flex:1">
-          <div class="eyebrow">הדברים הדחופים עכשיו</div>
-          <ul class="next-tasks" id="nextTasks"></ul>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>מזג אוויר לתאריכים שלכם <span class="sub">אומדן אקלימי · מתעדכן לפי הבחירה</span></h2>
-      <div id="wxTrip"></div>
-    </div>
-
-    <div class="card">
-      <h2>תקציב במבט <span class="sub">הערכה מבוססת מחקר מחירים · אוג' 2026</span></h2>
-      <div class="grid2" style="margin-top:10px">
-        <div class="stat"><div class="v num" id="ovEst">—</div><div class="l">הערכה טיפוסית לכל הטיול</div></div>
-        <div class="stat"><div class="v num" id="ovPaid">—</div><div class="l">שולם בפועל עד כה</div></div>
-      </div>
-      <div class="bud-bar" id="ovBar" style="margin-top:10px"></div>
-      <div class="bud-bar-lbl"><span id="ovBarL"></span><span id="ovBarR"></span></div>
-    </div>
-
-    <div class="card" id="wxLiveCard" hidden>
-      <h2>מזג אוויר עכשיו <span class="sub">Open-Meteo · חי</span></h2>
-      <div class="wx-now" id="wxNow"></div>
-      <div class="eyebrow" style="margin-top:12px">התחזית הקרובה — פוקט</div>
-      <div class="wx-days" id="wxDaysPhuket"></div>
-      <div class="eyebrow" style="margin-top:8px">התחזית הקרובה — אאו נאנג</div>
-      <div class="wx-days" id="wxDaysAonang"></div>
-    </div>
-
-    <div class="card">
-      <h2>נובמבר ביעדים <span class="sub">ממוצעים רב-שנתיים (WMO)</span></h2>
-      <div class="wx-now">
-        <div class="wx-cell">
-          <div class="city">פוקט</div>
-          <div class="t num">32° / 25°</div>
-          <div class="d">ים 29° · ‎~13 ימי גשם · שקיעה ‎18:04</div>
-        </div>
-        <div class="wx-cell">
-          <div class="city">אאו נאנג</div>
-          <div class="t num">31° / 24°</div>
-          <div class="d">ים 29° · ‎~17 ימי גשם קצרים · שקיעה ‎18:02</div>
-        </div>
-      </div>
-      <p style="font-size:12.5px; color:var(--ink2); margin:10px 0 0">
-        בתאריכים שלכם (1–14.11) הצד האנדמני נכנס לעונה היבשה — גשם קצר של אחה"צ וים שנרגע.
-        ההשוואה המלאה בין היעדים (כולל קוסמוי, עם נתוני אמת שנה-בשנה) נמצאת בלשונית <b>מסלול</b>.
-      </p>
-    </div>
-
-    <div class="card">
-      <h2>שעת חירום <span class="sub">שמור גם בטלפון</span></h2>
-      <div class="emg-list" id="emgList"></div>
-    </div>
-  </section>
-
-  <!-- ============ משימות ============ -->
-  <section class="view" id="view-tasks">
-    <div class="card nownext" id="nowNextCard">
-      <h2>עכשיו בתור</h2>
-      <div id="nowNext"></div>
-    </div>
-    <div class="card">
-      <h2>למה עכשיו?</h2>
-      <p style="font-size:13px; color:var(--ink2); margin:6px 0 0">
-        היציאה בעוד כחודשיים, ונובמבר הוא תחילת עונת השיא בצד אנדמן — מלונות וטיסות מתייקרים ונחטפים מכאן והלאה.
-        <b>שלב 0 ושלב 1 צריכים לקרות בשבועיים הקרובים.</b> הסדר בנוי לפי תלות: תאריכים ← טיסה בינלאומית ← פנימיות ← מלונות.
-      </p>
-    </div>
-    <div class="tasks-toolbar">
-      <label class="toggle-pill"><input type="checkbox" id="onlyOpen"><span>הסתר מה שבוצע</span></label>
-      <span class="tasks-count num" id="tasksCount"></span>
-    </div>
-    <div id="stagesBox"></div>
-  </section>
-
-  <!-- ============ מסלול ============ -->
-  <section class="view" id="view-route">
-    <div class="card">
-      <h2>המסלול צעד-צעד</h2>
-      <div class="split-toggle" id="splitToggle">
-        <button data-split="8+5">8 לילות פוקט + 5 אאו נאנג</button>
-        <button data-split="7+6">7 לילות פוקט + 6 אאו נאנג</button>
-      </div>
-      <ul class="legs" id="legsBox"></ul>
-      <p style="font-size:12.5px; color:var(--ink2); margin:8px 0 0">
-        💡 לקנות את הפנימיות <b>בנפרד ופתוח</b>: פנימה לפוקט (HKT), החוצה מקראבי (KBV) — חוסך 3 שעות נסיעה חזרה בסוף.
-      </p>
-    </div>
-
-    <div class="card">
-      <h2>אז איפה כן? השוואת היעדים <span class="sub">מחקר ספטמבר 2026 · משפחה · זוגיות · מזג אוויר</span></h2>
-      <div id="destsBox"></div>
-      <div class="rec-route" id="recRoute"></div>
-    </div>
-
-    <div class="card">
-      <h2>ערב זוגי: בייביסיטר לארבל <span class="sub">שירותים מאומתים לתיירים · ספט' 2026</span></h2>
-      <div id="sittersBox"></div>
-      <p style="font-size:12px; color:var(--muted); margin:10px 0 0">
-        טיפ: את הערב הזוגי הראשון עושים במסעדה של המלון עצמו — ארבל במרחק 3 דקות, ואתם בודקים את הסיטרית בתנאים קלים.
-        תמיד לבקש דוברת אנגלית עם עזרה ראשונה, ולהשאיר מספר וואטסאפ.
-      </p>
-    </div>
-
+  <section class="view active" id="view-route">
     <div class="card">
       <h2>המפה <span class="sub">הקש על נקודה לפרטים</span></h2>
       <div class="map-controls">
         <div class="seg" id="mapViews">
           <button data-mv="overview" class="active">הכול</button>
+          <button data-mv="bangkok">בנגקוק</button>
           <button data-mv="phuket">פוקט</button>
           <button data-mv="aonang">אאו נאנג</button>
+          <button data-mv="khaolak">קאו לאק</button>
         </div>
         <div class="seg" id="mapKinds">
           <button data-mk="all" class="active">הכול</button>
           <button data-mk="hotel">מלונות</button>
+          <button data-mk="cand">מועמדים</button>
           <button data-mk="att">אטרקציות</button>
           <button data-mk="med">רפואה</button>
+          <button data-mk="air">תעופה</button>
         </div>
       </div>
       <div id="mapbox">
@@ -181,107 +42,30 @@
       <p class="map-note" id="mapNote">גלילה או כפתורי ± לזום, גרירה להזזה (בנייד: שתי אצבעות). כל נקודה נפתחת ב-Google Maps לניווט מלא.</p>
     </div>
 
-    <div class="card">
-      <h2>אטרקציות ובילויים <span class="sub">מסונן לחיים עם תינוקת</span></h2>
-      <div class="att-filter" id="attFilter"></div>
-      <div id="attBox"></div>
+    <div class="card" id="candCard">
+      <h2>מועמדים למלונות <span class="sub" id="candSub"></span></h2>
+      <div id="candList"></div>
+      <p class="map-note">המחירים מאתר flyall — סה"כ לכל הלילות, לכולם. הקשה על מלון פותחת את כל הפרטים; ★ זהב על המפה = מועמד.</p>
     </div>
 
-    <div class="card">
-      <h2>ומה עם קוסמוי? הנתונים האמיתיים <span class="sub">ממוצע חודשי + מה קרה בפועל ב-1–14.11</span></h2>
-      <div id="rainchart"></div>
-      <div class="chart-legend">
-        <span class="k"><i class="swatch" style="background:var(--chart-a)"></i>פוקט (אנדמן)</span>
-        <span class="k"><i class="swatch" style="background:var(--chart-b)"></i>קוסמוי (המפרץ)</span>
-      </div>
-      <div class="eyebrow" style="margin-top:14px">גשם בפועל בתאריכים שלכם (1–14.11), מ"מ לפי שנה</div>
-      <div id="novTable"></div>
-      <p style="font-size:12.5px; color:var(--ink2); margin:10px 0 0">
-        לגבי "כמעט לא ירד גשם בסמוי בנובמבר": נובמבר 2025 באמת היה מתון יחסית בתחילתו — אבל עדיין עם ‎10+ ימי גשם,
-        ובכל שנה מאז 2000 היו לפחות 7 ימי גשם בחלון הזה. נובמבר הוא <b>החודש הגשום ביותר</b> של סמוי (המונסון עובר לצד המפרץ),
-        כשהגשם שם ממושך ואפור — לא מטח של אחה"צ. בצד אנדמן זה הפוך: הגשם קצר, והים דווקא נרגע.
-        זה לא שסמוי "אסורה" — זה פשוט הימור מול הסיכויים, ובחודש אחר (פברואר–אפריל) היא בחירה מעולה.
-      </p>
+    <div class="card" id="costsCard">
+      <h2>עלויות <span class="sub" id="costsSub"></span></h2>
+      <div id="costRows"></div>
+      <div class="cost-total"><span>סה"כ שולם עד כה</span><b id="costPaid"></b></div>
     </div>
+
+    <a class="tl-link tl-link-solo" href="timeline.html">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18"/><circle cx="12" cy="7" r="2.3"/><circle cx="12" cy="17" r="2.3"/><path d="M14.2 7h5.3"/><path d="M14.2 17h5.3"/></svg>
+      <span>ציר הזמן של הטיול<small>כל נקודה שצריך לסגור — לפי סדר, עם התאריכים</small></span>
+      <b>‹</b>
+    </a>
   </section>
-
-  <!-- ============ מלונות ============ -->
-  <section class="view" id="view-hotels">
-    <div class="card" style="border-color:var(--warm)">
-      <h2>איך בוחרים</h2>
-      <p style="font-size:13px; color:var(--ink2); margin:6px 0 0">
-        המחירים = טווח ללילה לחדר זוגי + עריסה בתחילת נובמבר (מחקר אוג' 2026 — Booking/Agoda/Kayak).
-        אם הביטול חינם, עדיף לתפוס מקום עכשיו ולהחליף אחר כך. <b>אאו נאנג נחטפת ראשונה.</b>
-        בכל הזמנה: לבקש חדר בלי מדרגות / ליד מעלית + מיטת תינוק + קומקום.
-      </p>
-    </div>
-    <div id="hotelsBox"></div>
-  </section>
-
-  <!-- ============ תקציב ============ -->
-  <section class="view" id="view-budget">
-    <div class="card">
-      <h2>סך הכול לטיול <span class="sub">‎2 מבוגרים + תינוקת · ₪</span></h2>
-      <div class="bud-sum">
-        <div class="stat"><div class="v num" id="bLow">—</div><div class="l">תרחיש חסכוני</div></div>
-        <div class="stat"><div class="v num" id="bTyp">—</div><div class="l">טיפוסי</div></div>
-        <div class="stat"><div class="v num" id="bHigh">—</div><div class="l">מפנק</div></div>
-      </div>
-      <div class="bud-bar" id="bBar"></div>
-      <div class="bud-bar-lbl"><span id="bBarL"></span><span id="bBarR"></span></div>
-      <p style="font-size:12px; color:var(--muted); margin:8px 0 0" id="bRateNote"></p>
-    </div>
-
-    <div class="card">
-      <h2>לפי סעיפים <span class="sub">עדכן כמה שילמת בפועל</span></h2>
-      <div id="budgetRows"></div>
-    </div>
-
-    <div class="card">
-      <h2>גיבוי וסנכרון בין מחשבים</h2>
-      <p style="font-size:13.5px; color:var(--ink2); margin:6px 0 0">
-        מקור האמת הוא הקובץ <b>thailand-trip-data.json</b> בתיקיית הפרויקט (שמור ב-git וב-OneDrive — מגיע לכל מחשב).
-        לוחצים "חיבור קובץ" פעם אחת בכל מחשב, מנווטים לתיקיית הפרויקט ובוחרים את הקובץ הקיים —
-        ובאישור ההרשאה בוחרים "אפשר בכל ביקור" כדי שהחיבור ישרוד סגירת דפדפן. מאז כל סימון נשמר אליו אוטומטית.
-        במקביל יש סנכרון ענן כשפותחים דרך הקישור (בשביל הטלפון), ושמירה מקומית בדפדפן כגיבוי חירום.
-      </p>
-      <div class="io-row">
-        <button id="btnConnectFile" class="primary">חיבור קובץ שמירה אוטומטית</button>
-        <button id="btnExport">ייצוא JSON</button>
-        <button id="btnCopy">העתקה ללוח</button>
-        <label class="btn" for="fileImport">ייבוא מקובץ</label>
-        <input type="file" id="fileImport" accept="application/json">
-      </div>
-      <div class="fs-status" id="fsStatus"></div>
-    </div>
-    <p class="footer-note">המחירים הם הערכות מחקר (אוגוסט 2026) — לפני סגירה בדקו מחיר בזמן אמת. נסיעה טובה 🌴</p>
-  </section>
-
-  <nav class="tabs" aria-label="ניווט ראשי">
-    <div class="row">
-      <button data-view="overview" class="active" aria-current="page" aria-label="סקירה">
-        <svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>סקירה
-      </button>
-      <button data-view="tasks" aria-label="משימות">
-        <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8.5 12.5l2.5 2.5 5-6"/></svg>משימות
-        <span class="badge" id="taskBadge" hidden></span>
-      </button>
-      <button data-view="route" aria-label="מסלול">
-        <svg viewBox="0 0 24 24"><path d="M12 21s-6-5.3-6-10a6 6 0 1 1 12 0c0 4.7-6 10-6 10z"/><circle cx="12" cy="11" r="2.2"/></svg>מסלול
-      </button>
-      <button data-view="hotels" aria-label="מלונות">
-        <svg viewBox="0 0 24 24"><path d="M2 17v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5"/><path d="M2 17h20"/><path d="M6 10V7h5v3"/></svg>מלונות
-      </button>
-      <button data-view="budget" aria-label="תקציב">
-        <svg viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="13" rx="3"/><path d="M16 12.5h3"/><path d="M2.5 10h19"/></svg>תקציב
-      </button>
-    </div>
-  </nav>
 </div>
-<div class="toast" id="toast"></div>
 <div class="charttip" id="charttip"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="trip.js"></script>
 <script src="data.js"></script>
+<script src="trip-loader.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

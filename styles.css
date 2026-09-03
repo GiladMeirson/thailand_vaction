@@ -7,7 +7,7 @@
   --warm:#9F7420; --warm-soft:#F3E8CD;
   --good:#35754A; --good-soft:#E0EDDD; --warn:#A2621B; --warn-soft:#F2E6CE; --crit:#B3362B; --crit-soft:#F6E1DB;
   --line:#DFD5C0; --sea:#DAE7E0; --sea-ink:#41756A;
-  --map-hotel:#2E6650; --map-att:#C05B38; --map-med:#B3362B;
+  --map-hotel:#2E6650; --map-att:#C05B38; --map-med:#B3362B; --map-air:#8A6A17; --map-cand:#9F7420;
   --shadow:0 1px 2px rgba(62,50,30,.05),0 5px 18px rgba(62,50,30,.07);
   --chart-a:#2E6650; --chart-b:#C05B38;
   --r:18px;
@@ -23,7 +23,7 @@
     --warm:#D3AC57; --warm-soft:#322A14;
     --good:#75C08E; --good-soft:#1C3325; --warn:#DBA24C; --warn-soft:#332711; --crit:#E2796B; --crit-soft:#3A211C;
     --line:#2B372C; --sea:#15231E; --sea-ink:#84AC9E;
-    --map-hotel:#75C08E; --map-att:#E28C64; --map-med:#E2796B;
+    --map-hotel:#75C08E; --map-att:#E28C64; --map-med:#E2796B; --map-air:#D3AC57; --map-cand:#D2A94E;
     --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 20px rgba(0,0,0,.35);
     --chart-a:#5FA982; --chart-b:#E28C64;
   }
@@ -36,7 +36,7 @@
   --warm:#D3AC57; --warm-soft:#322A14;
   --good:#75C08E; --good-soft:#1C3325; --warn:#DBA24C; --warn-soft:#332711; --crit:#E2796B; --crit-soft:#3A211C;
   --line:#2B372C; --sea:#15231E; --sea-ink:#84AC9E;
-  --map-hotel:#75C08E; --map-att:#E28C64; --map-med:#E2796B;
+  --map-hotel:#75C08E; --map-att:#E28C64; --map-med:#E2796B; --map-air:#D3AC57; --map-cand:#D2A94E;
   --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 20px rgba(0,0,0,.35);
   --chart-a:#5FA982; --chart-b:#E28C64;
 }
@@ -62,7 +62,7 @@ a{color:var(--accent-ink)}
 .num{font-variant-numeric:tabular-nums}
 
 /* ===== Shell ===== */
-#app{max-width:720px; margin:0 auto; padding:0 14px 116px}
+#app{max-width:720px; margin:0 auto; padding:14px 14px 28px}
 header.top{
   display:flex; align-items:baseline; justify-content:space-between; gap:10px;
   padding:18px 2px 10px;
@@ -70,9 +70,6 @@ header.top{
 .brand{font-family:"Frank Ruhl Libre","Heebo",serif; font-weight:900; font-size:28px; line-height:1.15}
 .brand small{font-family:"Heebo",sans-serif; font-size:12px; color:var(--ink2); font-weight:500; display:block; margin-top:0}
 .sync{font-size:11.5px; color:var(--muted); display:flex; align-items:center; gap:6px; white-space:nowrap}
-.sync .dot{width:8px; height:8px; border-radius:50%; background:var(--muted); display:inline-block}
-.sync.on .dot{background:var(--good)}
-.sync.local .dot{background:var(--warn)}
 
 /* ===== Nav — גלולה צפה ===== */
 nav.tabs{
@@ -155,11 +152,11 @@ section.view.active{display:block; animation:fadein .18s ease}
 .count b{display:block; font-family:"Frank Ruhl Libre",serif; font-weight:700; font-size:25px; color:#E9C982; font-variant-numeric:tabular-nums; line-height:1.25}
 .count span{font-size:12px; color:var(--on-deep2)}
 .datebox{display:flex; gap:8px; margin-top:14px; align-items:center; flex-wrap:wrap}
-.datebox label{font-size:13px; color:var(--on-deep2)}
-.datebox input{
-  border:1px solid rgba(255,253,244,.22); background:rgba(0,0,0,.18); border-radius:9px;
-  padding:5px 8px; font-size:13px; color:var(--on-deep); color-scheme:dark;
+.datebox .date-chip{
+  font-size:12.5px; font-weight:600; color:var(--on-deep2);
+  background:rgba(0,0,0,.18); border:1px solid rgba(255,253,244,.16); border-radius:99px; padding:4px 12px;
 }
+.datebox .date-chip b,.datebox .date-nights b{color:#E9C982; font-size:13.5px; font-weight:700}
 .progress-wrap{display:flex; align-items:center; gap:14px}
 .ring{width:74px; height:74px; flex:none}
 .ring svg{transform:rotate(-90deg)}
@@ -192,20 +189,15 @@ section.view.active{display:block; animation:fadein .18s ease}
 }
 .task.done{opacity:.62}
 .task.done .t{text-decoration:line-through}
-.task input[type=checkbox]{
-  appearance:none; width:22px; height:22px; border:2px solid var(--muted); border-radius:50%;
-  flex:none; margin:1px 0 0; cursor:pointer; display:grid; place-items:center; background:var(--surface);
-  transition:background-color .15s var(--ease), border-color .15s var(--ease);
+/* סימון ✓ סטטי — מגיע מ-tasksDone ב-trip.js */
+.task .chk{
+  width:22px; height:22px; border:2px solid var(--muted); border-radius:50%;
+  flex:none; margin:1px 0 0; display:grid; place-items:center; background:var(--surface);
 }
-.task input[type=checkbox]:checked{background:var(--good); border-color:var(--good); animation:checkpop .3s var(--ease)}
-@keyframes checkpop{0%{transform:scale(.75)}55%{transform:scale(1.15)}100%{transform:scale(1)}}
-.task input[type=checkbox]:checked::after{content:""; width:11px; height:6px; border:2.5px solid #fff; border-top:none; border-right:none; transform:rotate(-45deg) translate(1px,-1px)}
+.task .chk.on{background:var(--good); border-color:var(--good)}
+.task .chk.on::after{content:""; width:11px; height:6px; border:2.5px solid #fff; border-top:none; border-right:none; transform:rotate(-45deg) translate(1px,-1px)}
 .task .t{font-size:15px; font-weight:500}
 .task .n{font-size:13px; color:var(--ink2); margin-top:2px}
-.task .del{color:var(--muted); font-size:16px; margin-right:auto; padding:0 4px; flex:none}
-.addtask{display:flex; gap:8px; margin-top:10px}
-.addtask input{flex:1; border:1px solid var(--line); background:var(--surface); border-radius:10px; padding:8px 12px; font-size:13.5px}
-.addtask button{background:var(--accent); color:#fff; font-weight:600; border-radius:10px; padding:0 16px; font-size:13.5px}
 
 /* ===== Itinerary ===== */
 .legs{list-style:none; margin:10px 0 0; padding:0; position:relative}
@@ -221,17 +213,16 @@ section.view.active{display:block; animation:fadein .18s ease}
 .leg .bd b{font-size:15px}
 .leg .bd .d{font-size:13.2px; color:var(--ink2)}
 .leg .dur{font-size:12.5px; color:var(--muted); white-space:nowrap; padding-top:5px; font-variant-numeric:tabular-nums}
-.split-toggle{display:flex; background:var(--surface2); border-radius:10px; padding:3px; gap:3px; margin-top:10px}
-.split-toggle button{flex:1; padding:9px 0; border-radius:8px; font-size:13.5px; font-weight:600; color:var(--ink2)}
-.split-toggle button.active{background:var(--surface); color:var(--accent-ink); box-shadow:var(--shadow)}
 
 /* map */
 .map-controls{display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; justify-content:space-between}
-.seg{display:inline-flex; background:var(--surface2); border-radius:10px; padding:3px; gap:2px}
+.seg{display:inline-flex; flex-wrap:wrap; background:var(--surface2); border-radius:10px; padding:3px; gap:2px}
 .seg button{padding:6px 12px; border-radius:8px; font-size:12.5px; font-weight:600; color:var(--ink2); white-space:nowrap}
 .seg button.active{background:var(--surface); color:var(--accent-ink); box-shadow:var(--shadow)}
 #mapbox{border-radius:12px; overflow:hidden; border:1px solid var(--line); margin-top:10px; position:relative; background:var(--sea)}
 #leafmap{display:none; height:420px; direction:ltr; z-index:0}
+#leafmap .leaflet-tooltip.tt-air{background:var(--surface); color:var(--warm); border:1px solid var(--line); font-weight:700; font-family:inherit; box-shadow:none; padding:2px 6px}
+#leafmap .leaflet-tooltip.tt-air::before{border-top-color:var(--line)}
 #schemap{direction:ltr}
 #schemap svg{width:100%; height:auto; max-height:600px; display:block; margin:0 auto}
 #schemap text{user-select:none}
@@ -306,8 +297,6 @@ section.view.active{display:block; animation:fadein .18s ease}
 .hotel .warns .w{font-size:13.2px; color:var(--warn); background:var(--warn-soft); border-radius:8px; padding:5px 10px}
 .hotel .actions{display:flex; gap:8px; padding:10px 14px 13px; border-top:1px solid var(--line); margin-top:10px; flex-wrap:wrap}
 .hotel .actions a{flex:none}
-.choose{margin-right:auto; background:var(--accent); color:#fff; font-weight:600; font-size:14px; border-radius:9px; padding:8px 18px}
-.hotel.chosen .choose{background:var(--good)}
 
 /* ===== Budget ===== */
 .bud-sum{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px}
@@ -318,48 +307,23 @@ section.view.active{display:block; animation:fadein .18s ease}
 .bud-row .top b{font-size:15px}
 .bud-row .est{font-size:13.2px; color:var(--ink2); font-variant-numeric:tabular-nums; white-space:nowrap}
 .bud-row .note{font-size:12.8px; color:var(--muted); margin-top:1px}
-.bud-row .pay{display:flex; gap:7px; margin-top:8px; align-items:center}
-.bud-row .pay input[type=number]{
-  width:110px; border:1px solid var(--line); background:var(--surface); border-radius:8px; padding:6px 9px; font-size:13px;
-  font-variant-numeric:tabular-nums; direction:ltr; text-align:right;
-}
-.bud-row .pay input[type=text]{flex:1; min-width:0; border:1px solid var(--line); background:var(--surface); border-radius:8px; padding:6px 9px; font-size:12.5px}
-.bud-row .pay .paidtag{font-size:11px; font-weight:700; color:var(--good)}
+.bud-row .pay{display:flex; gap:8px; margin-top:8px; align-items:baseline; flex-wrap:wrap; font-size:13px}
+.bud-row .pay .paidtag{font-size:11.5px; font-weight:700; color:var(--good); background:var(--good-soft, var(--surface2)); border-radius:6px; padding:2px 8px}
+.bud-row .pay b{font-size:14.5px; color:var(--ink)}
+.bud-row .pay .pnote{color:var(--muted); font-size:12.5px}
 .bud-bar{height:9px; background:var(--surface2); border-radius:5px; overflow:hidden; margin-top:10px; display:flex}
 .bud-bar i{display:block; height:100%; background:var(--good)}
 .bud-bar em{display:block; height:100%; background:var(--accent); opacity:.35}
 .bud-bar-lbl{display:flex; justify-content:space-between; font-size:11.5px; color:var(--muted); margin-top:4px; font-variant-numeric:tabular-nums}
-.io-row{display:flex; gap:8px; margin-top:12px; flex-wrap:wrap}
-.io-row button,.io-row label.btn{
-  background:var(--surface2); color:var(--ink2); font-weight:600; font-size:13.5px;
-  border-radius:9px; padding:10px 16px; cursor:pointer;
-}
-.io-row input[type=file]{display:none}
-.toast{
-  position:fixed; bottom:calc(84px + env(safe-area-inset-bottom)); right:50%; transform:translateX(50%) translateY(10px); z-index:100;
-  background:var(--deep); color:var(--on-deep); font-size:13px; font-weight:600;
-  border:1px solid rgba(255,253,244,.12);
-  padding:9px 18px; border-radius:99px; opacity:0; pointer-events:none;
-  transition:opacity .25s var(--ease), transform .25s var(--ease);
-}
-.toast.on{opacity:1; transform:translateX(50%) translateY(0); pointer-events:auto}
-.toast button{color:inherit; font-weight:800; text-decoration:underline; margin-inline-start:10px}
+.trip-load-error{background:var(--warn-soft); color:var(--ink); font-size:14px; padding:14px 18px; margin:12px; border-radius:12px; border:1px solid var(--warn)}
+.trip-load-error code{font-family:ui-monospace,monospace; font-size:13px; background:var(--surface); padding:1px 5px; border-radius:5px; direction:ltr; unicode-bidi:isolate}
 .footer-note{font-size:12.5px; color:var(--muted); text-align:center; margin-top:22px}
 
 /* ===== שדרוג UX ===== */
 /* מובייל: קלט בגודל 16px מונע זום אוטומטי ב-iOS */
 @media (max-width:600px){ input,select,textarea{font-size:16px} }
 
-/* howto */
-.howto{border:1px solid var(--accent)}
-.howto h2 .dismiss{margin-right:auto; color:var(--muted); font-size:15px; padding:2px 6px}
-.howto-list{margin:10px 0 0; padding:0; list-style:none; display:flex; flex-direction:column; gap:8px; font-size:14px; color:var(--ink2)}
-.howto-list li{padding-right:14px; position:relative}
-.howto-list li::before{content:""; position:absolute; right:0; top:8px; width:6px; height:6px; border-radius:50%; background:var(--accent)}
-
 /* מזג אוויר לתאריכים */
-.wxt-set{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:8px; font-size:13px; color:var(--ink2)}
-.wxt-set button{background:var(--accent); color:#fff; font-weight:600; font-size:12.5px; border-radius:9px; padding:7px 13px}
 .wxt-sum{display:flex; flex-direction:column; gap:7px; margin-top:10px; font-size:14.2px}
 .wxt-sum .row{display:flex; gap:8px; align-items:baseline}
 .wxt-sum .city{font-weight:700; color:var(--accent-ink); flex:none; width:64px}
@@ -382,7 +346,6 @@ section.view.active{display:block; animation:fadein .18s ease}
 .nn-first .txt b{font-size:16.5px; display:block}
 .nn-first .txt .n{font-size:13.5px; color:var(--ink2); margin-top:2px}
 .nn-first .seq{flex:none}
-.nn-done{flex:none; background:var(--accent); color:#fff; font-weight:700; font-size:13px; border-radius:10px; padding:10px 16px}
 .nn-rest{margin:12px 0 0; padding:10px 0 0; border-top:1px dashed var(--line); list-style:none; display:flex; flex-direction:column; gap:7px}
 .nn-rest li{display:flex; gap:8px; align-items:baseline; font-size:13.8px; color:var(--ink2)}
 .seq{display:inline-grid; place-items:center; min-width:34px; height:24px; padding:0 6px; border-radius:8px; background:var(--accent-soft); color:var(--accent-ink); font-size:11.5px; font-weight:700; font-variant-numeric:tabular-nums}
@@ -421,7 +384,7 @@ details.stage-acc .why{font-size:13.2px; color:var(--ink2); background:var(--sur
 details.att-acc{border:1px solid var(--line); border-radius:12px; background:var(--surface); margin-top:7px; overflow:hidden}
 details.att-acc summary{list-style:none; cursor:pointer; display:flex; gap:9px; align-items:center; padding:10px 12px}
 details.att-acc summary::-webkit-details-marker{display:none}
-details.att-acc .star{flex:none; font-size:19px; color:var(--muted); width:26px; text-align:center; padding:0}
+{flex:none; font-size:19px; color:var(--muted); width:26px; text-align:center; padding:0}
 details.att-acc.saved .star{color:var(--warm)}
 details.att-acc summary .atitle{flex:1; min-width:0}
 details.att-acc summary .atitle b{font-size:15px}
@@ -451,9 +414,6 @@ details.att-acc .att-body .links{display:flex; gap:8px; margin-top:3px}
 
 .hotel .photo{width:100%; height:158px; object-fit:cover; display:block; background:var(--surface2)}
 
-.fs-status{display:flex; align-items:center; gap:8px; font-size:13px; color:var(--ink2); margin-top:10px; flex-wrap:wrap}
-.fs-status .ok{color:var(--good); font-weight:600}
-.io-row .primary{background:var(--accent); color:#fff}
 #mapbox{touch-action:none}
 #schemap svg{cursor:grab}
 #schemap svg.panning{cursor:grabbing}
@@ -463,10 +423,9 @@ details.att-acc .att-body .links{display:flex; gap:8px; margin-top:3px}
 
 /* ===== גרסה 4: מצבי אינטראקציה, תנועה, סיכום מלונות ===== */
 /* מעברים אחידים לכל האלמנטים הלחיצים */
-.linkbtn,.choose,.nn-done,.io-row button,.io-row label.btn,.seg button,.att-filter button,
-.split-toggle button,.addtask button,.emg-list a.call,.map-zoom button,.wxt-set button,
-nav.tabs button,.toggle-pill,.howto .dismiss,.place-sheet .close,.task .del,
-details.att-acc .star,.place-sheet .links a{
+.linkbtn,.seg button,.att-filter button,.emg-list a.call,.map-zoom button,
+nav.tabs button,.toggle-pill,.place-sheet .close,
+.place-sheet .links a{
   transition:background-color .18s var(--ease), color .18s var(--ease), border-color .18s var(--ease),
              box-shadow .18s var(--ease), transform .15s var(--ease), opacity .18s var(--ease), filter .18s var(--ease);
 }
@@ -476,15 +435,13 @@ details.att-acc .star,.place-sheet .links a{
 /* ריחוף — רק במכשירים עם עכבר */
 @media (hover:hover){
   .linkbtn:hover,.place-sheet .links a:hover{border-color:var(--accent); background:var(--accent-soft)}
-  .choose:hover,.nn-done:hover,.addtask button:hover,.io-row .primary:hover,.wxt-set button:hover{filter:brightness(1.07); box-shadow:0 3px 12px color-mix(in srgb, var(--accent) 30%, transparent)}
-  .io-row button:hover,.io-row label.btn:hover{background:var(--line)}
-  .seg button:not(.active):hover,.split-toggle button:not(.active):hover{color:var(--ink)}
+  .seg button:not(.active):hover{color:var(--ink)}
   .att-filter button:not(.active):hover{background:var(--line); color:var(--ink)}
   nav.tabs button:not(.active):hover{color:var(--on-deep)}
   .emg-list a.call:hover{background:var(--accent); color:#fff}
   .map-zoom button:hover{color:var(--accent-ink); border-color:var(--accent)}
   .task:not(.done):hover{border-color:color-mix(in srgb, var(--accent) 45%, var(--line))}
-  .task .del:hover,.howto .dismiss:hover,.place-sheet .close:hover{color:var(--crit)}
+  .place-sheet .close:hover{color:var(--crit)}
   details.stage-acc summary:hover,details.att-acc summary:hover{background:color-mix(in srgb, var(--surface2) 45%, transparent)}
   .next-tasks li[data-go-tasks]:hover{color:var(--accent-ink)}
   .hotel:not(.chosen):hover{border-color:color-mix(in srgb, var(--accent) 40%, var(--line))}
@@ -493,9 +450,8 @@ details.att-acc .star,.place-sheet .links a{
 }
 
 /* לחיצה — משוב פיזי */
-.linkbtn:active,.choose:active,.nn-done:active,.io-row button:active,.io-row label.btn:active,
-.seg button:active,.att-filter button:active,.split-toggle button:active,.addtask button:active,
-.emg-list a.call:active,.map-zoom button:active,.wxt-set button:active,details.att-acc .star:active{
+.linkbtn:active,.seg button:active,.att-filter button:active,
+.emg-list a.call:active,.map-zoom button:active{
   transform:scale(.96);
 }
 
@@ -542,7 +498,6 @@ details.stage-acc summary .stitle .when.overdue{color:var(--crit); font-weight:7
   background:rgba(0,0,0,.18); border:1px solid rgba(255,253,244,.16);
   border-radius:99px; padding:4px 12px;
 }
-.datebox .date-nights b{color:#E9C982; font-size:13.5px; font-weight:700}
 
 /* ===== גרסה 7 — כרטיסי טיסה ===== */
 #flightsBox{margin-top:16px}
@@ -625,6 +580,45 @@ details.stage-acc summary .stitle .when.overdue{color:var(--crit); font-weight:7
 .ft-pass{display:flex; flex-wrap:wrap; gap:8px}
 .ft-chip{background:var(--surface2); border-radius:99px; padding:5px 13px; font-size:12.5px; font-weight:600; color:var(--ink2)}
 .ft-tickets{margin-top:9px; font-size:12.5px}
+/* כרטיס טיסה פנימית — קומפקטי יותר, פס עליון בגוון ים (לא ירוק־עמוק של הטיסה הבינלאומית),
+   שוליים מנוקדים כמו כרטיס "לואו-קוסט", ורשימת מושבים במקום עובדות המטוס */
+.ft-dom-eyebrow{margin-top:16px}
+.ft-dom{
+  border:1px solid var(--line); box-shadow:none;
+  background:
+    linear-gradient(var(--surface),var(--surface)) padding-box,
+    repeating-linear-gradient(90deg,var(--sea-ink) 0 6px,transparent 6px 12px) border-box;
+  border-top:0; border-bottom:0;
+}
+.ft-dom .ft-top{background:linear-gradient(115deg,var(--sea-ink),color-mix(in srgb,var(--sea-ink) 72%,#1E3B2D)); padding:7px 14px}
+.ft-dom .ft-dirtag{background:rgba(255,253,244,.22)}
+.ft-dom .ft-no{color:#FFF6DB; font-size:14px}
+.ft-dom .ft-route{padding:11px 14px 9px}
+.ft-dom .ft-code{font-size:25px}
+.ft-dom .ft-time{font-size:15px; color:var(--sea-ink)}
+.ft-dom .ft-path{height:42px}
+.ft-dom .ft-fly svg{color:var(--sea-ink); width:17px; height:17px}
+.ft-dom .ft-fly{animation-duration:4s}
+.ft-dom .ft-pin-a,.ft-dom .ft-pin-b{background:var(--sea-ink)}
+.ft-dom-stub{display:grid; grid-template-columns:1fr auto; gap:8px 14px; align-items:end; padding:9px 14px 11px}
+.ft-seats{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:5px}
+.ft-seats li{display:flex; align-items:center; gap:10px}
+.ft-seat{
+  flex:none; min-width:44px; text-align:center; padding:4px 8px; border-radius:8px;
+  background:var(--sea); color:var(--sea-ink); font-weight:800; font-size:13px; letter-spacing:.5px;
+}
+.ft-seat-who{display:flex; flex-direction:column; min-width:0; font-size:12.5px; line-height:1.3}
+.ft-seat-who b{font-weight:600; color:var(--ink)}
+.ft-seat-who small{font-size:10.5px; color:var(--muted)}
+.ft-dom-meta{display:flex; flex-direction:column; align-items:flex-end; gap:6px}
+.ft-dom-meta .ft-barcode{margin:0; width:58px; height:22px}
+.ft-dom-note{margin:0; padding:8px 14px 11px; border-top:1px dashed var(--line); background:var(--sea); color:var(--sea-ink)}
+@media (max-width:430px){
+  .ft-dom .ft-code{font-size:22px}
+  .ft-dom-stub{grid-template-columns:1fr}
+  .ft-dom-meta{flex-direction:row; align-items:center; justify-content:space-between}
+}
+
 .ft-tickets summary{cursor:pointer; list-style:none; color:var(--accent-ink); font-weight:600; display:flex; align-items:center; gap:4px; width:max-content}
 .ft-tickets summary::-webkit-details-marker{display:none}
 .ft-tickets[open] summary .chev{transform:rotate(180deg)}
@@ -699,3 +693,76 @@ table.nov td.h4{background:var(--crit-soft); color:var(--crit)}
 .sit-row b a{text-decoration:none}
 .sit-row span{color:var(--ink2)}
 .sit-night{margin-top:8px; font-size:12px; color:var(--sea-ink); background:var(--sea); border-radius:10px; padding:7px 11px; line-height:1.5}
+
+/* ===== עלויות (דף ראשי) ===== */
+.cost-row{display:flex; align-items:center; gap:10px; padding:12px 2px; border-bottom:1px solid var(--line)}
+.cost-row:last-child{border-bottom:none}
+.cost-row .tag{flex:none; font-size:11px; font-weight:700; border-radius:6px; padding:2px 8px; white-space:nowrap}
+.cost-row.paid .tag{color:var(--good); background:var(--good-soft)}
+.cost-row.open .tag{color:var(--warn); background:var(--warn-soft)}
+.cost-row .body{flex:1; min-width:0; line-height:1.3}
+.cost-row .body b{font-size:14.5px; display:block}
+.cost-row .body small{display:block; font-size:12.3px; color:var(--muted); margin-top:2px}
+.cost-row .amt{flex:none; font-size:15.5px; font-variant-numeric:tabular-nums; white-space:nowrap}
+.cost-row.open .amt{color:var(--muted); font-weight:500}
+.cost-total{display:flex; justify-content:space-between; align-items:baseline; margin:12px -16px -18px; padding:12px 16px 14px;
+  background:var(--good-soft); border-radius:0 0 var(--r) var(--r); font-size:13.5px; color:var(--ink2)}
+.cost-total b{font-family:"Frank Ruhl Libre","Heebo",serif; font-size:22px; color:var(--good); font-variant-numeric:tabular-nums}
+.cost-empty{font-size:13.5px; color:var(--muted); margin:8px 0 0}
+
+/* ===== קישור לדף ציר הזמן (timeline.html) ===== */
+.tl-link{
+  display:flex; align-items:center; gap:12px; margin-top:14px; padding:12px 14px; border-radius:14px;
+  background:rgba(255,253,244,.09); border:1px solid rgba(255,253,244,.18); color:var(--on-deep); text-decoration:none;
+}
+.tl-link svg{width:26px; height:26px; flex:none; stroke:#E9C982; fill:none; stroke-width:2; stroke-linecap:round}
+.tl-link span{flex:1; font-weight:600; font-size:15px; line-height:1.25}
+.tl-link small{display:block; font-weight:400; font-size:12.5px; color:var(--on-deep2); margin-top:2px}
+.tl-link b{font-size:22px; color:#E9C982; font-weight:400; transform:scaleX(-1); display:inline-block}
+@media (hover:hover){ .tl-link:hover{background:rgba(255,253,244,.15)} }
+
+/* הקישור לציר הזמן כשהוא עומד לבד (לא בתוך ההירו) */
+.tl-link-solo{
+  margin-top:14px; padding:14px 16px; border-radius:var(--r);
+  background:linear-gradient(165deg, var(--deep2), var(--deep) 70%);
+  border-color:rgba(255,253,244,.14); box-shadow:var(--shadow);
+}
+@media (hover:hover){ .tl-link-solo:hover{background:linear-gradient(165deg, var(--deep2), var(--deep2) 70%)} }
+
+
+/* ===== מועמדים למלונות ===== */
+.cand-group{margin-top:14px}
+.cand-group:first-child{margin-top:8px}
+.cand-head{display:flex; align-items:baseline; gap:8px; padding:0 2px 6px; border-bottom:1px solid var(--line)}
+.cand-head b{font-family:"Frank Ruhl Libre","Heebo",serif; font-size:16.5px; color:var(--deep2)}
+.cand-head span{font-size:12.3px; color:var(--muted)}
+.cand{border:1px solid var(--line); border-radius:12px; background:var(--surface2); margin-top:8px; overflow:hidden; transition:border-color .2s var(--ease), background .2s var(--ease)}
+.cand[open]{border-color:var(--warm); background:var(--surface); box-shadow:var(--shadow)}
+.cand summary{display:flex; align-items:center; gap:10px; padding:8px 10px 8px 8px; cursor:pointer; list-style:none}
+.cand summary::-webkit-details-marker{display:none}
+.cand summary img,.cand summary .noimg{width:74px; height:54px; object-fit:cover; border-radius:8px; flex:none; background:var(--line)}
+.cand summary .noimg{display:grid; place-items:center; font-size:22px}
+.cand summary .t{flex:1; min-width:0; line-height:1.25}
+.cand summary .t b{display:block; font-size:14.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.cand summary .t small{display:block; font-size:12px; color:var(--muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.cand summary .p{flex:none; text-align:left; line-height:1.2; direction:ltr}
+.cand summary .p b{display:block; font-size:15.5px; color:var(--warm); font-variant-numeric:tabular-nums}
+.cand summary .p small{font-size:11.5px; color:var(--muted); white-space:nowrap}
+.cand summary .chev{flex:none; color:var(--muted); transition:transform .25s var(--ease)}
+.cand[open] summary .chev{transform:rotate(180deg)}
+.cand-body{padding:2px 12px 12px; border-top:1px solid var(--line)}
+.cand-body dl{display:grid; grid-template-columns:auto 1fr; gap:6px 12px; margin:10px 0 0; font-size:13.3px; line-height:1.4}
+.cand-body dt{color:var(--muted); font-weight:600; white-space:nowrap}
+.cand-body dd{margin:0; color:var(--ink)}
+.cand-body dd b{color:var(--warm)}
+.cand-note{font-size:12.8px; color:var(--ink2); background:var(--warm-soft); border-radius:8px; padding:7px 10px; margin-top:10px; line-height:1.4}
+.cand-imgs{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px}
+.cand-imgs figure{margin:0}
+.cand-imgs img{width:100%; aspect-ratio:16/9; object-fit:cover; border-radius:9px; display:block; background:var(--line)}
+.cand-imgs figcaption{font-size:11.5px; color:var(--muted); margin-top:3px}
+@media (max-width:400px){ .cand-imgs{grid-template-columns:1fr} }
+.cand-body .links{margin-top:10px; display:flex; gap:8px; flex-wrap:wrap}
+.cand-body .links .linkbtn{font-family:inherit; cursor:pointer}
+.place-sheet .sheet-img{width:100%; aspect-ratio:16/7; object-fit:cover; border-radius:9px; margin:8px 0 2px; display:block}
+#leafmap .leaflet-tooltip.tt-cand{background:var(--surface); color:var(--warm); border:1px solid var(--map-cand); font-weight:700; font-family:inherit; box-shadow:none; padding:2px 6px}
+#leafmap .leaflet-tooltip.tt-cand::before{border-top-color:var(--map-cand)}

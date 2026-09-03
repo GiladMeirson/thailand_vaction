@@ -1,0 +1,407 @@
+/* ======================================================================
+   ציר הזמן · עיצוב "מסמך תכנון" — ניטרלי, שקט וקריא.
+   כלל אחד: הצבע שמור אך ורק למצב (סגור / לפעולה / פתוח).
+   כל השאר — נייר, דיו ואפורים. רצועת הימים בגווני אפור בלבד.
+   פונטים: Assistant (טקסט) + IBM Plex Mono (מספרים, שעות, קודים).
+   ====================================================================== */
+:root{
+  --bg:#FAFAF9; --paper:#FFFFFF; --paper2:#F4F4F2; --paper3:#EDEDEA;
+  --ink:#1A1A18; --ink2:#4A4A46; --mute:#87877F; --line:#E4E4E0; --line2:#D3D3CD;
+
+  --done:#3F7D58; --done-soft:#EDF4EF; --done-ink:#2C5C3F;
+  --todo:#B0740F; --todo-soft:#FAF2E2; --todo-ink:#87590A;
+  --open:#8C8C84; --open-soft:#F1F1EE; --open-ink:#5C5C55;
+
+  --p1:#3C4048; --p2:#767C86; --p3:#B4B8BE; --p0:#20232A;   /* רצועת הימים */
+  --focus:#2E5AA8;
+  --shadow:0 1px 2px rgba(20,20,18,.04), 0 6px 18px rgba(20,20,18,.05);
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15161A; --paper:#1D1F24; --paper2:#252830; --paper3:#2E323B;
+    --ink:#ECECE8; --ink2:#BCBCB6; --mute:#8B8B83; --line:#2E3138; --line2:#3B3F48;
+    --done:#6FB98A; --done-soft:#1D2C23; --done-ink:#9CD4B2;
+    --todo:#DDA33F; --todo-soft:#312716; --todo-ink:#F0C077;
+    --open:#8E8E86; --open-soft:#26272B; --open-ink:#B6B6AE;
+    --p1:#8A9099; --p2:#5A606A; --p3:#3A3F47; --p0:#C6CBD2;
+    --focus:#7CA2E8;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 18px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15161A; --paper:#1D1F24; --paper2:#252830; --paper3:#2E323B;
+  --ink:#ECECE8; --ink2:#BCBCB6; --mute:#8B8B83; --line:#2E3138; --line2:#3B3F48;
+  --done:#6FB98A; --done-soft:#1D2C23; --done-ink:#9CD4B2;
+  --todo:#DDA33F; --todo-soft:#312716; --todo-ink:#F0C077;
+  --open:#8E8E86; --open-soft:#26272B; --open-ink:#B6B6AE;
+  --p1:#8A9099; --p2:#5A606A; --p3:#3A3F47; --p0:#C6CBD2;
+  --focus:#7CA2E8;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 18px rgba(0,0,0,.3);
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Assistant","Segoe UI",system-ui,sans-serif; font-size:16px; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+.mono, time, .code{font-family:"IBM Plex Mono","Consolas",monospace; font-variant-numeric:tabular-nums; direction:ltr; unicode-bidi:isolate; font-size:.94em}
+#tl{max-width:660px; margin:0 auto; padding:20px 16px 64px}
+:focus-visible{outline:2px solid var(--focus); outline-offset:2px; border-radius:6px}
+
+.sec-title{margin:0 0 10px; font-size:12px; font-weight:600; letter-spacing:.08em; color:var(--mute)}
+
+/* ---------- כותרת ---------- */
+.tl-head{padding:0 0 20px}
+.back{
+  display:inline-block; font-size:13.5px; font-weight:600; color:var(--ink2); text-decoration:none;
+  padding:5px 11px; border-radius:8px; background:var(--paper); border:1px solid var(--line);
+}
+.back:hover{color:var(--ink); border-color:var(--line2)}
+.kicker{margin-top:16px; font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:.04em; color:var(--mute); direction:ltr; text-align:right}
+h1{margin:2px 0 0; font-size:32px; line-height:1.15; font-weight:700; letter-spacing:-.02em}
+.lede{margin:8px 0 0; font-size:15px; color:var(--ink2); max-width:46ch}
+
+/* ---------- לוח מצב ---------- */
+.board{background:var(--paper); border:1px solid var(--line); border-radius:var(--r); padding:14px; box-shadow:var(--shadow)}
+.board-top{display:flex; align-items:center; justify-content:space-between; gap:12px}
+.board-num{display:flex; align-items:baseline; gap:7px}
+.board-num b{font-family:"IBM Plex Mono",monospace; font-size:24px; font-weight:600; line-height:1; letter-spacing:-.02em}
+.board-num span{font-size:13px; color:var(--mute)}
+.ghost{
+  font:inherit; font-size:13px; font-weight:600; color:var(--ink2); cursor:pointer;
+  padding:6px 11px; border-radius:8px; background:var(--paper2); border:1px solid var(--line);
+}
+.ghost:hover{border-color:var(--line2); color:var(--ink)}
+
+.progress{display:flex; gap:3px; margin-top:12px}
+.progress i{flex:1; height:6px; border-radius:3px; background:var(--paper3)}
+.progress i.done{background:var(--done)}
+.progress i.todo{background:var(--todo)}
+.progress i.open{background:repeating-linear-gradient(135deg,var(--open) 0 3px,transparent 3px 6px), var(--open-soft)}
+
+.filters{display:flex; gap:6px; margin-top:14px; flex-wrap:wrap}
+.filters button{
+  font:inherit; font-size:13px; font-weight:600; cursor:pointer; color:var(--ink2);
+  display:flex; align-items:center; gap:6px;
+  padding:6px 11px; border-radius:99px; background:var(--paper); border:1px solid var(--line);
+}
+.filters button i{width:8px; height:8px; border-radius:50%; flex:none}
+.filters button i.done{background:var(--done)}
+.filters button i.todo{background:var(--todo)}
+.filters button i.open{background:transparent; box-shadow:inset 0 0 0 1.5px var(--open)}
+.filters button i.all{background:var(--line2)}
+.filters button b{font-family:"IBM Plex Mono",monospace; font-weight:600; color:var(--mute)}
+.filters button:hover{border-color:var(--line2)}
+.filters button[aria-selected="true"]{background:var(--ink); border-color:var(--ink); color:var(--paper)}
+.filters button[aria-selected="true"] b{color:var(--paper); opacity:.65}
+
+/* ---------- רצועת ימים (אפורים בלבד — הצבע שמור למצב) ---------- */
+.strip-wrap{margin-top:22px; background:var(--paper); border:1px solid var(--line); border-radius:var(--r); padding:14px; box-shadow:var(--shadow)}
+.strip{display:grid; grid-template-columns:repeat(16,1fr); gap:3px}
+.strip .d{display:flex; flex-direction:column; align-items:center; gap:5px; min-width:0}
+.strip .d small{font-family:"IBM Plex Mono",monospace; font-size:10px; color:var(--mute); line-height:1}
+.strip .d i{display:block; width:100%; height:24px; border-radius:5px; background:var(--paper3)}
+.strip .d.bkk i{background:var(--p1)}
+.strip .d.hkt i{background:var(--p2)}
+.strip .d.dest2 i{background:repeating-linear-gradient(135deg,var(--p3) 0 3px,transparent 3px 6px); box-shadow:inset 0 0 0 1.5px var(--p3)}
+.strip .d.air i{background:var(--p0)}
+.strip .d.today small{color:var(--ink); font-weight:600}
+.strip-legend{display:flex; gap:14px; flex-wrap:wrap; margin-top:12px; font-size:12.5px; color:var(--ink2)}
+.strip-legend span{display:flex; align-items:center; gap:6px}
+.strip-legend i{width:11px; height:11px; border-radius:3px; display:inline-block; flex:none}
+.strip-legend .bkk{background:var(--p1)}
+.strip-legend .hkt{background:var(--p2)}
+.strip-legend .dest2{background:repeating-linear-gradient(135deg,var(--p3) 0 3px,transparent 3px 6px); box-shadow:inset 0 0 0 1.5px var(--p3)}
+.strip-legend .air{background:var(--p0)}
+
+/* ---------- תג מצב — שפה אחת בכל הדף ---------- */
+.badge{
+  display:inline-flex; align-items:center; gap:5px; flex:none;
+  font-size:12px; font-weight:600; padding:3px 9px; border-radius:99px; white-space:nowrap;
+}
+.badge i{width:7px; height:7px; border-radius:50%; flex:none}
+.badge.done{background:var(--done-soft); color:var(--done-ink)}
+.badge.done i{background:var(--done)}
+.badge.todo{background:var(--todo-soft); color:var(--todo-ink)}
+.badge.todo i{background:var(--todo)}
+.badge.open{background:var(--open-soft); color:var(--open-ink)}
+.badge.open i{background:transparent; box-shadow:inset 0 0 0 1.5px var(--open)}
+
+/* ---------- ציר הזמן ---------- */
+.tl-list{position:relative; margin-top:26px; padding-right:22px}
+.tl-list::before{content:""; position:absolute; top:14px; bottom:14px; right:6px; width:1.5px; background:var(--line2)}
+.node{position:relative; margin-bottom:10px}
+.node[hidden]{display:none}
+.node .knob{
+  position:absolute; right:-22px; top:22px; width:13px; height:13px; border-radius:50%;
+  background:var(--line2); box-shadow:0 0 0 3px var(--bg); z-index:1;
+}
+.node.done .knob{background:var(--done)}
+.node.todo .knob{background:var(--todo)}
+.node.open .knob{background:var(--bg); border:1.5px dashed var(--open)}
+
+.card{
+  position:relative; background:var(--paper); border:1px solid var(--line); border-radius:var(--r);
+  box-shadow:var(--shadow); overflow:hidden;
+}
+/* פס המצב בקצה — אותו צבע כמו התג והנקודה */
+.card::before{content:""; position:absolute; top:0; bottom:0; right:0; width:3px; background:var(--line2); z-index:2}
+.node.done .card::before{background:var(--done)}
+.node.todo .card::before{background:var(--todo)}
+.node.open .card::before{background:repeating-linear-gradient(180deg,var(--open) 0 4px,transparent 4px 8px)}
+.node.is-open .card{border-color:var(--line2)}
+
+.head{
+  display:grid; grid-template-columns:auto 1fr auto; gap:12px; align-items:start;
+  width:100%; padding:14px 14px 14px 12px; border:0; background:none; color:inherit; text-align:right;
+  font:inherit; cursor:pointer;
+}
+.head:hover{background:var(--paper2)}
+.head:focus-visible{outline:2px solid var(--focus); outline-offset:-2px}
+.when{
+  display:flex; flex-direction:column; align-items:center; justify-content:center; min-width:46px;
+  padding:7px 5px; border-radius:9px; background:var(--paper2); line-height:1; border:1px solid var(--line);
+}
+.when b{font-family:"IBM Plex Mono",monospace; font-size:19px; font-weight:600; letter-spacing:-.02em}
+.when small{font-size:11px; color:var(--mute); margin-top:4px; font-weight:600}
+.when em{font-style:normal; font-family:"IBM Plex Mono",monospace; font-size:10px; color:var(--mute); margin-top:4px; direction:ltr}
+.ttl{min-width:0}
+.ttl .row1{display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+.ttl .h{display:block; font-size:16.5px; font-weight:600; line-height:1.3}
+.ttl .sum{display:block; margin:4px 0 0; font-size:13.5px; color:var(--ink2); line-height:1.45}
+.ttl .need{
+  display:flex; gap:6px; margin:8px 0 0; font-size:13px; font-weight:600; line-height:1.4;
+  padding:6px 9px; border-radius:8px;
+}
+.ttl .need::before{content:"←"; flex:none; opacity:.55}
+.node.todo .need{background:var(--todo-soft); color:var(--todo-ink)}
+.node.open .need{background:var(--open-soft); color:var(--open-ink)}
+.chev{align-self:center; color:var(--mute); display:flex}
+.chev svg{width:17px; height:17px; stroke:currentColor; stroke-width:2; fill:none; transition:transform .2s ease}
+.node.is-open .chev svg{transform:rotate(180deg)}
+
+/* פאנל פרטים */
+.body{display:grid; grid-template-rows:0fr; transition:grid-template-rows .24s ease}
+.body > div{overflow:hidden; min-height:0}
+.node.is-open .body{grid-template-rows:1fr}
+.body-in{padding:14px 14px 16px 12px; border-top:1px solid var(--line)}
+
+.kv{display:grid; grid-template-columns:auto 1fr; gap:7px 14px; font-size:14px; margin:0}
+.kv dt{color:var(--mute); font-size:13px; white-space:nowrap; padding-top:1px}
+.kv dd{margin:0; color:var(--ink)}
+
+.seg{margin:14px 0 0}
+.seg h4{margin:0 0 7px; font-size:12px; font-weight:600; letter-spacing:.06em; color:var(--mute)}
+.seg ul{margin:0; padding:0 17px 0 0; font-size:14px; color:var(--ink2)}
+.seg li{margin:4px 0}
+.seg li b{color:var(--ink); font-weight:600}
+
+.pax{display:flex; flex-direction:column; gap:6px}
+.pax .p{display:flex; align-items:center; gap:10px; font-size:14px; background:var(--paper2); border:1px solid var(--line); border-radius:9px; padding:7px 10px}
+.pax .p .seat{font-family:"IBM Plex Mono",monospace; font-weight:600; font-size:13.5px; background:var(--paper); border:1px solid var(--line); padding:2px 8px; border-radius:6px; direction:ltr; white-space:nowrap}
+.pax .p .nm{flex:1; font-weight:500}
+.pax .p .ex{font-size:12px; color:var(--mute)}
+
+.flightrow{
+  display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:10px;
+  padding:12px; border-radius:11px; background:var(--paper2); border:1px solid var(--line); margin-bottom:14px; direction:ltr;
+}
+.flightrow .ap{text-align:center}
+.flightrow .ap b{display:block; font-family:"IBM Plex Mono",monospace; font-size:21px; font-weight:600; letter-spacing:.02em}
+.flightrow .ap span{display:block; font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--ink2); margin-top:2px}
+.flightrow .ap small{display:block; font-size:11px; color:var(--mute); direction:rtl; margin-top:2px}
+.flightrow .mid{display:flex; flex-direction:column; align-items:center; gap:3px; color:var(--mute); font-size:11px; font-family:"IBM Plex Mono",monospace}
+.flightrow .mid svg{width:52px; height:10px; stroke:var(--line2); fill:none; stroke-width:1.5}
+
+.note{
+  margin:14px 0 0; padding:10px 12px; border-radius:9px; font-size:13.5px; line-height:1.5;
+  background:var(--paper2); color:var(--ink2); border-right:2px solid var(--line2);
+}
+.node.todo .note{background:var(--todo-soft); color:var(--todo-ink); border-color:var(--todo)}
+.node.open .note{background:var(--open-soft); color:var(--open-ink); border-color:var(--open)}
+
+.actions{display:flex; gap:8px; flex-wrap:wrap; margin-top:14px}
+.actions a{
+  font-size:13px; font-weight:600; text-decoration:none; color:var(--ink); padding:7px 12px; border-radius:8px;
+  background:var(--paper2); border:1px solid var(--line);
+}
+.actions a.primary{background:var(--ink); color:var(--paper); border-color:var(--ink)}
+.actions a:hover{border-color:var(--line2)}
+.actions a.primary:hover{opacity:.88}
+
+.gap{position:relative; margin:0 0 10px; padding:4px 10px; font-size:12.5px; color:var(--mute); font-family:"IBM Plex Mono",monospace}
+.gap[hidden]{display:none}
+.empty{text-align:center; color:var(--mute); font-size:14px; padding:26px 0}
+
+/* ---------- תחתית ---------- */
+.tl-foot{margin-top:28px; padding-top:18px; border-top:1px solid var(--line)}
+.legend{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:9px; font-size:13.5px; color:var(--ink2)}
+.legend li{display:flex; align-items:center; gap:9px}
+.legend .badge{min-width:76px; justify-content:center}
+.hint{font-size:12px; color:var(--mute); margin:16px 0 0; line-height:1.5}
+
+/* ---------- מובייל ---------- */
+@media (max-width:480px){
+  #tl{padding:16px 12px 52px}
+  h1{font-size:27px}
+  .head{padding:12px 12px 12px 10px; gap:10px}
+  .when{min-width:42px}
+  .when b{font-size:17px}
+  .ttl .h{font-size:15.5px}
+  .flightrow .ap b{font-size:19px}
+  .kv{grid-template-columns:1fr; gap:2px 0}
+  .kv dt{margin-top:8px}
+  .kv dt:first-child{margin-top:0}
+  .legend li{align-items:flex-start; flex-direction:column; gap:4px}
+}
+/* ---------- נקודת טיסה בציר: מסלול מיני + רמז "כרטיס" ---------- */
+.mini-route{
+  display:inline-flex; align-items:center; gap:8px; margin-top:8px; padding:4px 9px; border-radius:7px;
+  background:var(--paper2); border:1px solid var(--line); font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--ink2);
+  align-self:flex-start;
+}
+.mini-route b{font-weight:600; letter-spacing:.04em}
+.mini-route i{width:26px; height:1px; background:var(--line2); position:relative}
+.mini-route i::after{content:""; position:absolute; right:-1px; top:-2.5px; border:3px solid transparent; border-left:5px solid var(--line2)}
+.mini-route small{color:var(--mute); font-size:11px}
+.ttl{display:flex; flex-direction:column; align-items:flex-start; min-width:0}
+.ttl .row1,.ttl .sum,.ttl .need{width:100%}
+.chev.tkt-hint{flex-direction:column; gap:3px; align-items:center; color:var(--mute)}
+.chev.tkt-hint small{font-size:10.5px; font-weight:600; letter-spacing:.04em}
+.node.flight .head:hover .chev{color:var(--ink)}
+
+/* רצועת ימים: כשהיעד השני סגור — מלא ולא מקווקו */
+.strip .d.dest2.fixed i, .strip-legend .dest2.fixed{background:var(--p3); box-shadow:none}
+
+/* ======================================================================
+   כרטיס טיסה — דיאלוג בסגנון כרטיס עלייה למטוס.
+   אותם אסימונים: נייר + דיו; המצב (ירוק) בתג בלבד. המטוס עף על קשת מהמוצא ליעד.
+   ====================================================================== */
+body.tkt-lock{overflow:hidden}
+.tkt-overlay{position:fixed; inset:0; z-index:50; display:flex; align-items:flex-end; justify-content:center; padding:0}
+.tkt-overlay[hidden]{display:none}
+.tkt-scrim{position:absolute; inset:0; background:rgba(20,20,18,.5); opacity:0; transition:opacity .24s ease; -webkit-backdrop-filter:blur(2px); backdrop-filter:blur(2px)}
+.tkt-overlay.on .tkt-scrim{opacity:1}
+.tkt{
+  position:relative; width:100%; max-width:560px; max-height:calc(100dvh - 24px); overflow-y:auto; overscroll-behavior:contain;
+  background:var(--paper); color:var(--ink); border-radius:18px 18px 0 0; border:1px solid var(--line); border-bottom:0;
+  box-shadow:0 -10px 40px rgba(0,0,0,.18);
+  transform:translateY(24px); opacity:0; transition:transform .28s cubic-bezier(.2,.8,.2,1), opacity .22s ease;
+}
+.tkt-overlay.on .tkt{transform:none; opacity:1}
+@media (min-width:600px){
+  .tkt-overlay{align-items:center; padding:24px}
+  .tkt{border-radius:18px; border-bottom:1px solid var(--line); max-height:calc(100dvh - 48px); box-shadow:0 20px 60px rgba(0,0,0,.25)}
+}
+.tkt-close{
+  position:absolute; top:12px; left:12px; z-index:3; width:34px; height:34px; border-radius:50%; border:0; cursor:pointer;
+  background:rgba(128,128,124,.28); color:var(--paper); display:grid; place-items:center;
+}
+.tkt-close svg{width:16px; height:16px; stroke:currentColor; stroke-width:2.2; fill:none; stroke-linecap:round}
+.tkt-close:hover{background:rgba(128,128,124,.45)}
+.tkt-close:focus-visible{outline:2px solid var(--paper); outline-offset:2px}
+
+/* ראש כהה: חברה, מספר טיסה, מצב */
+.tkt-top{
+  display:grid; grid-template-columns:1fr auto; grid-template-areas:"air no" "status no"; align-items:center; gap:2px 14px;
+  padding:18px 20px 16px 56px; background:var(--ink); color:var(--paper);
+}
+.tkt-air{grid-area:air; display:flex; flex-direction:column}
+.tkt-air-name{font-size:15px; font-weight:700; letter-spacing:.01em}
+.tkt-dir{font-size:12px; opacity:.7}
+.tkt-no{grid-area:no; font-size:26px; font-weight:600; letter-spacing:.02em; direction:ltr}
+.tkt-status{grid-area:status; display:inline-flex; align-items:center; gap:6px; margin-top:6px; font-size:12px; font-weight:600; justify-self:start; padding:3px 9px 3px 7px; border-radius:99px; background:rgba(255,255,255,.1)}
+.tkt-status i{width:7px; height:7px; border-radius:50%; background:var(--done)}
+
+/* מסלול: מוצא · שמיים · יעד */
+.tkt-route{
+  display:grid; grid-template-columns:1fr 1fr; grid-template-areas:"from to" "sky sky"; gap:0 12px; padding:20px 20px 6px;
+}
+.tkt-ap{display:flex; flex-direction:column; min-width:0}
+.tkt-from{grid-area:from; text-align:left}
+.tkt-to{grid-area:to; text-align:right}
+.tkt-ap .code{font-family:"IBM Plex Mono",monospace; font-size:38px; font-weight:600; letter-spacing:.02em; line-height:1}
+.tkt-ap .time{font-family:"IBM Plex Mono",monospace; font-size:22px; font-weight:600; margin-top:6px; line-height:1}
+.tkt-ap .time sup{font-size:11px; color:var(--mute); margin-left:2px}
+.tkt-ap .city{font-size:15px; font-weight:600; margin-top:8px; direction:rtl}
+.tkt-ap .date{font-size:12.5px; color:var(--ink2); margin-top:2px; direction:rtl}
+.tkt-ap .term{font-size:12px; color:var(--mute); margin-top:1px; direction:rtl}
+.tkt-sky{grid-area:sky; width:100%; height:auto; margin-top:4px; overflow:visible}
+.tkt-sky .rail{fill:none; stroke:var(--line2); stroke-width:1.5; stroke-dasharray:.012 .012}
+/* מחזור אחד = 3.4s (כמו ה-animateMotion): 68% טיסה, 32% עצירה ביעד — ואז שוב מההתחלה */
+.tkt-sky .trail{fill:none; stroke:var(--ink); stroke-width:1.5; stroke-dasharray:1; stroke-dashoffset:1; animation:tkt-trail 3.4s linear .35s infinite}
+.tkt-sky .pin{fill:var(--paper); stroke:var(--ink); stroke-width:2}
+.tkt-sky .pulse{fill:none; stroke:var(--done); stroke-width:2; opacity:0; animation:tkt-pulse 3.4s linear .35s infinite}
+.tkt-sky .plane path{fill:var(--ink); transform:scale(.62); transform-origin:0 0}
+.tkt-sky .dur{font-family:"IBM Plex Mono",monospace; font-size:11px; fill:var(--mute)}
+@keyframes tkt-trail{
+  0%{stroke-dashoffset:1; animation-timing-function:cubic-bezier(.42,0,.18,1)}
+  68%,100%{stroke-dashoffset:0}
+}
+@keyframes tkt-pulse{
+  0%,66%{opacity:0; r:4}
+  68%{opacity:.9; r:4}
+  92%,100%{opacity:0; r:16}
+}
+
+/* קו תלישה עם חריצים */
+.tkt-tear{position:relative; height:0; border-top:1.5px dashed var(--line2); margin:12px 0 14px}
+.tkt-tear::before,.tkt-tear::after{
+  content:""; position:absolute; top:-11px; width:22px; height:22px; border-radius:50%;
+  background:color-mix(in srgb, var(--bg) 50%, #141412);
+  box-shadow:inset 0 0 0 1px var(--line);
+}
+.tkt-tear::before{left:-12px}
+.tkt-tear::after{right:-12px}
+
+/* פרטים */
+.tkt-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:12px 16px; margin:0; padding:0 20px}
+.tkt-grid div{min-width:0}
+.tkt-grid dt{font-size:11px; font-weight:600; letter-spacing:.06em; color:var(--mute)}
+.tkt-grid dd{margin:2px 0 0; font-size:14px; line-height:1.4}
+.tkt-grid div:last-child:nth-child(odd){grid-column:1 / -1}
+
+.tkt-pax{padding:18px 20px 0}
+.tkt-pax h4{margin:0 0 8px; font-size:11px; font-weight:600; letter-spacing:.06em; color:var(--mute)}
+.tkt-seatnote{font-weight:500; letter-spacing:0; color:var(--todo-ink)}
+.tkt-p{
+  display:grid; grid-template-columns:auto 1fr auto; grid-template-areas:"seat who bag" "seat ex ex"; align-items:center; gap:2px 12px;
+  padding:9px 0; border-top:1px solid var(--line);
+}
+.tkt-p:last-child{border-bottom:1px solid var(--line)}
+.tkt-p .seat{grid-area:seat; font-size:15px; font-weight:600; min-width:52px; text-align:center; padding:7px 6px; border-radius:8px; background:var(--paper2); border:1px solid var(--line)}
+.tkt-p.infant .seat{color:var(--mute); font-size:12px}
+.tkt-p .who{grid-area:who; display:flex; flex-direction:column; min-width:0}
+.tkt-p .who b{font-size:14.5px; font-weight:600}
+.tkt-p .who small{font-size:11.5px; color:var(--mute)}
+.tkt-p .bag{grid-area:bag; display:inline-flex; align-items:center; gap:5px; font-size:13px; color:var(--ink2); white-space:nowrap}
+.tkt-p .bag svg{width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:1.7; stroke-linejoin:round}
+.tkt-p .ex{grid-area:ex; font-size:12px; color:var(--mute)}
+
+.tkt-note{margin:16px 20px 0; padding:10px 12px; border-radius:9px; font-size:13.5px; line-height:1.5; background:var(--paper2); color:var(--ink2); border-right:2px solid var(--line2)}
+
+/* "ברקוד" דקורטיבי */
+.tkt-code{display:flex; flex-direction:column; align-items:center; gap:6px; padding:18px 20px 22px}
+.tkt-code i{
+  display:block; width:min(100%, 320px); height:34px;
+  background:repeating-linear-gradient(90deg, var(--ink) 0 2px, transparent 2px 4px, var(--ink) 4px 5px, transparent 5px 8px, var(--ink) 8px 11px, transparent 11px 13px, var(--ink) 13px 14px, transparent 14px 18px);
+  opacity:.85;
+}
+.tkt-code span{font-size:11px; letter-spacing:.14em; color:var(--mute)}
+
+@media (max-width:480px){
+  .tkt-ap .code{font-size:32px}
+  .tkt-ap .time{font-size:19px}
+  .tkt-top{padding:16px 16px 14px 52px}
+  .tkt-route,.tkt-grid,.tkt-pax{padding-left:16px; padding-right:16px}
+  .tkt-note{margin-left:16px; margin-right:16px}
+  .tkt-p{grid-template-columns:auto 1fr; grid-template-areas:"seat who" "seat bag" "seat ex"}
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{transition:none !important; animation:none !important}
+  .tkt-sky .trail{stroke-dashoffset:0}
+}

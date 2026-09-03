@@ -1,0 +1,1321 @@
+<title>ציר הזמן · תאילנד</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* ======================================================================
+   ציר הזמן · עיצוב "מסמך תכנון" — ניטרלי, שקט וקריא.
+   כלל אחד: הצבע שמור אך ורק למצב (סגור / לפעולה / פתוח).
+   כל השאר — נייר, דיו ואפורים. רצועת הימים בגווני אפור בלבד.
+   פונטים: Assistant (טקסט) + IBM Plex Mono (מספרים, שעות, קודים).
+   ====================================================================== */
+:root{
+  --bg:#FAFAF9; --paper:#FFFFFF; --paper2:#F4F4F2; --paper3:#EDEDEA;
+  --ink:#1A1A18; --ink2:#4A4A46; --mute:#87877F; --line:#E4E4E0; --line2:#D3D3CD;
+
+  --done:#3F7D58; --done-soft:#EDF4EF; --done-ink:#2C5C3F;
+  --todo:#B0740F; --todo-soft:#FAF2E2; --todo-ink:#87590A;
+  --open:#8C8C84; --open-soft:#F1F1EE; --open-ink:#5C5C55;
+
+  --p1:#3C4048; --p2:#767C86; --p3:#B4B8BE; --p0:#20232A;   /* רצועת הימים */
+  --focus:#2E5AA8;
+  --shadow:0 1px 2px rgba(20,20,18,.04), 0 6px 18px rgba(20,20,18,.05);
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15161A; --paper:#1D1F24; --paper2:#252830; --paper3:#2E323B;
+    --ink:#ECECE8; --ink2:#BCBCB6; --mute:#8B8B83; --line:#2E3138; --line2:#3B3F48;
+    --done:#6FB98A; --done-soft:#1D2C23; --done-ink:#9CD4B2;
+    --todo:#DDA33F; --todo-soft:#312716; --todo-ink:#F0C077;
+    --open:#8E8E86; --open-soft:#26272B; --open-ink:#B6B6AE;
+    --p1:#8A9099; --p2:#5A606A; --p3:#3A3F47; --p0:#C6CBD2;
+    --focus:#7CA2E8;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 18px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15161A; --paper:#1D1F24; --paper2:#252830; --paper3:#2E323B;
+  --ink:#ECECE8; --ink2:#BCBCB6; --mute:#8B8B83; --line:#2E3138; --line2:#3B3F48;
+  --done:#6FB98A; --done-soft:#1D2C23; --done-ink:#9CD4B2;
+  --todo:#DDA33F; --todo-soft:#312716; --todo-ink:#F0C077;
+  --open:#8E8E86; --open-soft:#26272B; --open-ink:#B6B6AE;
+  --p1:#8A9099; --p2:#5A606A; --p3:#3A3F47; --p0:#C6CBD2;
+  --focus:#7CA2E8;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 18px rgba(0,0,0,.3);
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Assistant","Segoe UI",system-ui,sans-serif; font-size:16px; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+.mono, time, .code{font-family:"IBM Plex Mono","Consolas",monospace; font-variant-numeric:tabular-nums; direction:ltr; unicode-bidi:isolate; font-size:.94em}
+#tl{max-width:660px; margin:0 auto; padding:20px 16px 64px}
+:focus-visible{outline:2px solid var(--focus); outline-offset:2px; border-radius:6px}
+
+.sec-title{margin:0 0 10px; font-size:12px; font-weight:600; letter-spacing:.08em; color:var(--mute)}
+
+/* ---------- כותרת ---------- */
+.tl-head{padding:0 0 20px}
+.back{
+  display:inline-block; font-size:13.5px; font-weight:600; color:var(--ink2); text-decoration:none;
+  padding:5px 11px; border-radius:8px; background:var(--paper); border:1px solid var(--line);
+}
+.back:hover{color:var(--ink); border-color:var(--line2)}
+.kicker{margin-top:16px; font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:.04em; color:var(--mute); direction:ltr; text-align:right}
+h1{margin:2px 0 0; font-size:32px; line-height:1.15; font-weight:700; letter-spacing:-.02em}
+.lede{margin:8px 0 0; font-size:15px; color:var(--ink2); max-width:46ch}
+
+/* ---------- לוח מצב ---------- */
+.board{background:var(--paper); border:1px solid var(--line); border-radius:var(--r); padding:14px; box-shadow:var(--shadow)}
+.board-top{display:flex; align-items:center; justify-content:space-between; gap:12px}
+.board-num{display:flex; align-items:baseline; gap:7px}
+.board-num b{font-family:"IBM Plex Mono",monospace; font-size:24px; font-weight:600; line-height:1; letter-spacing:-.02em}
+.board-num span{font-size:13px; color:var(--mute)}
+.ghost{
+  font:inherit; font-size:13px; font-weight:600; color:var(--ink2); cursor:pointer;
+  padding:6px 11px; border-radius:8px; background:var(--paper2); border:1px solid var(--line);
+}
+.ghost:hover{border-color:var(--line2); color:var(--ink)}
+
+.progress{display:flex; gap:3px; margin-top:12px}
+.progress i{flex:1; height:6px; border-radius:3px; background:var(--paper3)}
+.progress i.done{background:var(--done)}
+.progress i.todo{background:var(--todo)}
+.progress i.open{background:repeating-linear-gradient(135deg,var(--open) 0 3px,transparent 3px 6px), var(--open-soft)}
+
+.filters{display:flex; gap:6px; margin-top:14px; flex-wrap:wrap}
+.filters button{
+  font:inherit; font-size:13px; font-weight:600; cursor:pointer; color:var(--ink2);
+  display:flex; align-items:center; gap:6px;
+  padding:6px 11px; border-radius:99px; background:var(--paper); border:1px solid var(--line);
+}
+.filters button i{width:8px; height:8px; border-radius:50%; flex:none}
+.filters button i.done{background:var(--done)}
+.filters button i.todo{background:var(--todo)}
+.filters button i.open{background:transparent; box-shadow:inset 0 0 0 1.5px var(--open)}
+.filters button i.all{background:var(--line2)}
+.filters button b{font-family:"IBM Plex Mono",monospace; font-weight:600; color:var(--mute)}
+.filters button:hover{border-color:var(--line2)}
+.filters button[aria-selected="true"]{background:var(--ink); border-color:var(--ink); color:var(--paper)}
+.filters button[aria-selected="true"] b{color:var(--paper); opacity:.65}
+
+/* ---------- רצועת ימים (אפורים בלבד — הצבע שמור למצב) ---------- */
+.strip-wrap{margin-top:22px; background:var(--paper); border:1px solid var(--line); border-radius:var(--r); padding:14px; box-shadow:var(--shadow)}
+.strip{display:grid; grid-template-columns:repeat(16,1fr); gap:3px}
+.strip .d{display:flex; flex-direction:column; align-items:center; gap:5px; min-width:0}
+.strip .d small{font-family:"IBM Plex Mono",monospace; font-size:10px; color:var(--mute); line-height:1}
+.strip .d i{display:block; width:100%; height:24px; border-radius:5px; background:var(--paper3)}
+.strip .d.bkk i{background:var(--p1)}
+.strip .d.hkt i{background:var(--p2)}
+.strip .d.dest2 i{background:repeating-linear-gradient(135deg,var(--p3) 0 3px,transparent 3px 6px); box-shadow:inset 0 0 0 1.5px var(--p3)}
+.strip .d.air i{background:var(--p0)}
+.strip .d.today small{color:var(--ink); font-weight:600}
+.strip-legend{display:flex; gap:14px; flex-wrap:wrap; margin-top:12px; font-size:12.5px; color:var(--ink2)}
+.strip-legend span{display:flex; align-items:center; gap:6px}
+.strip-legend i{width:11px; height:11px; border-radius:3px; display:inline-block; flex:none}
+.strip-legend .bkk{background:var(--p1)}
+.strip-legend .hkt{background:var(--p2)}
+.strip-legend .dest2{background:repeating-linear-gradient(135deg,var(--p3) 0 3px,transparent 3px 6px); box-shadow:inset 0 0 0 1.5px var(--p3)}
+.strip-legend .air{background:var(--p0)}
+
+/* ---------- תג מצב — שפה אחת בכל הדף ---------- */
+.badge{
+  display:inline-flex; align-items:center; gap:5px; flex:none;
+  font-size:12px; font-weight:600; padding:3px 9px; border-radius:99px; white-space:nowrap;
+}
+.badge i{width:7px; height:7px; border-radius:50%; flex:none}
+.badge.done{background:var(--done-soft); color:var(--done-ink)}
+.badge.done i{background:var(--done)}
+.badge.todo{background:var(--todo-soft); color:var(--todo-ink)}
+.badge.todo i{background:var(--todo)}
+.badge.open{background:var(--open-soft); color:var(--open-ink)}
+.badge.open i{background:transparent; box-shadow:inset 0 0 0 1.5px var(--open)}
+
+/* ---------- ציר הזמן ---------- */
+.tl-list{position:relative; margin-top:26px; padding-right:22px}
+.tl-list::before{content:""; position:absolute; top:14px; bottom:14px; right:6px; width:1.5px; background:var(--line2)}
+.node{position:relative; margin-bottom:10px}
+.node[hidden]{display:none}
+.node .knob{
+  position:absolute; right:-22px; top:22px; width:13px; height:13px; border-radius:50%;
+  background:var(--line2); box-shadow:0 0 0 3px var(--bg); z-index:1;
+}
+.node.done .knob{background:var(--done)}
+.node.todo .knob{background:var(--todo)}
+.node.open .knob{background:var(--bg); border:1.5px dashed var(--open)}
+
+.card{
+  position:relative; background:var(--paper); border:1px solid var(--line); border-radius:var(--r);
+  box-shadow:var(--shadow); overflow:hidden;
+}
+/* פס המצב בקצה — אותו צבע כמו התג והנקודה */
+.card::before{content:""; position:absolute; top:0; bottom:0; right:0; width:3px; background:var(--line2); z-index:2}
+.node.done .card::before{background:var(--done)}
+.node.todo .card::before{background:var(--todo)}
+.node.open .card::before{background:repeating-linear-gradient(180deg,var(--open) 0 4px,transparent 4px 8px)}
+.node.is-open .card{border-color:var(--line2)}
+
+.head{
+  display:grid; grid-template-columns:auto 1fr auto; gap:12px; align-items:start;
+  width:100%; padding:14px 14px 14px 12px; border:0; background:none; color:inherit; text-align:right;
+  font:inherit; cursor:pointer;
+}
+.head:hover{background:var(--paper2)}
+.head:focus-visible{outline:2px solid var(--focus); outline-offset:-2px}
+.when{
+  display:flex; flex-direction:column; align-items:center; justify-content:center; min-width:46px;
+  padding:7px 5px; border-radius:9px; background:var(--paper2); line-height:1; border:1px solid var(--line);
+}
+.when b{font-family:"IBM Plex Mono",monospace; font-size:19px; font-weight:600; letter-spacing:-.02em}
+.when small{font-size:11px; color:var(--mute); margin-top:4px; font-weight:600}
+.when em{font-style:normal; font-family:"IBM Plex Mono",monospace; font-size:10px; color:var(--mute); margin-top:4px; direction:ltr}
+.ttl{min-width:0}
+.ttl .row1{display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+.ttl .h{display:block; font-size:16.5px; font-weight:600; line-height:1.3}
+.ttl .sum{display:block; margin:4px 0 0; font-size:13.5px; color:var(--ink2); line-height:1.45}
+.ttl .need{
+  display:flex; gap:6px; margin:8px 0 0; font-size:13px; font-weight:600; line-height:1.4;
+  padding:6px 9px; border-radius:8px;
+}
+.ttl .need::before{content:"←"; flex:none; opacity:.55}
+.node.todo .need{background:var(--todo-soft); color:var(--todo-ink)}
+.node.open .need{background:var(--open-soft); color:var(--open-ink)}
+.chev{align-self:center; color:var(--mute); display:flex}
+.chev svg{width:17px; height:17px; stroke:currentColor; stroke-width:2; fill:none; transition:transform .2s ease}
+.node.is-open .chev svg{transform:rotate(180deg)}
+
+/* פאנל פרטים */
+.body{display:grid; grid-template-rows:0fr; transition:grid-template-rows .24s ease}
+.body > div{overflow:hidden; min-height:0}
+.node.is-open .body{grid-template-rows:1fr}
+.body-in{padding:14px 14px 16px 12px; border-top:1px solid var(--line)}
+
+.kv{display:grid; grid-template-columns:auto 1fr; gap:7px 14px; font-size:14px; margin:0}
+.kv dt{color:var(--mute); font-size:13px; white-space:nowrap; padding-top:1px}
+.kv dd{margin:0; color:var(--ink)}
+
+.seg{margin:14px 0 0}
+.seg h4{margin:0 0 7px; font-size:12px; font-weight:600; letter-spacing:.06em; color:var(--mute)}
+.seg ul{margin:0; padding:0 17px 0 0; font-size:14px; color:var(--ink2)}
+.seg li{margin:4px 0}
+.seg li b{color:var(--ink); font-weight:600}
+
+.pax{display:flex; flex-direction:column; gap:6px}
+.pax .p{display:flex; align-items:center; gap:10px; font-size:14px; background:var(--paper2); border:1px solid var(--line); border-radius:9px; padding:7px 10px}
+.pax .p .seat{font-family:"IBM Plex Mono",monospace; font-weight:600; font-size:13.5px; background:var(--paper); border:1px solid var(--line); padding:2px 8px; border-radius:6px; direction:ltr; white-space:nowrap}
+.pax .p .nm{flex:1; font-weight:500}
+.pax .p .ex{font-size:12px; color:var(--mute)}
+
+.flightrow{
+  display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:10px;
+  padding:12px; border-radius:11px; background:var(--paper2); border:1px solid var(--line); margin-bottom:14px; direction:ltr;
+}
+.flightrow .ap{text-align:center}
+.flightrow .ap b{display:block; font-family:"IBM Plex Mono",monospace; font-size:21px; font-weight:600; letter-spacing:.02em}
+.flightrow .ap span{display:block; font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--ink2); margin-top:2px}
+.flightrow .ap small{display:block; font-size:11px; color:var(--mute); direction:rtl; margin-top:2px}
+.flightrow .mid{display:flex; flex-direction:column; align-items:center; gap:3px; color:var(--mute); font-size:11px; font-family:"IBM Plex Mono",monospace}
+.flightrow .mid svg{width:52px; height:10px; stroke:var(--line2); fill:none; stroke-width:1.5}
+
+.note{
+  margin:14px 0 0; padding:10px 12px; border-radius:9px; font-size:13.5px; line-height:1.5;
+  background:var(--paper2); color:var(--ink2); border-right:2px solid var(--line2);
+}
+.node.todo .note{background:var(--todo-soft); color:var(--todo-ink); border-color:var(--todo)}
+.node.open .note{background:var(--open-soft); color:var(--open-ink); border-color:var(--open)}
+
+.actions{display:flex; gap:8px; flex-wrap:wrap; margin-top:14px}
+.actions a{
+  font-size:13px; font-weight:600; text-decoration:none; color:var(--ink); padding:7px 12px; border-radius:8px;
+  background:var(--paper2); border:1px solid var(--line);
+}
+.actions a.primary{background:var(--ink); color:var(--paper); border-color:var(--ink)}
+.actions a:hover{border-color:var(--line2)}
+.actions a.primary:hover{opacity:.88}
+
+.gap{position:relative; margin:0 0 10px; padding:4px 10px; font-size:12.5px; color:var(--mute); font-family:"IBM Plex Mono",monospace}
+.gap[hidden]{display:none}
+.empty{text-align:center; color:var(--mute); font-size:14px; padding:26px 0}
+
+/* ---------- תחתית ---------- */
+.tl-foot{margin-top:28px; padding-top:18px; border-top:1px solid var(--line)}
+.legend{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:9px; font-size:13.5px; color:var(--ink2)}
+.legend li{display:flex; align-items:center; gap:9px}
+.legend .badge{min-width:76px; justify-content:center}
+.hint{font-size:12px; color:var(--mute); margin:16px 0 0; line-height:1.5}
+
+/* ---------- מובייל ---------- */
+@media (max-width:480px){
+  #tl{padding:16px 12px 52px}
+  h1{font-size:27px}
+  .head{padding:12px 12px 12px 10px; gap:10px}
+  .when{min-width:42px}
+  .when b{font-size:17px}
+  .ttl .h{font-size:15.5px}
+  .flightrow .ap b{font-size:19px}
+  .kv{grid-template-columns:1fr; gap:2px 0}
+  .kv dt{margin-top:8px}
+  .kv dt:first-child{margin-top:0}
+  .legend li{align-items:flex-start; flex-direction:column; gap:4px}
+}
+/* ---------- נקודת טיסה בציר: מסלול מיני + רמז "כרטיס" ---------- */
+.mini-route{
+  display:inline-flex; align-items:center; gap:8px; margin-top:8px; padding:4px 9px; border-radius:7px;
+  background:var(--paper2); border:1px solid var(--line); font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--ink2);
+  align-self:flex-start;
+}
+.mini-route b{font-weight:600; letter-spacing:.04em}
+.mini-route i{width:26px; height:1px; background:var(--line2); position:relative}
+.mini-route i::after{content:""; position:absolute; right:-1px; top:-2.5px; border:3px solid transparent; border-left:5px solid var(--line2)}
+.mini-route small{color:var(--mute); font-size:11px}
+.ttl{display:flex; flex-direction:column; align-items:flex-start; min-width:0}
+.ttl .row1,.ttl .sum,.ttl .need{width:100%}
+.chev.tkt-hint{flex-direction:column; gap:3px; align-items:center; color:var(--mute)}
+.chev.tkt-hint small{font-size:10.5px; font-weight:600; letter-spacing:.04em}
+.node.flight .head:hover .chev{color:var(--ink)}
+
+/* רצועת ימים: כשהיעד השני סגור — מלא ולא מקווקו */
+.strip .d.dest2.fixed i, .strip-legend .dest2.fixed{background:var(--p3); box-shadow:none}
+
+/* ======================================================================
+   כרטיס טיסה — דיאלוג בסגנון כרטיס עלייה למטוס.
+   אותם אסימונים: נייר + דיו; המצב (ירוק) בתג בלבד. המטוס עף על קשת מהמוצא ליעד.
+   ====================================================================== */
+body.tkt-lock{overflow:hidden}
+.tkt-overlay{position:fixed; inset:0; z-index:50; display:flex; align-items:flex-end; justify-content:center; padding:0}
+.tkt-overlay[hidden]{display:none}
+.tkt-scrim{position:absolute; inset:0; background:rgba(20,20,18,.5); opacity:0; transition:opacity .24s ease; -webkit-backdrop-filter:blur(2px); backdrop-filter:blur(2px)}
+.tkt-overlay.on .tkt-scrim{opacity:1}
+.tkt{
+  position:relative; width:100%; max-width:560px; max-height:calc(100dvh - 24px); overflow-y:auto; overscroll-behavior:contain;
+  background:var(--paper); color:var(--ink); border-radius:18px 18px 0 0; border:1px solid var(--line); border-bottom:0;
+  box-shadow:0 -10px 40px rgba(0,0,0,.18);
+  transform:translateY(24px); opacity:0; transition:transform .28s cubic-bezier(.2,.8,.2,1), opacity .22s ease;
+}
+.tkt-overlay.on .tkt{transform:none; opacity:1}
+@media (min-width:600px){
+  .tkt-overlay{align-items:center; padding:24px}
+  .tkt{border-radius:18px; border-bottom:1px solid var(--line); max-height:calc(100dvh - 48px); box-shadow:0 20px 60px rgba(0,0,0,.25)}
+}
+.tkt-close{
+  position:absolute; top:12px; left:12px; z-index:3; width:34px; height:34px; border-radius:50%; border:0; cursor:pointer;
+  background:rgba(128,128,124,.28); color:var(--paper); display:grid; place-items:center;
+}
+.tkt-close svg{width:16px; height:16px; stroke:currentColor; stroke-width:2.2; fill:none; stroke-linecap:round}
+.tkt-close:hover{background:rgba(128,128,124,.45)}
+.tkt-close:focus-visible{outline:2px solid var(--paper); outline-offset:2px}
+
+/* ראש כהה: חברה, מספר טיסה, מצב */
+.tkt-top{
+  display:grid; grid-template-columns:1fr auto; grid-template-areas:"air no" "status no"; align-items:center; gap:2px 14px;
+  padding:18px 20px 16px 56px; background:var(--ink); color:var(--paper);
+}
+.tkt-air{grid-area:air; display:flex; flex-direction:column}
+.tkt-air-name{font-size:15px; font-weight:700; letter-spacing:.01em}
+.tkt-dir{font-size:12px; opacity:.7}
+.tkt-no{grid-area:no; font-size:26px; font-weight:600; letter-spacing:.02em; direction:ltr}
+.tkt-status{grid-area:status; display:inline-flex; align-items:center; gap:6px; margin-top:6px; font-size:12px; font-weight:600; justify-self:start; padding:3px 9px 3px 7px; border-radius:99px; background:rgba(255,255,255,.1)}
+.tkt-status i{width:7px; height:7px; border-radius:50%; background:var(--done)}
+
+/* מסלול: מוצא · שמיים · יעד */
+.tkt-route{
+  display:grid; grid-template-columns:1fr 1fr; grid-template-areas:"from to" "sky sky"; gap:0 12px; padding:20px 20px 6px;
+}
+.tkt-ap{display:flex; flex-direction:column; min-width:0}
+.tkt-from{grid-area:from; text-align:left}
+.tkt-to{grid-area:to; text-align:right}
+.tkt-ap .code{font-family:"IBM Plex Mono",monospace; font-size:38px; font-weight:600; letter-spacing:.02em; line-height:1}
+.tkt-ap .time{font-family:"IBM Plex Mono",monospace; font-size:22px; font-weight:600; margin-top:6px; line-height:1}
+.tkt-ap .time sup{font-size:11px; color:var(--mute); margin-left:2px}
+.tkt-ap .city{font-size:15px; font-weight:600; margin-top:8px; direction:rtl}
+.tkt-ap .date{font-size:12.5px; color:var(--ink2); margin-top:2px; direction:rtl}
+.tkt-ap .term{font-size:12px; color:var(--mute); margin-top:1px; direction:rtl}
+.tkt-sky{grid-area:sky; width:100%; height:auto; margin-top:4px; overflow:visible}
+.tkt-sky .rail{fill:none; stroke:var(--line2); stroke-width:1.5; stroke-dasharray:.012 .012}
+/* מחזור אחד = 3.4s (כמו ה-animateMotion): 68% טיסה, 32% עצירה ביעד — ואז שוב מההתחלה */
+.tkt-sky .trail{fill:none; stroke:var(--ink); stroke-width:1.5; stroke-dasharray:1; stroke-dashoffset:1; animation:tkt-trail 3.4s linear .35s infinite}
+.tkt-sky .pin{fill:var(--paper); stroke:var(--ink); stroke-width:2}
+.tkt-sky .pulse{fill:none; stroke:var(--done); stroke-width:2; opacity:0; animation:tkt-pulse 3.4s linear .35s infinite}
+.tkt-sky .plane path{fill:var(--ink); transform:scale(.62); transform-origin:0 0}
+.tkt-sky .dur{font-family:"IBM Plex Mono",monospace; font-size:11px; fill:var(--mute)}
+@keyframes tkt-trail{
+  0%{stroke-dashoffset:1; animation-timing-function:cubic-bezier(.42,0,.18,1)}
+  68%,100%{stroke-dashoffset:0}
+}
+@keyframes tkt-pulse{
+  0%,66%{opacity:0; r:4}
+  68%{opacity:.9; r:4}
+  92%,100%{opacity:0; r:16}
+}
+
+/* קו תלישה עם חריצים */
+.tkt-tear{position:relative; height:0; border-top:1.5px dashed var(--line2); margin:12px 0 14px}
+.tkt-tear::before,.tkt-tear::after{
+  content:""; position:absolute; top:-11px; width:22px; height:22px; border-radius:50%;
+  background:color-mix(in srgb, var(--bg) 50%, #141412);
+  box-shadow:inset 0 0 0 1px var(--line);
+}
+.tkt-tear::before{left:-12px}
+.tkt-tear::after{right:-12px}
+
+/* פרטים */
+.tkt-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:12px 16px; margin:0; padding:0 20px}
+.tkt-grid div{min-width:0}
+.tkt-grid dt{font-size:11px; font-weight:600; letter-spacing:.06em; color:var(--mute)}
+.tkt-grid dd{margin:2px 0 0; font-size:14px; line-height:1.4}
+.tkt-grid div:last-child:nth-child(odd){grid-column:1 / -1}
+
+.tkt-pax{padding:18px 20px 0}
+.tkt-pax h4{margin:0 0 8px; font-size:11px; font-weight:600; letter-spacing:.06em; color:var(--mute)}
+.tkt-seatnote{font-weight:500; letter-spacing:0; color:var(--todo-ink)}
+.tkt-p{
+  display:grid; grid-template-columns:auto 1fr auto; grid-template-areas:"seat who bag" "seat ex ex"; align-items:center; gap:2px 12px;
+  padding:9px 0; border-top:1px solid var(--line);
+}
+.tkt-p:last-child{border-bottom:1px solid var(--line)}
+.tkt-p .seat{grid-area:seat; font-size:15px; font-weight:600; min-width:52px; text-align:center; padding:7px 6px; border-radius:8px; background:var(--paper2); border:1px solid var(--line)}
+.tkt-p.infant .seat{color:var(--mute); font-size:12px}
+.tkt-p .who{grid-area:who; display:flex; flex-direction:column; min-width:0}
+.tkt-p .who b{font-size:14.5px; font-weight:600}
+.tkt-p .who small{font-size:11.5px; color:var(--mute)}
+.tkt-p .bag{grid-area:bag; display:inline-flex; align-items:center; gap:5px; font-size:13px; color:var(--ink2); white-space:nowrap}
+.tkt-p .bag svg{width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:1.7; stroke-linejoin:round}
+.tkt-p .ex{grid-area:ex; font-size:12px; color:var(--mute)}
+
+.tkt-note{margin:16px 20px 0; padding:10px 12px; border-radius:9px; font-size:13.5px; line-height:1.5; background:var(--paper2); color:var(--ink2); border-right:2px solid var(--line2)}
+
+/* "ברקוד" דקורטיבי */
+.tkt-code{display:flex; flex-direction:column; align-items:center; gap:6px; padding:18px 20px 22px}
+.tkt-code i{
+  display:block; width:min(100%, 320px); height:34px;
+  background:repeating-linear-gradient(90deg, var(--ink) 0 2px, transparent 2px 4px, var(--ink) 4px 5px, transparent 5px 8px, var(--ink) 8px 11px, transparent 11px 13px, var(--ink) 13px 14px, transparent 14px 18px);
+  opacity:.85;
+}
+.tkt-code span{font-size:11px; letter-spacing:.14em; color:var(--mute)}
+
+@media (max-width:480px){
+  .tkt-ap .code{font-size:32px}
+  .tkt-ap .time{font-size:19px}
+  .tkt-top{padding:16px 16px 14px 52px}
+  .tkt-route,.tkt-grid,.tkt-pax{padding-left:16px; padding-right:16px}
+  .tkt-note{margin-left:16px; margin-right:16px}
+  .tkt-p{grid-template-columns:auto 1fr; grid-template-areas:"seat who" "seat bag" "seat ex"}
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{transition:none !important; animation:none !important}
+  .tkt-sky .trail{stroke-dashoffset:0}
+}
+
+</style>
+<div id="tl">
+  <header class="tl-head">
+    <a class="back" href="https://claude.ai/code/artifact/655d2aa2-95d2-4ef7-8ba4-0598ac61e874" id="backLink">‹ לחמ"ל</a>
+    <div class="kicker">31.10 – 15.11.2026 · 16 ימים</div>
+    <h1>ציר הזמן</h1>
+    <p class="lede">שבע נקודות. כל אחת היא דבר אחד שצריך לסגור. לוחצים על מלון כדי לפתוח את הפרטים, ועל טיסה כדי לראות את כרטיס הטיסה.</p>
+  </header>
+
+  <!-- מצב: כמה סגור, כמה נשאר -->
+  <section class="board" aria-label="מצב ההכנות">
+    <div class="board-top">
+      <div class="board-num"><b id="progNum">0/0</b><span>נקודות סגורות</span></div>
+      <button class="ghost" id="toggleAll" type="button">פתח הכול</button>
+    </div>
+    <div class="progress" id="progress" aria-hidden="true"></div>
+    <div class="filters" id="filters" role="tablist" aria-label="סינון לפי מצב"></div>
+  </section>
+
+  <!-- רצועת הימים: איפה ישנים בכל לילה -->
+  <section class="strip-wrap" aria-label="איפה ישנים בכל לילה">
+    <h2 class="sec-title">איפה ישנים בכל לילה</h2>
+    <div class="strip" id="dayStrip"></div>
+    <div class="strip-legend" id="stripLegend"></div>
+  </section>
+
+  <!-- ציר הזמן -->
+  <main class="tl-list" id="tlList" aria-label="ציר הזמן"></main>
+  <p class="empty" id="empty" hidden>אין נקודות במצב הזה.</p>
+
+  <footer class="tl-foot">
+    <h2 class="sec-title">מקרא</h2>
+    <ul class="legend">
+      <li><span class="badge done"><i></i>סגור</span> הוזמן ושולם — אין מה לעשות</li>
+      <li><span class="badge todo"><i></i>לפעולה</span> ידוע מה צריך, רק להזמין</li>
+      <li><span class="badge open"><i></i>פתוח</span> עוד לא הוחלט מה עושים</li>
+    </ul>
+    <p class="hint">הנתונים נקראים מ-trip.js (טיסות, מלונות, לילות) — אותו מקור כמו החמ"ל.</p>
+  </footer>
+</div>
+
+<!-- כרטיס טיסה — נפתח בלחיצה על נקודת טיסה בציר -->
+<div class="tkt-overlay" id="tktOverlay" hidden>
+  <div class="tkt-scrim"></div>
+  <div class="tkt" role="dialog" aria-modal="true" aria-label="כרטיס טיסה">
+    <button class="tkt-close" type="button" aria-label="סגירה"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <div class="tkt-in"></div>
+  </div>
+</div>
+<script>
+/* trip.js — קובץ הנתונים של הטיול · מקור האמת היחיד. עורכים כאן ידנית, האפליקציה רק קוראת ומציגה.
+   זהו קובץ JS (ולא JSON) כדי שהדפדפן יטען אותו ישירות עם <script src="trip.js"> — גם בפתיחה מ-file:// בלי שרת.
+   העריכה זהה לעריכת JSON: אובייקט אחד, מפתחות במרכאות, בלי פסיק אחרי האיבר האחרון.
+
+   updated: תאריך העדכון האחרון (מוצג בכותרת האפליקציה).
+   tasksDone: מזהי משימות שבוצעו (t01, t12 ...) — המזהים בקובץ data.js תחת STAGES.
+   myTasks: משימות משלכם [{ "t": "טקסט", "done": false }].
+   hotels: לכל בסיס — id מהקטלוג ב-data.js (HOTELS) או name חופשי, booked=true אחרי הזמנה, ref=מספר הזמנה.
+   secondDest: היעד השני אחרי פוקט — decided=false כל עוד לא הוחלט; כשמחליטים: decided=true + id (aonang / khaolak / bangkok) + name.
+   phuketNights: כמה לילות בפוקט. השאר (אחרי לילות בנגקוק שנגזרים מהטיסה הפנימית) הולך ליעד השני.
+   payments: לפי מזהי BUDGET ב-data.js — { "amount": ₪, "note": "..." }.
+   costs: רשימת העלויות שמוצגת בדף הראשי — [{ "what": "תיאור", "amount": ₪, "paid": true/false, "date": "YYYY-MM-DD", "note": "..." }].
+          מוסיפים שורה לכל הוצאה (טיסה, מלון, ביטוח...). paid=true אחרי ששולם בפועל.
+   candidates: מועמדים למלונות שמוצגים בדף הראשי (רשימה נפתחת + נקודות זהב על המפה) —
+          [{ "id", "base": bangkok/phuket/khaolak, "name", "area", "room", "from", "to", "board", "usd": מחיר כולל לכל הלילות, "src": מקור המחיר,
+             "address", "lat", "lng", "placeId" (אופציונלי), "site", "img": ["img/..."], "note" }]. מוסיפים/מוחקים מועמדים כאן.
+   savedAttractions: מזהי אטרקציות מסומנות בכוכב (ATTS ב-data.js). */
+
+window.TRIP = {
+
+  "updated": "2026-09-03",
+
+  "dates": { "start": "2026-10-31", "end": "2026-11-15" },
+
+  "travelers": [
+    { "name": "גלעד מאירסון", "role": "מבוגר" },
+    { "name": "שיר מאירסון", "role": "מבוגר" },
+    { "name": "ארבל מרים מאירסון", "role": "תינוקת · שנה" }
+  ],
+
+  "flights": {
+    "intl": {
+      "ref": "923R6Y",
+      "airline": "EL AL · אל על",
+      "status": "מאושר",
+      "paid": 10090,
+      "pax": [
+        { "name": "גלעד מאירסון", "ticket": "114-5237866339", "seat": "45G" },
+        { "name": "שיר מאירסון", "ticket": "114-5237866340", "seat": "45F" },
+        { "name": "ארבל מרים מאירסון", "ticket": "114-5237866341", "seat": "על הברכיים 👶" }
+      ],
+      "legs": [
+        {
+          "no": "LY 083", "dir": "הלוך",
+          "from": { "code": "TLV", "city": "תל אביב", "term": "טרמינל 3" },
+          "to": { "code": "BKK", "city": "בנגקוק", "term": "סוברנבומי" },
+          "depDate": "2026-10-31", "depTime": "21:40",
+          "arrDate": "2026-11-01", "arrTime": "13:50", "arrNote": "+1",
+          "dur": "11:10", "direct": true, "cls": "תיירים (S)",
+          "plane": "בואינג 777-200/300", "meal": "ארוחה חמה + ארוחת בוקר",
+          "bags": "מזוודה אחת לכל נוסע", "seats": "45G · 45F"
+        },
+        {
+          "no": "LY 082", "dir": "חזור",
+          "from": { "code": "BKK", "city": "בנגקוק", "term": "סוברנבומי" },
+          "to": { "code": "TLV", "city": "תל אביב", "term": "טרמינל 3" },
+          "depDate": "2026-11-14", "depTime": "23:55",
+          "arrDate": "2026-11-15", "arrTime": "06:20", "arrNote": "+1",
+          "dur": "11:25", "direct": true, "cls": "תיירים (L)",
+          "plane": "בואינג 777-200/300", "meal": "ארוחה חמה + ארוחת בוקר",
+          "bags": "מזוודה אחת לכל נוסע", "seats": "טרם נבחרו"
+        }
+      ]
+    },
+    "domestic": [
+      {
+        "no": "PG 271", "airline": "Bangkok Airways", "dir": "פנימית",
+        "status": "מאושר",
+        "ref": "",
+        "paid": 550,
+        "from": { "code": "BKK", "city": "בנגקוק", "term": "סוברנבומי · טרמינל D" },
+        "to": { "code": "HKT", "city": "פוקט", "term": "שדה בינלאומי" },
+        "depDate": "2026-11-02", "depTime": "08:00",
+        "arrDate": "2026-11-02", "arrTime": "09:35",
+        "dur": "01:35", "direct": true, "cls": "PGPROMO (V)", "fare": "VNWW",
+        "note": "צ'ק-אין נסגר 45 דק' לפני ההמראה — להיות בטרמינל D עד 06:45. ל-Bangkok Airways יש לאונג' חינם לכל הנוסעים (קפה, מאפים, פינת ילדים).",
+        "pax": [
+          { "name": "גלעד מאירסון", "seat": "28F", "bag": "20 ק\"ג", "status": "מאושר", "extra": "ארבל על הברכיים (INFT)" },
+          { "name": "שיר מאירסון", "seat": "28E", "bag": "20 ק\"ג", "status": "מאושר" },
+          { "name": "ארבל מרים מאירסון", "seat": "על הברכיים 👶", "bag": "10 ק\"ג", "status": "מאושר · ללא מושב" }
+        ]
+      },
+      {
+        "no": "PG 284", "airline": "Bangkok Airways", "dir": "פנימית",
+        "status": "מאושר",
+        "ref": "",
+        "paid": 650,
+        "from": { "code": "HKT", "city": "פוקט", "term": "שדה בינלאומי · טרמינל D" },
+        "to": { "code": "BKK", "city": "בנגקוק", "term": "סוברנבומי" },
+        "depDate": "2026-11-14", "depTime": "17:20",
+        "arrDate": "2026-11-14", "arrTime": "18:55",
+        "dur": "01:35", "direct": true, "cls": "PGPROMO (Q)", "fare": "QNWW",
+        "note": "נוחתים בסוברנבומי ב-18:55 — 5 שעות לפני אל על (23:55). נשארים באותו שדה: מוציאים מזוודות, עולים לקומת ההמראות ועושים צ'ק-אין לאל על. יש זמן לארוחת ערב רגועה.",
+        "pax": [
+          { "name": "גלעד מאירסון", "seat": "24F", "bag": "20 ק\"ג", "status": "מאושר", "extra": "ארבל על הברכיים (INFT)" },
+          { "name": "שיר מאירסון", "seat": "24E", "bag": "20 ק\"ג", "status": "מאושר" },
+          { "name": "ארבל מרים מאירסון", "seat": "על הברכיים 👶", "bag": "10 ק\"ג", "status": "מאושר · ללא מושב (NS)" }
+        ]
+      }
+    ]
+  },
+
+  "phuketNights": 6,
+
+  "secondDest": {
+    "decided": true,
+    "id": "khaolak",
+    "name": "קאו לאק",
+    "options": ["אאו נאנג (קראבי)", "קאו לאק", "בנגקוק"]
+  },
+
+  "hotels": {
+    "bangkok": { "name": "", "booked": false, "ref": "", "note": "לילה אחד 1.11→2.11, חייב להיות ליד סוברנבומי" },
+    "phuket":  { "id": "saii", "booked": false, "ref": "", "note": "" },
+    "second":  { "id": null, "name": "", "booked": false, "ref": "", "note": "קאו לאק · 6 לילות 8.11→14.11 — לבחור ריזורט על החוף ולהזמין" }
+  },
+
+  "tasksDone": ["t01", "t02", "t03", "t04", "t05", "t06", "t11", "t12"],
+
+  "myTasks": [],
+
+  "payments": {
+    "flightsIntl": { "amount": 10090, "note": "אל על 923R6Y — הלוך חזור לבנגקוק, שולם 1.9.2026" },
+    "flightsDom":  { "amount": 1200,  "note": "Bangkok Airways — PG 271 בנגקוק→פוקט ₪550 + PG 284 פוקט→בנגקוק ₪650" }
+  },
+
+  "costs": [
+    { "what": "טיסה הלוך-חזור תל אביב ↔ בנגקוק", "amount": 10090, "paid": true, "date": "2026-09-01", "note": "אל על · 923R6Y · 2 מבוגרים + תינוקת" },
+    { "what": "טיסה פנימית בנגקוק → פוקט",        "amount": 550,   "paid": true, "date": "2026-09-03", "note": "Bangkok Airways · PG 271" },
+    { "what": "טיסה פנימית פוקט → בנגקוק",        "amount": 650,   "paid": true, "date": "2026-09-03", "note": "Bangkok Airways · PG 284" }
+  ],
+
+  "candidates": [
+    {
+      "id": "canalis", "base": "bangkok", "short": "Canalis",
+      "name": "Canalis Suvarnabhumi Airport Hotel", "area": "לאט קראבאנג · שאטל חינם לסוברנבומי",
+      "room": "Suite", "from": "2026-11-01", "to": "2026-11-02", "board": "",
+      "usd": 129, "src": "flyall",
+      "address": "1599/1 Lat Krabang Soi 13, Lat Krabang Road, Lat Krabang, Bangkok 10520",
+      "lat": 13.72238, "lng": 100.77491,
+      "site": "https://www.canalissuvarnabhumi.com/",
+      "img": ["img/cand-canalis.jpg", "img/cand-canalis-room.jpg"],
+      "note": "לילה אחד בין הנחיתה (13:50) לטיסה ל-PG271 ב-08:00 למחרת — לבדוק שעות השאטל ללילה/בוקר מוקדם."
+    },
+    {
+      "id": "kalima", "base": "phuket", "short": "Kalima",
+      "name": "Kalima Resort and Spa", "area": "קאטו · גבעת קאלים מעל פאטונג, נוף לים",
+      "room": "Double Pool Access with Ocean View", "from": "2026-11-02", "to": "2026-11-08", "board": "ארוחת בוקר",
+      "usd": 2609, "src": "flyall",
+      "address": "338/1 Phabaramee Road, Patong Beach, Kathu, Phuket 83150",
+      "lat": 7.91732, "lng": 98.28400,
+      "site": "https://www.kalimaresort.com/",
+      "img": ["img/cand-kalima.jpg", "img/cand-kalima-room.jpg"],
+      "note": "ריזורט על צלע הגבעה — הרבה מדרגות/מעליות בין הרמות; לבקש חדר קרוב ללובי. אין חוף צמוד (שאטל לפאטונג)."
+    },
+    {
+      "id": "centara-grand", "base": "phuket", "short": "Centara",
+      "name": "Centara Grand Beach Resort Phuket", "area": "חוף קארון · על החוף",
+      "room": "Deluxe Suite with Private Pool", "from": "2026-11-02", "to": "2026-11-08", "board": "",
+      "usd": 1738, "src": "flyall",
+      "address": "683 Patak Road, Karon Beach, Phuket 83100",
+      "lat": 7.857859, "lng": 98.290401, "placeId": "ChIJ_fm1oEElUDAR38X4EWQfkI0",
+      "site": "https://www.centarahotelsresorts.com/",
+      "img": ["img/centara-grand.jpg"],
+      "note": "נהר עצל ומגלשות — נהדר לפעוטות. ביקורות 2025–26 על חדרים מיושנים והרבה מדרגות; אם בוחרים — חדר צמוד למעלית."
+    },
+    {
+      "id": "merlin", "base": "phuket", "short": "Marriott",
+      "name": "Phuket Marriott Resort & Spa, Merlin Beach", "area": "חוף טרי טראנג · 3 ק\"מ מפאטונג, מפרץ שקט",
+      "room": "1 King Bed Guest Room with Pool Access", "from": "2026-11-02", "to": "2026-11-08", "board": "ארוחת בוקר",
+      "usd": 876, "src": "flyall",
+      "address": "99 Muen-Ngoen Road, Tri-Trang Beach, Patong, Kathu, Phuket 83150",
+      "lat": 7.88349, "lng": 98.27245,
+      "site": "https://www.marriott.com/en-us/hotels/hktmb-phuket-marriott-resort-and-spa-merlin-beach/overview/",
+      "img": ["img/cand-merlin.jpg", "img/cand-merlin-pool.jpg"],
+      "note": "הזול ברשימה בפער גדול. 3 בריכות + בריכת ילדים עם מגלשות, חוף פרטי עם שונית. מבודד — לפאטונג בשאטל/מונית."
+    },
+    {
+      "id": "jw-khaolak", "base": "khaolak", "short": "JW Marriott",
+      "name": "JW Marriott Khao Lak Resort & Spa", "area": "קוק קאק, פאנג נגה · על החוף",
+      "room": "Deluxe Room · 1 King Bed · Pool Access · Sofa Bed", "from": "2026-11-08", "to": "2026-11-14", "board": "חצי פנסיון",
+      "usd": 2210, "src": "flyall",
+      "address": "41/12 Moo 3, Khuk Khak, Takua Pa, Khao Lak, Phang Nga 82220",
+      "lat": 8.70151, "lng": 98.24046, "placeId": "ChIJ5dIlcHXpUDAR1vOwPuNM2Jk",
+      "site": "https://www.marriott.com/en-us/hotels/hktkl-jw-marriott-khao-lak-resort-and-spa/overview/",
+      "img": ["img/cand-jw.jpg", "img/cand-jw-room.jpg"],
+      "note": "הבריכה הארוכה בדרום-מזרח אסיה (‎~2.5 ק\"מ) עוברת ליד הטרסה של חדרי ה-Pool Access. אזור ילדים (Aqua Play) ומועדון ילדים."
+    }
+  ],
+
+  "savedAttractions": []
+};
+
+</script>
+<script>
+/* ================= DATA (מחקר: אוגוסט 2026) ================= */
+const RATES = { usd: 2.98, thb: 0.089, note: "שער: ‎$1 ≈ ₪2.98 · ‎฿1 ≈ ₪0.089 (סוף אוגוסט 2026)" };
+
+/* הטיסות (בינלאומיות + פנימיות), מלונות שנבחרו, תשלומים ומשימות שבוצעו — ב-trip.js */
+
+const RAIN = {
+  months: ["ינו","פבר","מרץ","אפר","מאי","יונ","יול","אוג","ספט","אוק","נוב","דצמ"],
+  phuket: [50,24,81,135,237,249,240,309,350,336,178,82],
+  samui:  [127,64,116,83,132,134,117,102,118,295,445,263]
+};
+
+/* גשם בפועל בחלון הטיול המדויק — 1–14 בנובמבר, מ"מ (ארכיון ERA5 של Open-Meteo, נשלף ספט' 2026).
+   רשת ERA5 מעט ממתנת ערכים מוחלטים באיים קטנים — הדפוס בין שנים/יעדים הוא האמין. */
+const NOV_WINDOW = {
+  years: [2021, 2022, 2023, 2024, 2025],
+  dests: [
+    { id: "samui",   n: "קוסמוי",   mm: [252, 170, 168, 173, 107], mean: 163, days: "10–14 ימי גשם, ממושך לאורך היום" },
+    { id: "aonang",  n: "אאו נאנג", mm: [197, 139, 125, 121, 73],  mean: 117, days: "‎58% מהגשם ב-12:00–18:00 · הים הכי רגוע" },
+    { id: "phuket",  n: "פוקט",     mm: [161, 177, 152, 96, 94],   mean: 108, days: "ממטרים קצרים אחה\"צ, שמש בין לבין" },
+    { id: "khaolak", n: "קאו לאק",  mm: [194, 135, 202, 154, 143], mean: 106, days: "בקרים שמשיים כמעט מובטחים" }
+  ]
+};
+
+/* השוואת יעדים — מחקר רשת ספטמבר 2026 (משפחה עם תינוקת + זמן זוגי + סיכון מזג אוויר בנובמבר) */
+const DESTS = [
+  { n: "פוקט — באנג טאו/לגונה", family: 9, couple: 9.5, wx: 7, call: "העוגן · רוב הלילות", good: true,
+    why: "חופים רדודים ורגועים מנובמבר (באנג טאו, נאי יאנג), בתי החולים הטובים בדרום (Bangkok Hospital Phuket), 25 דק' מהשדה, שפע סוכנויות בייביסיטר ומועדוני חוף במרחק הליכה לערב זוגי" },
+  { n: "אאו נאנג / קראבי", family: 8, couple: 7, wx: 7, call: "נשאר · אבל 4 לילות במקום 6", good: true,
+    why: "הים הכי שטוח ורגוע לתינוקת מכל היעדים (מפרץ מוגן, גלים ‎<0.6 מ'), עיירה קומפקטית והכול בהליכה. בייביסיטר רק דרך המלון, וסצנת הערב קטנה — לכן מקצרים" },
+  { n: "בנגקוק — בסוף הטיול", family: 7, couple: 9, wx: 8, call: "להוסיף 2 לילות בסוף", good: true,
+    why: "הטיסה הביתה ממריאה 23:55 — סיום בבנגקוק מוחק את לחץ הקונקשן עם תינוקת. רפואה ברמה עולמית, מלונות עם בייביסיטר מוסדר, וערב גגות רומנטי אחד גדול" },
+  { n: "קאו לאק", family: 8.5, couple: 5.5, wx: 6.5, call: "חלופה שקטה לאאו נאנג",
+    why: "רצועת הריזורטים הכי מותאמת לפעוטות בתאילנד, ים נרגע כבר בתחילת נובמבר — אבל אין בית חולים אמיתי (פוקט במרחק 1.5–2 ש') וכמעט אין לאן לצאת בערב" },
+  { n: "קוסמוי", family: 8, couple: 9, wx: 3, call: "לא בנובמבר · לשמור לפברואר–אפריל",
+    why: "תשתית הזוגיות הכי טובה באיים (סוכנויות נני מוסמכות-החייאה, מסעדות על החוף) — אבל נובמבר הוא החודש הגשום בשנתה: גשם ממושך, עונת שיטפונות, ומוקד מדוזות הקופסה של תאילנד" }
+];
+const DESTS_SKIP = "נפסלו גם: חוא הין (יבש אבל ים עכור של המפרץ), קו יאו נוי (אין בי\"ח — עדיף כטיול יום מפוקט), צ'אנג מאי (פסטיבל הפנסים 24–25.11 — אחרי שתטוסו הביתה).";
+
+/* בייביסיטר וערב זוגי — לפי אזור (מחקר ספטמבר 2026) */
+const SITTERS = [
+  { area: "פוקט", items: [
+    { n: "Phuket Nanny Services", d: "‎฿350 לשעה (‎฿500 אחרי 21:00). ערב זוגי 19:00–23:00 ≈ ‎₪200–270", u: "https://phuketnannyservices.com/pricing/" },
+    { n: "Little Ducky Babysitting", d: "סיטריות מקומיות בבאנג טאו, קאטה, קמאלה, פאטונג", u: "https://www.phuketbabysitter.com/" },
+    { n: "בתי מלון עם שירות בייביסיטר", d: "Mövenpick באנג טאו, Katathani, Holiday Inn פאטונג — ‎฿300–500 לשעה דרך הקבלה" }
+  ], night: "לאן יוצאים: Xana Beach Club (לגונה — חוזרים ברגל למלון!), Catch Beach Club, שקיעה ב-Café del Mar קמאלה" },
+  { area: "אאו נאנג", items: [
+    { n: "דרך המלון בלבד", d: "Holiday Inn Resort Krabi — שירות נני מוסדר · Centara Grand — בייביסיטר בתשלום. אין סוכנות עצמאית אמינה באזור" }
+  ], night: "לאן יוצאים: Lae Lay Grill (שקיעה מהמדרון + שאטל חינם), The Hilltop (שולחנות זוגיים), The Grotto על החוף" },
+  { area: "בנגקוק", items: [
+    { n: "ThaiKidsHome", d: "הספק המאומת של מלונות מריוט, דוברי אנגלית, גילאי 0–3", u: "https://www.thaikidshome.com/" },
+    { n: "מלונות מומלצים עם בייביסיטר", d: "Marriott Marquis Queen's Park · Siam Kempinski · Peninsula" }
+  ], night: "לאן יוצאים: מסעדת גג (רופטופ) — הערב הזוגי הגדול של הטיול, כשארבל עם סיטר במלון" },
+  { area: "קוסמוי (לטיול הבא)", items: [
+    { n: "Nanny Service Koh Samui", d: "‎฿400 לשעה, מוסמכות החייאה ועזרה ראשונה של Bangkok Hospital — הסיבה לחזור לסמוי בפברואר–אפריל", u: "https://www.nannyservicekohsamui.com/" }
+  ], night: "" }
+];
+
+const STAGES = [
+  { id:"s0", name:"שלב 0 — חוסמים", why:"הכול תלוי בתאריכים ובדרכונים. אין טעם להשוות טיסות בלי תאריכים, ואין טעם לקנות טיסה בלי דרכון בתוקף. לביצוע בשבועיים הקרובים!", urgent:true, tasks:[
+    { id:"t01", t:"לדבר עם רועי (הבוס של שיר) — אישור חופשה", n:"קובע את התאריכים המדויקים, כל השאר נגזר מזה. דורש זמן תגובה מהמעסיק" },
+    { id:"t02", t:"לבדוק אישור חופש שלך ולוודא שהחפיפה עובדת", n:"" },
+    { id:"t03", t:"דרכון לתינוקת", n:"אם עדיין אין — להתחיל מיד, זה חוסם מוחלט", links:[{l:"תור ללשכה — MyVisit", u:"https://myvisit.com"}] },
+    { id:"t04", t:"בדיקת תוקף הדרכונים שלכם", n:"תאילנד דורשת 6 חודשים לפחות מיום הכניסה. חידוש לוקח שבועות", links:[{l:"חידוש דרכון — gov.il", u:"https://www.gov.il/he/search?query=%D7%97%D7%99%D7%93%D7%95%D7%A9%20%D7%93%D7%A8%D7%9B%D7%95%D7%9F"}] },
+    { id:"t05", t:"סגירת טווח תאריכים מדויק", n:"הפלט של שתי המשימות הראשונות — ולעדכן אותו למעלה בלשונית הסקירה" },
+    { id:"t06", t:"אימות פטור ויזה לישראלים", n:"יש פטור לשהות קצרה — לאמת מול הנציגות שהוא עדיין בתוקף", links:[{l:"שגרירות תאילנד בת\"א", u:"https://telaviv.thaiembassy.org"}] }
+  ]},
+  { id:"s1", name:"שלב 1 — הזמנות שמתייקרות", why:"הסדר חשוב: קודם הטיסה הבינלאומית (מכתיבה שעות נחיתה), אז הפנימיות (מתחברות אליה), ורק אז המלונות (הלילות נגזרים מהטיסות).", urgent:true, tasks:[
+    { id:"t11", t:"לדבר עם אילנה — טיסות עובדים ל-TLV↔BKK", n:"לבדוק לפני השוואת מחירים רגילה — יכול לחסוך אלפי שקלים" },
+    { id:"t12", t:"טיסה בינלאומית TLV↔BKK", n:"ישיר ~‎$950–1,100 לאדם, עם עצירה ~‎$730–900. לשים לב לשעת הנחיתה בבנגקוק", links:[{l:"Google Flights · TLV↔BKK", act:"flIntl"}] },
+    { id:"t13", t:"טיסות פנימיות — בנפרד ובאופן פתוח", n:"BKK→HKT (פנימה לפוקט) ו-KBV→BKK (החוצה מקראבי) · ‎~$45–60 לאדם לכיוון", links:[{l:"BKK→HKT", act:"flOut"},{l:"KBV→BKK", act:"flBack"}] },
+    { id:"t14", t:"לבקש עריסת טיסה (Bassinet) ולוודא רישום התינוקת ככרטיס Infant", n:"לרוב עד ~11 ק\"ג — לבדוק מגבלת משקל מול חברת התעופה" },
+    { id:"t15", t:"החלטה על חלוקת הלילות בין פוקט לאאו נאנג", n:"יותר פוקט או חלוקה מאוזנת — אפשר לשחק עם זה בלשונית המסלול, המספרים מתעדכנים לפי התאריכים שבחרתם", links:[{l:"ללשונית המסלול", go:"route"}] },
+    { id:"t16", t:"מלון בפוקט", n:"Katathani או SAii Laguna. לבקש חדר בלי מדרגות + מיטת תינוק. עדיף ביטול חינם", links:[{l:"Booking עם התאריכים", act:"bkPhuket"},{l:"השוואת המלונות", go:"hotels"}] },
+    { id:"t17", t:"מלון באאו נאנג", n:"Centara Ao Nang / Avani Cliff — זה הראשון שייגמר, לסגור קודם!", links:[{l:"Booking עם התאריכים", act:"bkAonang"},{l:"השוואת המלונות", go:"hotels"}] },
+    { id:"t18", t:"החלטה: לסיים עם 2 לילות בבנגקוק (מומלץ) או להישאר 7+6", n:"הטיסה הביתה ממריאה 23:55 — סיום בבנגקוק מוריד את לחץ הקונקשן ביום האחרון ונותן ערב זוגי עם בייביסיטר מהמלון. ההשוואה המלאה בלשונית המסלול", links:[{l:"להשוואת היעדים", go:"route"},{l:"מלונות בבנגקוק", act:"bkBkk"}] },
+    { id:"t19", t:"פנסיון לכלבה — לסגור ל-31.10 עד 15.11", n:"פנסיונים טובים מתמלאים — לסגור מוקדם. לוודא: מסירה ב-31.10 לפני הטיסה, איסוף ב-15.11, ולהשאיר מספר חירום של מישהו בארץ", links:[{l:"חיפוש פנסיון לכלבים", u:"https://www.google.com/search?q=%D7%A4%D7%A0%D7%A1%D7%99%D7%95%D7%9F%20%D7%9C%D7%9B%D7%9C%D7%91%D7%99%D7%9D%20%D7%9E%D7%95%D7%9E%D7%9C%D7%A5"}] }
+  ]},
+  { id:"s2", name:"שלב 2 — ביטוח ובריאות", why:"הביטוח דורש תאריכים ופרטי טיסה, לכן אחרי שלב 1 — אבל לא לדחות, חייב להיות תקף מרגע היציאה.", tasks:[
+    { id:"t21", t:"ביטוח נסיעות ל-3 נפשות", n:"לוודא במפורש שהתינוקת מכוסה + כיסוי ביטול. ‎~₪600–800 למשפחה ל-14 יום", links:[{l:"השוואת ביטוחים", u:"https://www.google.com/search?q=%D7%91%D7%99%D7%98%D7%95%D7%97%20%D7%A0%D7%A1%D7%99%D7%A2%D7%95%D7%AA%20%D7%AA%D7%90%D7%99%D7%9C%D7%A0%D7%93%20%D7%94%D7%A9%D7%95%D7%95%D7%90%D7%94%20%D7%AA%D7%99%D7%A0%D7%95%D7%A7"}] },
+    { id:"t22", t:"ייעוץ בטיפת חלב / רופא ילדים", n:"חיסונים והמלצות לתינוקת באזור טרופי" },
+    { id:"t23", t:"חיסונים למבוגרים", n:"הפטיטיס A/B, טטנוס — לפי המרפאה. חלקם דורשים זמן מראש" },
+    { id:"t24", t:"ערכת תרופות מהארץ", n:"אקמול/נורופן לתינוקות, תרופות קיבה, חומר חיטוי, קרם הגנה לתינוקות, דוחה יתושים מותאם" },
+    { id:"t25", t:"לשמור בטלפון: בתי החולים + מספר החירום של הביטוח", n:"הכול מרוכז בלשונית הסקירה כאן", links:[{l:"לרשימת החירום", go:"overview"}] }
+  ]},
+  { id:"s3", name:"שלב 3 — לוגיסטיקה על הקרקע", why:"בערך חודש לפני היציאה.", tasks:[
+    { id:"t31", t:"הזמנת הסעה פוקט → אאו נאנג", n:"רכב פרטי ~3 שעות, ‎~฿3,000–3,500. לוודא במפורש כיסא בטיחות (‎+฿300) — לא מובן מאליו בתאילנד", links:[{l:"12Go · פוקט→קראבי", u:"https://12go.asia/en/travel/phuket/krabi"}] },
+    { id:"t32", t:"הסעות שדה ↔ מלון", n:"HKT→קאטה ‎~฿1,000. גם כאן — כיסא בטיחות מראש", links:[{l:"חיפוש הסעה עם כיסא", u:"https://www.google.com/search?q=phuket+airport+private+transfer+baby+car+seat"}] },
+    { id:"t33", t:"אישור סופי מול המלונות", n:"מיטת תינוק, קומקום בחדר, חדר נגיש בלי מדרגות / ליד מעלית" },
+    { id:"t34", t:"בניית לוח זמנים יומי גמיש", n:"עם תינוקת — פעילות אחת ביום מקסימום. אפשר לסמן כוכב באטרקציות כאן", links:[{l:"לאטרקציות", go:"route"}] },
+    { id:"t35", t:"סגירת תקציב", n:"בלשונית התקציב — ולעדכן שם כל תשלום", links:[{l:"ללשונית התקציב", go:"budget"}] },
+    { id:"t36", t:"eSIM לשני הטלפונים", n:"Airalo ‎~$20 ל-15 יום ללא הגבלה — לקנות מראש, זול מרואמינג", links:[{l:"Airalo תאילנד", u:"https://www.airalo.com/thailand-esim"}] },
+    { id:"t37", t:"כרטיס אשראי בלי עמלות חו\"ל + מזומן בבאט", n:"" },
+    { id:"t38", t:"להוריד את Grab / Bolt", n:"המוניות של תאילנד — חוסך ויכוחי מחיר", links:[{l:"Grab", u:"https://www.grab.com/th/en/"},{l:"Bolt", u:"https://bolt.eu/he/"}] }
+  ]},
+  { id:"s4", name:"שלב 4 — שבוע לפני", why:"", tasks:[
+    { id:"t41", t:"צילום/סריקה של דרכונים, ביטוח, אישורי טיסה ומלון", n:"בענן וגם שמור בנייד" },
+    { id:"t42", t:"אריזה", n:"מצע החתלה, מנשא (חשוב יותר מעגלה!), כובע, בגדים קלים, מטרייה קטנה" },
+    { id:"t43", t:"צ'ק-אין מקוון לטיסה", n:"" },
+    { id:"t46", t:"טופס כניסה דיגיטלי TDAC — חובה, ב-72 השעות שלפני ההגעה", n:"חובה לכל נוסע, כולל התינוקת (מחליף את טופס הנייר TM6, בתוקף ממאי 2025). ממלאים אונליין, בחינם, עד 3 ימים לפני הנחיתה בתאילנד — המערכת לא מאפשרת קודם. מקבלים QR למייל — לשמור בנייד ולהציג בביקורת הדרכונים. זהירות מאתרים מתחזים שגובים כסף — רק האתר הרשמי", links:[{l:"האתר הרשמי — tdac.immigration.go.th", u:"https://tdac.immigration.go.th/"}] },
+    { id:"t44", t:"הורדת מפות אופליין של פוקט וקראבי", n:"Google Maps → Offline maps", links:[{l:"מדריך מפות אופליין", u:"https://support.google.com/maps/answer/6291838"}] },
+    { id:"t45", t:"לוודא שהתינוקת מופיעה בכרטיס כ-Infant", n:"" }
+  ]}
+];
+
+const HOTELS = [
+  { id:"katathani", img:"img/katathani.jpg", base:"phuket", rec:true, name:"Katathani Phuket Beach Resort", area:"חוף קאטה נוי", rating:4.5, count:2757, booking:"8.6 (1,799)", phone:"+66 76 318 350", site:"https://www.katathani.com/", lat:7.807386, lng:98.299914, placeId:"ChIJ8fl9IZslUDARwog5-UwseOI", usd:[140,270],
+    pros:["חוף קאטה נוי שקט וכמעט פרטי","אגף Vhari החדש (נפתח דצמ' 2025): פארק מים, נהר עצל 170 מ', בריכות רדודות לפעוטות ✔ אומת","מהמשפחתיים באי · 10 דק' לעיירת קאטה ולשוק"],
+    warns:["המגלשות פועלות ב-3 מקצי זמן ביום; אגף Vhari מעבר לכביש (לא צמוד לחוף)"] },
+  { id:"saii", img:"img/saii.jpg", base:"phuket", rec:true, name:"SAii Laguna Phuket", area:"חוף באנג טאו (לגונה)", rating:4.7, count:5338, booking:"8.7 (1,257)", phone:"+66 76 360 600", site:"https://saiihotels.com/laguna-phuket/", lat:7.996386, lng:98.293788, placeId:"ChIJc2pBSM85UDARj5iASp6ii8I", usd:[120,180],
+    pros:["ביקורות מפורשות על התאמה לתינוקות (ערכת ילדים, שרפרף לכיור)","שיפוץ מלא הושלם ב-2025 — 255 חדרים מחודשים","הכי קרוב לשדה — 30 דק' · צמוד ל-Boat Avenue"],
+    warns:["לוודא מול המלון שאין עבודות שיוריות בתאריכים שלכם"] },
+  { id:"centara-grand", img:"img/centara-grand.jpg", base:"phuket", name:"Centara Grand Beach Resort", area:"חוף קארון", rating:4.7, count:6975, booking:"7.9 (625) — הנמוך ברשימה", phone:"+66 76 201 234", site:"https://www.centarahotelsresorts.com/", lat:7.857859, lng:98.290401, placeId:"ChIJ_fm1oEElUDAR38X4EWQfkI0", usd:[150,250],
+    pros:["נהר עצל ומגלשות מים — נהדר לפעוטות","גישה ישירה לחוף קארון, 10 דק' הליכה למסעדות"],
+    warns:["ביקורות 2025–26: חדרים מיושנים, שירות מתחת לתקן 5★, פיקדון ฿2,000 בצ'ק-אין","הרבה מדרגות ומעליות מרובות — מסורבל עם עגלה. אם בוחרים: חדר צמוד למעלית"] },
+  { id:"angsana", img:"img/angsana.jpg", base:"phuket", name:"Angsana Laguna Phuket", area:"באנג טאו (לגונה)", rating:4.7, count:5895, phone:"+66 76 358 500", site:"https://www.angsana.com/thailand/laguna-phuket", lat:7.9905, lng:98.2965, placeId:"ChIJVSJwJs05UDAR9rkrcC6f_zM", usd:[230,270],
+    pros:["ריזורט לגונה גדול עם בריכה ענקית","קרוב ל-Boat Avenue"],
+    warns:["⏰ שיפוץ נרחב מתוכנן 5.5–31.10.2026 (בריכה ראשית סגורה בחלקו) — התאריכים שלכם ימים ספורים אחרי הסיום המתוכנן. לוודא סיום בפועל לפני הזמנה!"] },
+  { id:"dusit", img:"img/dusit.jpg", base:"phuket", name:"Dusit Thani Laguna Phuket", area:"באנג טאו (לגונה)", rating:4.6, count:3903, booking:"8.5 (2,054)", phone:"+66 76 362 999", site:"https://www.dusit.com/dusitthani-lagunaphuket/", lat:7.9889, lng:98.2925, placeId:"ChIJJXHPLsw5UDARWleCTPNA0yU", usd:[135,250],
+    pros:["ישירות על חוף באנג טאו","הבחירה הבטוחה באזור הלגונה לתאריכים שלכם (בלי שיפוצים)"],
+    warns:["רחוק יחסית מאזורי קניות ושווקי לילה"] },
+  { id:"kata-palm", img:"img/kata-palm.jpg", base:"phuket", name:"Kata Palm Resort & Spa", area:"קאטה — 5 דק' הליכה שטוחה לחוף", booking:"~8.0", lat:7.8207, lng:98.3009, usd:[50,90],
+    pros:["הליכה שטוחה לחוף קאטה — בלי גבעות ומדרגות","בריכות גדולות עם אזור ילדים","האופציה החסכונית ברשימה"],
+    warns:["נכנס במקום נובוטל קאטה שנפסל באימות (גבעה תלולה, עבודות בנייה, דיווחי עובש) — לבדוק ביקורות עדכניות לפני הזמנה"] },
+  { id:"centara-aonang", img:"img/centara-aonang.jpg", base:"aonang", rec:true, name:"Centara Ao Nang Beach Resort & Spa", area:"אאו נאנג — על החוף", rating:4.8, count:7534, booking:"8.4 (2,400+)", phone:"+66 75 815 999", site:"https://www.centarahotelsresorts.com/centara/cnk/", lat:8.029651, lng:98.82588, placeId:"ChIJi1x0FEDzVDARsED3oOcDb7k", usd:[100,160],
+    pros:["הדירוג הגבוה ביותר ברשימה (4.8 בגוגל)","שטוח לגמרי, גישה ישירה לחוף + הליכה למרכז ולשוק","חדרים מרווחים ובריכה משפחתית"],
+    warns:["ביקורות אחרונות: חוסר עקביות בניקיון ומעט מיטות שיזוף בעונת השיא"] },
+  { id:"avani", img:"img/avani.jpg", base:"aonang", name:"Avani Ao Nang Cliff Resort", area:"אאו נאנג — על הצוק", rating:4.6, count:5908, booking:"8.3 (691)", phone:"+66 75 626 888", site:"https://www.avanihotels.com/ao-nang-krabi", lat:8.033188, lng:98.825728, placeId:"ChIJw5CadqMJKDERQJH1SHe8-VE", usd:[85,130],
+    pros:["שירות עם שבחים חריגים","5 דק' הליכה לחוף ולמסעדות","נוף צוקים מהבריכה"],
+    warns:["הרבה מדרגות ומעליות מוגבלות במתחם הצוק — לא נוח עם עגלה. אם בוחרים: לבקש חדר צמוד ללובי/מעלית","רעש ערב אפשרי (מרכז אאו נאנג)"] },
+  { id:"holiday-inn", img:"img/holiday-inn.jpg", base:"aonang", rec:true, name:"Holiday Inn Resort Krabi Ao Nang", area:"אאו נאנג", rating:4.5, count:1803, booking:"8.5 (2,326)", phone:"+66 75 637 635", site:"https://www.ihg.com/holidayinnresorts/hotels/us/en/krabi/kbvao/hoteldetail", lat:8.033398, lng:98.826472, placeId:"ChIJHwyCY__BUTARad1a0JdWa1A", usd:[100,150],
+    pros:["ההתאמה המשפחתית הטובה באזור: מועדון הילדים הגדול באאו נאנג, בריכת פעוטות רדודה עם מגלשות","ילדים ישנים ואוכלים חינם (IHG Kids Free)","שטוח, 4 דק' הליכה לחוף"],
+    warns:["רעש בערב בקומות נמוכות מול מתחם הבידור — לבקש קומה גבוהה / כיוון בריכה"] }
+];
+
+const ATTS = [
+  /* ---- פוקט ---- */
+  { id:"old-town", base:"phuket", kind:"walk", name:"העיר העתיקה של פוקט", desc:"רחובות סינו-פורטוגזיים צבעוניים (Thalang, Soi Romanee), ציורי קיר ובתי קפה", lat:7.8858, lng:98.3866, cost:"חינם", time:"1.5–3 ש'", baby:"מדרכות צרות — מנשא נוח מעגלה. הכי נעים לפני 10:00" },
+  { id:"lard-yai", base:"phuket", kind:"market", name:"שוק יום ראשון — Lard Yai", desc:"רק בימי א' 16:00–22:00: רחוב Thalang נסגר לרכבים — אוכל רחוב, קראפט והופעות", lat:7.8856, lng:98.3868, cost:"חינם · מנות ‎฿20–100", time:"1–2 ש'", baby:"להגיע ב-16:00–17:30 — אחרי החושך צפוף מאוד. הרחוב הסגור דווקא נוח לעגלה מוקדם" },
+  { id:"chillva", base:"phuket", kind:"market", name:"שוק צ'ילווה (Chillva)", desc:"שוק לילה צעיר בקונטיינרים — דוכני אוכל ומוזיקה חיה · ב'–ש' 17:00–23:00, סגור בימי א'", lat:7.90697, lng:98.37327, cost:"חינם · ארוחה ‎฿150–250", time:"1–1.5 ש'", baby:"מרווח יחסית, עגלה עוברת בנעימות בשעה מוקדמת" },
+  { id:"naka", base:"phuket", kind:"market", name:"שוק סוף השבוע נאקה", desc:"השוק הגדול באי — בגדים, מזכרות והמון אוכל רחוב · שבת–א' 16:00–22:00", lat:7.88061, lng:98.36682, cost:"חינם · מנות ‎฿30–150", time:"1–2 ש'", baby:"חם וצפוף אחרי השקיעה — להגיע ב-16:00 בדיוק. מנשא בטוח יותר בשיא" },
+  { id:"boat-avenue", base:"phuket", kind:"market", name:"Boat Avenue + פורטו דה פוקט", desc:"שוק שישי איכותי (16:00–21:00) וקניון פתוח יומיומי — 5 דק' מבאנג טאו", lat:7.9922, lng:98.3057, cost:"חינם · דוכנים ‎฿100–300", time:"1.5–2 ש'", baby:"השוק הכי ידידותי לעגלה באי — סלול, חדר החתלה וממוזג בפורטו" },
+  { id:"elephant-sanct", base:"phuket", kind:"nature", name:"מקלט הפילים של פוקט", desc:"מקלט אתי (צפייה בלבד) לפילים משוחררים, טיילת חופות מוצלת · חצי יום בוקר", lat:8.040, lng:98.408, cost:"‎฿3,000 למבוגר · לתאם תינוקת מראש", time:"חצי יום", baby:"מנשא חובה. יש עגלות גולף חשמליות למשפחות. תוכנית הבוקר קרירה יותר" },
+  { id:"aquaria", base:"phuket", kind:"indoor", name:"אקווריה פוקט", desc:"האקווריום הגדול בתאילנד, במרתף קניון Central Floresta — מנהרת הליכה מתחת למים", lat:7.889, lng:98.3673, cost:"‎~฿540–600 אונליין (בקופה ‎฿1,090)", time:"1.5–2 ש'", baby:"מושלם ליום חם/גשום — ממוזג, שטוח, נגיש לעגלה, חדרי החתלה בקניון" },
+  { id:"kata-noi", base:"phuket", kind:"beach", name:"חוף קאטה נוי", desc:"האח הקטן והשקט של קאטה — חול נקי ומים רגועים בבקרים של נובמבר", lat:7.8095, lng:98.2963, cost:"חינם", time:"2–3 ש'", baby:"שיפוע עדין. צל טבעי מועט — להביא מטרייה" },
+  { id:"surin", base:"phuket", kind:"beach", name:"חוף סורין", desc:"סהר חול לבן עם פארק עצי צל ומסעדות חוף רגועות מאחור", lat:7.9743, lng:98.2779, cost:"חינם", time:"2–3 ש'", baby:"חורשה מוצלת ממש מאחורי החול — נדיר בפוקט ומעולה לשנ\"צ ופיקניק" },
+  { id:"bangtao-beach", base:"phuket", kind:"beach", name:"חוף באנג טאו", desc:"6 ק\"מ של חול רחב ורגוע מול ריזורטי הלגונה — החוף המשפחתי המרווח באי", lat:7.993, lng:98.295, cost:"חינם", time:"חצי יום", baby:"חול הדוק ושטוח — עגלה מתגלגלת ליד קו המים. המון מסעדות חוף" },
+  { id:"ao-yon", base:"phuket", kind:"beach", name:"חוף או יון (Ao Yon)", desc:"מפרץ מזרחי מוגן שנשאר רגוע גם כשיש גלים במערב — מקומי ולא צפוף", lat:7.809, lng:98.390, cost:"חינם", time:"2–3 ש'", baby:"המים הכי רדודים ושקטים בפוקט לתינוקת. צל עצים טבעי. להביא ציוד — שירותים מעטים" },
+  { id:"big-buddha", base:"phuket", kind:"view", name:"הבודהה הגדול", desc:"פסל שיש בגובה 45 מ' על ההר — נפתח מחדש במרץ 2026 · 9:00–18:00", lat:7.82758, lng:98.31284, cost:"חינם (תרומה)", time:"‎~1 ש'", baby:"הטרסה התחתונה עם הנוף נגישה לעגלה; לפסל עצמו 94 מדרגות — מנשא. לבוש צנוע" },
+  { id:"karon-vp", base:"phuket", kind:"view", name:"תצפית שלושת החופים", desc:"נקודת התצפית הקלאסית על קאטה נוי, קאטה וקארון", lat:7.786, lng:98.3058, cost:"חינם", time:"20–30 דק'", baby:"מגיעים ברכב עד למעלה, טרסה סלולה עם צל — עצירה קלה בדרך לפרומתפ" },
+  { id:"promthep", base:"phuket", kind:"view", name:"כף פרומתפ בשקיעה", desc:"נקודת השקיעה המפורסמת של פוקט — שקיעה ‎~18:10 בנובמבר", lat:7.7591, lng:98.3054, cost:"חינם", time:"45–60 דק'", baby:"הטרסה העליונה נוחה לעגלה. עמוס 17:30–18:30 — להגיע ב-17:00 בשביל חניה" },
+  { id:"windmill-vp", base:"phuket", kind:"view", name:"תצפית טחנות הרוח", desc:"מעל חוף יה נוי, בין ראוואי לפרומתפ — זווית שקיעה יפה עם עשירית מהקהל", lat:7.7679, lng:98.304, cost:"חינם", time:"20–30 דק'", baby:"שביל קצר ושטוח מהחניה — קל עם מנשא" },
+  { id:"rawai", base:"phuket", kind:"food", name:"שוק פירות הים ראוואי", desc:"קונים דגים טריים במשקל ומבשלים לכם בצריפים ממול (‎~฿100/ק\"ג) מול המפרץ", lat:7.7716, lng:98.3232, cost:"ארוחה ‎฿300–600 לאדם", time:"1–1.5 ש'", baby:"שולחנות פתוחים עם בריזה. כיסאות אוכל נדירים — קליפ-און שימושי" },
+  { id:"wat-chalong", base:"phuket", kind:"temple", name:"ואט צ'לונג", desc:"המקדש החשוב של פוקט — פגודה מעוטרת עם שריד של בודהה", lat:7.8461, lng:98.3376, cost:"חינם (תרומה)", time:"45–60 דק'", baby:"מתחם שטוח וסלול, נוח לעגלה. לפני 10:00 — פחות חום ואוטובוסים. זיקוקי המשאלות עלולים להבהיל" },
+  { id:"central", base:"phuket", kind:"indoor", name:"סנטרל פוקט (קניוני הענק)", desc:"שני מגה-קניונים ממוזגים — פודקורטים, אקווריה, והמפלט המושלם מחום צהריים או גשם", lat:7.889, lng:98.367, cost:"חינם", time:"2–4 ש'", baby:"חדרי הנקה והחתלה, מעליות בכל פינה, השכרת עגלות — התשתית הכי טובה באי" },
+  { id:"cafe-delmar", base:"phuket", kind:"food", name:"קפה דל מאר קמאלה (ביום)", desc:"ביץ' קלאב איביזה — ריק ורגוע 11:00–16:00, נהיה מסיבה מהשקיעה", lat:7.96095, lng:98.28393, cost:"ללא כניסה · מינימום ‎฿1,000–3,000 למיטה", time:"2–4 ש'", baby:"בריכה ומיטות מוצלות עם שירות — לבוא ביום וללכת לפני שה-DJ עולה" },
+  { id:"bangla", base:"phuket", kind:"walk", name:"באנגלה רואד, פאטונג (הצצה)", desc:"רחוב חיי הלילה — 18:00–19:30 זה חלון ה\"רך\": ניאון דולק, עדיין לא רועש", lat:7.8928, lng:98.2967, cost:"חינם", time:"20–30 דק'", baby:"אפשרי עם עגלה מוקדם בערב כחוויית ניאון קצרה; אחרי 20:00 — ממש לא" },
+  /* ---- אאו נאנג / קראבי ---- */
+  { id:"landmark", base:"aonang", kind:"market", name:"שוק הלילה Ao Nang Landmark", desc:"שוק הלילה המרכזי — אוכל רחוב, פירות ים, מוזיקה חיה ומופעי אש · כל ערב 16:00–23:00", lat:8.0341, lng:98.8158, cost:"חינם · מנות ‎฿50–200", time:"1–1.5 ש'", baby:"שטוח וסלול. 17:00–18:30 = החלון הנוח; אחרי 19:00 צפוף ורועש" },
+  { id:"nopparat", base:"aonang", kind:"beach", name:"חוף נופרת תארא", desc:"חוף ארוך, שקט ומוצל בעצי קזוארינה — 5 דק' מאאו נאנג ועדיף ממנו בהרבה", lat:8.0355, lng:98.808, cost:"חינם", time:"1–3 ש'", baby:"החוף היומיומי המושלם: צל, מים רדודים, טיילת נוחה לעגלה, דוכני אוכל" },
+  { id:"railay", base:"aonang", kind:"boat", name:"ריילי ווסט (לונגטייל)", desc:"חוף החלומות בין הצוקים — 10–15 דק' שיט לונגטייל מאאו נאנג", lat:8.0068, lng:98.8371, cost:"‎฿200 לאדם הלוך-חזור · תינוקת חינם", time:"חצי יום", baby:"עשוי ומקובל עם תינוקת: יורדים למים ברגליים עם התינוקת ביד (Wet landing). מנשא, לא עגלה. הים בנובמבר רגוע" },
+  { id:"phra-nang", base:"aonang", kind:"beach", name:"חוף מערת פרה נאנג", desc:"חוף עוצר נשימה מתחת לצוק עם מערת המקדש — 10 דק' הליכה שטוחה מריילי", lat:8.0009, lng:98.8395, cost:"חינם (בשילוב השיט לריילי)", time:"1–2 ש'", baby:"שביל שטוח, מים רדודים ורגועים, צל בבסיס הצוק. זהירות מהקופים — אוכל בתיק סגור!" },
+  { id:"monkey-trail", base:"aonang", kind:"walk", name:"שביל הקופים → חוף פאי פלונג", desc:"‎350 מ' של מדרגות עץ בג'ונגל מעל הים, בסופו מפרץ שקט. לנגורים בדרך", lat:8.0297, lng:98.825, cost:"חינם", time:"1–2 ש' עם החוף", baby:"רק מנשא (מדרגות תלולות), נעליים סגורות, לוותר אחרי גשם. בלי אוכל גלוי — קופים חוטפים" },
+  { id:"krabi-market", base:"aonang", kind:"market", name:"שוק סוף השבוע קראבי טאון", desc:"השוק הטוב במחוז — כיכר אוכל ענקית, במה ומוזיקה · ו'–א' 17:00–22:00 · ‎30 דק' נסיעה", lat:8.0621, lng:98.917, cost:"חינם · מנות ‎฿20–100", time:"1.5–2 ש' + נסיעה", baby:"אזור ישיבה מול הבמה. להגיע ב-17:00 כשפתוח ואוורירי. משתלב עם המקדש הלבן" },
+  { id:"wat-kaew", base:"aonang", kind:"temple", name:"המקדש הלבן (Wat Kaew)", desc:"מקדש לבן בוהק על גבעה במרכז קראבי טאון — עצירה יפה לפני שוק סוף השבוע", lat:8.0622, lng:98.9135, cost:"חינם", time:"20–30 דק'", baby:"כ-70 מדרגות — קל עם מנשא, אולם שקט ומוצל למעלה" },
+  { id:"tiger-cave", base:"aonang", kind:"temple", name:"מקדש מערת הנמר (הבסיס)", desc:"המקדש המפורסם של קראבי. למעלה 1,260 מדרגות — אבל הבסיס לבדו שווה ביקור", lat:8.124, lng:98.9252, cost:"חינם (תרומה)", time:"‎~1 ש' בבסיס", baby:"לא לטפס עם תינוקת! בבסיס: מערת המקדש, פסל גואן-ין ענק ומתחם שטוח נוח לעגלה. זהירות מקופים" },
+  { id:"emerald", base:"aonang", kind:"nature", name:"בריכת האזמרגד + מעיינות חמים", desc:"בריכת מעיין טורקיז ביער גשם + בריכות מפל חמימות · ‎~שעה ורבע נסיעה", lat:7.9262, lng:99.2668, cost:"‎฿400 + ‎฿200 למבוגר · תינוקת חינם", time:"חצי יום", baby:"אפשרי: לצאת 7:30, להגיע לפני האוטובוסים. שביל עץ שטוח ‎~1 ק\"מ (מנשא). בבריכה החמה — רק רגליים לתינוקת" },
+  { id:"hong", base:"aonang", kind:"boat", name:"איי הונג — לונגטייל פרטי", desc:"לגונה טורקיז בתוך טבעת צוקים וחוף לבן שמור · 45–60 דק' שיט", lat:8.0724, lng:98.686, cost:"שכירת סירה ‎~฿2,500–4,000 + ‎฿300 דמי פארק לאדם", time:"חצי יום", baby:"פרטי = בקצב שלכם: לצאת 8:00 לפני הקהל. לונגטייל בים רגוע עדיף על ספידבוט. להביא אוהל צל וחגורת ציפה לתינוקת" },
+  { id:"krabi-elephant", base:"aonang", kind:"nature", name:"מקלט פילים קראבי (Elephant House)", desc:"מקלט קטן ואתי בעמק סאי תאי — האכלה והליכה עם פילים מחולצים · 20 דק' נסיעה", lat:8.051, lng:98.889, cost:"‎฿1,700–2,400 למבוגר · גיל 0–3 חינם", time:"חצי יום", baby:"ידידותי לתינוקות במוצהר (0–3 חינם). האכלה מהפלטפורמה עם תינוקת ביד; את אמבט הבוץ עושים בתורות" },
+  { id:"khanab-nam", base:"aonang", kind:"boat", name:"הרי התאומים בנהר (Khao Khanab Nam)", desc:"שיט לונגטייל רגוע בנהר קראבי בין שני צוקי ענק ומנגרובים · 15 דק' מהעיר", lat:8.0777, lng:98.9127, cost:"סירה ‎~฿300–500 + מערה ‎฿30", time:"1–1.5 ש'", baby:"מים שטוחים לגמרי — חוויית השיט הכי קלה לתינוקת. למערה יש מדרגות — מנשא" },
+  { id:"tubkaek", base:"aonang", kind:"beach", name:"חופי קלונג מואנג וטובקאק", desc:"חופים שלווים 20–30 דק' צפונה, מול איי הונג — השקיעות הכי יפות בקראבי", lat:8.068, lng:98.74, cost:"חינם", time:"אחה\"צ", baby:"רדוד, ריק ומוצל. אחר צהריים בלי תוכנית: שכשוך, ארוחת שקיעה על החוף, והביתה לישון" },
+  { id:"klong-root", base:"aonang", kind:"nature", name:"קיאקים בלגונה הצלולה (Klong Root)", desc:"תעלת מעיין שקופה כזכוכית בין דקלים — 10–15 דק' מאאו נאנג", lat:8.085, lng:98.783, cost:"קיאק ‎~฿300 ללא הגבלת זמן", time:"1.5–2.5 ש'", baby:"הפתרון: אחד חותר, השני עם התינוקת בקפה שעל המים — ומתחלפים. 7:00–9:00 המים כמו מראה" },
+  { id:"susan-hoi", base:"aonang", kind:"nature", name:"חוף המאובנים (Susan Hoi)", desc:"משטחי אבן של צדפות בנות ‎35–75 מיליון שנה על קו החוף · 15 דק' נסיעה", lat:8.0224, lng:98.8836, cost:"‎฿200 למבוגר", time:"30–45 דק'", baby:"שבילים סלולים עד התצפית — נוח לעגלה. עצירה קצרה ונחמדה, לא יעד שלם" }
+];
+
+const MEDICAL = [
+  { id:"bkk-hosp", base:"phuket", name:"Bangkok Hospital Phuket", desc:"בית חולים פרטי ברמה מערבית, דובר אנגלית — הכתובת הרפואית בפוקט", lat:7.904, lng:98.376, phone:"+66 76 254 425" },
+  { id:"krabi-hosp", base:"aonang", name:"Krabi Nakharin Int'l Hospital", desc:"הפרטי הטוב באזור קראבי · 25 דק' מאאו נאנג · מוקד חירום ‎+66 75 630 999", lat:8.0808, lng:98.9058, phone:"+66 75 626 700" }
+];
+
+/* שדות תעופה — נקודות מפה (הטיסות עצמן ב-trip.js) */
+const AIRPORTS = [
+  { id:"hkt", base:"phuket", name:"נמל התעופה פוקט (HKT)", short:"HKT",
+    desc:"בצפון-מערב האי · הנחיתה של PG271 מבנגקוק · ‎25–35 דק' לבאנג טאו/לגונה, ‎45–60 דק' לקאטה",
+    lat:8.1132, lng:98.3169, site:"https://phuketairportthai.com/" },
+  { id:"bkk", base:"bangkok", name:"נמל התעופה סוברנבומי (BKK)", short:"BKK",
+    desc:"נחיתת אל על ב-1.11 והמראת PG271 למחרת ב-08:00 · ‎~10 דק' נסיעה למלון בלאט קראבאנג",
+    lat:13.6900, lng:100.7501, site:"https://suvarnabhumi.airportthai.co.th/" }
+];
+
+/* קאו לאק — החלופה השקטה ליעד השני (שעה–שעה וחצי צפונית לפוקט).
+   נקודות אלה מוצגות על המפה בלבד ואינן חלק מרשימת האטרקציות, כי היעד עוד לא הוכרע. */
+const KHAOLAK = [
+  { id:"kl-jw", kind:"hotel", short:"JW Marriott", name:"JW Marriott Khao Lak Resort & Spa", area:"חוף קוק קאק",
+    desc:"הריזורט המשפחתי המוביל ברצועה — פארק מים, מועדון ילדים ולגונת בריכות · שימו לב: אין בי\"ח פרטי באזור, פוקט במרחק 1.5–2 ש'",
+    lat:8.6086, lng:98.2384, placeId:"ChIJ5dIlcHXpUDAR1vOwPuNM2Jk", site:"https://www.marriott.com/hotels/travel/hktjw-jw-marriott-khao-lak-resort-and-spa/" },
+  { id:"kl-nangthong", kind:"att", short:"נאנג תונג", name:"חוף נאנג תונג", desc:"החוף המרכזי של קאו לאק — רצועה ארוכה עם מסעדות וחנויות מעבר לכביש", lat:8.6413, lng:98.2372, time:"חצי יום", extra:"שיפוע מתון וחול רך; בתחילת נובמבר הים כבר נרגע. מעט מאוד צל — מטרייה חובה" },
+  { id:"kl-bangniang", kind:"att", short:"באנג ניאנג", name:"חוף ושוק באנג ניאנג", desc:"החוף השקט מצפון + שוק הערב הכי גדול באזור (ב', ד', ש' מ-16:00)", lat:8.6660, lng:98.2415, cost:"חינם · מנות ‎฿40–150", time:"2–3 ש'", extra:"השוק שטוח וסלול, נוח לעגלה. זו כמעט כל סצנת הערב של קאו לאק" },
+  { id:"kl-tsunami", kind:"att", short:"סירה 813", name:"סירת המשטרה 813 — אנדרטת הצונאמי", desc:"ספינת משמר שנסחפה 2 ק\"מ פנימה ב-2004, היום אתר הנצחה עם מרכז מבקרים", lat:8.6704, lng:98.2482, cost:"חינם", time:"30–45 דק'", extra:"מתחם פתוח ושטוח, קרוב לשוק באנג ניאנג — עצירה קצרה בדרך" },
+  { id:"kl-lamru", kind:"att", short:"לאם רו", name:"פארק לאומי קאו לאק–לאם רו", desc:"תצפית צוק על הים האנדמני עם בית קפה ביער — הנקודה הכי יפה ברצועה", lat:8.5628, lng:98.2377, cost:"‎฿200 למבוגר", time:"1–1.5 ש'", extra:"מגיעים ברכב עד למעלה, השביל לתצפית קצר. קופים באזור — אוכל בתיק סגור" },
+  { id:"kl-taplamu", kind:"att", short:"טאפ לאמו", name:"נמל טאפ לאמו (איי סימילן)", desc:"נמל היציאה לאיי סימילן — נפתחים ב-15 באוקטובר. ספידבוט ‎~1.5 ש' לכיוון", lat:8.5372, lng:98.2545, cost:"טיול יום ‎฿2,500–3,500", time:"יום מלא", extra:"לא מומלץ עם תינוקת — ספידבוט פתוח בים פתוח. מוזכר כדי לדעת מה יש בסביבה" }
+];
+
+const EMERGENCY = [
+  { l:"משטרת תיירות (אנגלית, 24/7)", s:"הכתובת הראשונה כשיש בעיה", tel:"1155" },
+  { l:"אמבולנס", s:"חירום רפואי ארצי", tel:"1669" },
+  { l:"Bangkok Hospital Phuket", s:"בי\"ח פרטי, פוקט", tel:"+6676254425" },
+  { l:"Krabi Nakharin Hospital — מיון", s:"25 דק' מאאו נאנג", tel:"+6675630999" },
+  { l:"מרפאת Aonang Medical Clinic", s:"מרפאה תיירותית בלב אאו נאנג, כולל ילדים", tel:"" },
+  { l:"שגרירות ישראל בבנגקוק", s:"קו חירום: ‎+66 2 204 9209", tel:"+6622049200" },
+  { l:"בתי מרקחת", s:"Watsons על טיילת אאו נאנג (9:00–23:00) · Boots בפורטו דה פוקט וב-Jungceylon פאטונג", tel:"" }
+];
+
+const BUDGET = [
+  { id:"flightsIntl", name:"טיסות בינלאומיות TLV↔BKK", low:4600, typ:6300, high:8100, note:"‎2 מבוגרים + תינוקת (10% + מיסים). ישיר יקר יותר, עם עצירה זול יותר — ולבדוק טיסות עובדים!" },
+  { id:"flightsDom", name:"טיסות פנימיות", low:525, typ:700, high:1070, note:"BKK→HKT + KBV→BKK כולל כבודה ודמי תינוקת (‎~฿500 לקטע)" },
+  { id:"hotelPhuket", name:"מלון בפוקט", low:1460, typ:4300, high:6700, note:"", dyn:"phuket" },
+  { id:"hotelAonang", name:"מלון באאו נאנג", low:1340, typ:2860, high:3900, note:"", dyn:"aonang" },
+  { id:"transfers", name:"הסעות", low:450, typ:540, high:720, note:"שדה↔מלון ×2 + פוקט→אאו נאנג (‎~฿3,500 + כיסא בטיחות)" },
+  { id:"food", name:"אוכל", low:1400, typ:2500, high:3750, note:"‎~฿1,500–2,500 ליום לזוג, ארוחת בוקר כלולה במלון", perDay:14 },
+  { id:"activities", name:"אטרקציות ובילויים", low:450, typ:1100, high:1800, note:"מקלט פילים, שיט לריילי/הונג, אקווריום, ביץ' קלאב" },
+  { id:"insurance", name:"ביטוח נסיעות", low:350, typ:700, high:1200, note:"‎3 נפשות · לוודא כיסוי תינוקת", perDay:14 },
+  { id:"esim", name:"eSIM לשני טלפונים", low:60, typ:105, high:180, note:"Airalo ‎~$20 ל-15 יום ללא הגבלה" },
+  { id:"misc", name:"שונות", low:500, typ:1000, high:2000, note:"טיפים, מוניות, בית מרקחת, מזכרות" }
+];
+
+</script>
+<script>
+/* גשר אל trip.js — מקור האמת היחיד של הטיול (נערך ידנית).
+   trip.js מגדיר window.TRIP ונטען כ-<script> רגיל, לכן הכול עובד גם מ-file:// בלי שרת. */
+function loadTrip() {
+  if (window.TRIP) return Promise.resolve(window.TRIP);
+  const box = document.createElement("div");
+  box.className = "trip-load-error";
+  box.innerHTML = "<b>trip.js לא נטען.</b> ודאו שהקובץ <code>trip.js</code> קיים לצד ה-HTML, שהוא נטען לפני <code>trip-loader.js</code>, ושאין בו שגיאת תחביר (בדקו בקונסול).";
+  document.body.prepend(box);
+  return Promise.reject(new Error("window.TRIP is missing"));
+}
+
+</script>
+<script>
+/* ציר הזמן — בונה את הנקודות מתוך trip.js (טיסות, מלונות, לילות, תשלומים) + הקטלוג ב-data.js (HOTELS)
+   מצבים: done = סגור ושולם · todo = ידוע מה צריך, רק להזמין · open = עוד לא הוחלט.
+   נקודות מלון נפתחות כאקורדיון; נקודות טיסה פותחות כרטיס טיסה (דיאלוג) עם אנימציית מטוס. */
+loadTrip().then(function (trip) {
+  "use strict";
+
+  const FLIGHTS = trip.flights.intl, DOMESTIC = trip.flights.domestic || [];
+  const hotels = trip.hotels || {};
+  const hotelChoice = { phuket: hotels.phuket && hotels.phuket.id, second: hotels.second && hotels.second.id };
+  const paid = trip.payments || {};
+  const dest2 = trip.secondDest || { decided: false };
+  const dest2Name = dest2.decided && dest2.name ? dest2.name : "אאו נאנג או קאו לאק";
+
+  /* ---------- תאריכים ---------- */
+  const DAYS = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
+  const MON = ["ינו", "פבר", "מרץ", "אפר", "מאי", "יוני", "יולי", "אוג", "ספט", "אוק", "נוב", "דצמ"];
+  const MONF = ["ינואר", "פברואר", "מרץ", "אפריל", "מאי", "יוני", "יולי", "אוגוסט", "ספטמבר", "אוקטובר", "נובמבר", "דצמבר"];
+  const d = s => { const [y, m, dd] = s.split("-").map(Number); return new Date(y, m - 1, dd); };
+  const iso = dt => `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
+  const addDays = (s, n) => { const x = d(s); x.setDate(x.getDate() + n); return iso(x); };
+  const dm = s => `${d(s).getDate()}.${d(s).getMonth() + 1}`;
+  const dow = s => DAYS[d(s).getDay()];
+  const longDate = s => `יום ${dow(s)}, ${d(s).getDate()} ב${MONF[d(s).getMonth()]} ${d(s).getFullYear()}`;
+  const diffDays = (a, b) => Math.round((d(b) - d(a)) / 864e5);
+  const subMin = (hm, m) => { const [h, mm] = hm.split(":").map(Number); const t = h * 60 + mm - m; return `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`; };
+
+  const out = FLIGHTS.legs[0], back = FLIGHTS.legs[1];
+  const dom = DOMESTIC.find(f => f.from.code === "BKK") || DOMESTIC[0];          // בנגקוק → פוקט
+  const domBack = DOMESTIC.find(f => f.to.code === "BKK" && f !== dom) || null;  // חזרה לבנגקוק (אם נסגרה)
+  const landBKK = out.arrDate;              // 1.11
+  const toPhuket = dom.depDate;             // 2.11
+  const bkkNights = diffDays(landBKK, toPhuket);          // 1
+  const total = diffDays(landBKK, back.depDate);          // 13 לילות מלון
+  const rest = total - bkkNights;                          // 12
+  const phuketNights = Math.min(rest - 1, Math.max(1, +trip.phuketNights || Math.ceil(rest / 2))); // 6
+  const dest2Nights = rest - phuketNights;                  // 6
+  const phuketEnd = addDays(toPhuket, phuketNights);      // 8.11
+  const dest2End = back.depDate;                           // 14.11
+
+  const phuketHotel = HOTELS.find(h => h.id === hotelChoice.phuket) || null;
+  const phuketBooked = !!(hotels.phuket && hotels.phuket.booked);
+  const bkkHotel = hotels.bangkok && hotels.bangkok.name ? hotels.bangkok : null;
+  const secondHotel = hotels.second || {};
+  const secondBooked = !!secondHotel.booked;
+
+  /* ---------- עוזרים ---------- */
+  const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const mono = s => `<span class="mono">${esc(s)}</span>`;
+  const kv = rows => `<dl class="kv">${rows.filter(r => r[1]).map(([k, v]) => `<dt>${esc(k)}</dt><dd>${v}</dd>`).join("")}</dl>`;
+  const seg = (h, items) => `<div class="seg"><h4>${esc(h)}</h4><ul>${items.map(i => `<li>${i}</li>`).join("")}</ul></div>`;
+  const note = t => `<p class="note">${t}</p>`;
+  const actions = list => `<div class="actions">${list.map(a => `<a href="${a.u}" target="_blank" rel="noopener"${a.p ? ' class="primary"' : ""}>${esc(a.l)}</a>`).join("")}</div>`;
+  const gmaps = q => "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q);
+  const booking = (q, ci, co) => `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(q)}&checkin=${ci}&checkout=${co}&group_adults=2&group_children=1&age=1&no_rooms=1`;
+  const hasDigit = s => /\d/.test(String(s || ""));
+  const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ---------- כרטיסי טיסה: נורמליזציה של הנתונים ---------- */
+  const flightsPaid = paid.flightsIntl && paid.flightsIntl.amount ? `₪${paid.flightsIntl.amount.toLocaleString("he-IL")}` : "";
+  const intlTicket = leg => ({
+    kind: "intl", airline: FLIGHTS.airline, no: leg.no, ref: FLIGHTS.ref, status: FLIGHTS.status || "מאושר", dir: leg.dir,
+    from: leg.from, to: leg.to, depDate: leg.depDate, depTime: leg.depTime, arrDate: leg.arrDate, arrTime: leg.arrTime, arrNote: leg.arrNote,
+    dur: leg.dur, direct: leg.direct, cls: leg.cls, plane: leg.plane, meal: leg.meal, bags: leg.bags,
+    paid: flightsPaid ? flightsPaid + " · הלוך + חזור" : "",
+    seatsNote: hasDigit(leg.seats) ? "" : leg.seats,
+    pax: FLIGHTS.pax.map(p => {
+      const infant = !hasDigit(p.seat);
+      return { name: p.name, ticket: p.ticket, seat: infant ? p.seat : (hasDigit(leg.seats) ? p.seat : leg.seats), bag: infant ? "עגלה + תיק" : leg.bags, infant };
+    }),
+    note: leg.dir === "הלוך"
+      ? "יוצאים במוצ\"ש בלילה — ארבל תישן רוב הטיסה. נוחתים בצהריים ונשארים בבנגקוק ללילה אחד."
+      : "טיסת לילה — נוחתים בשבת בבוקר. מגיעים לסוברנבומי מהטיסה הפנימית עם כ-5 שעות מרווח."
+  });
+  const domTicket = f => ({
+    kind: "dom", airline: f.airline, no: f.no, ref: f.ref, status: f.status || "מאושר", dir: f.from.code === "BKK" ? "לדרום" : "לבנגקוק",
+    from: f.from, to: f.to, depDate: f.depDate, depTime: f.depTime, arrDate: f.arrDate, arrTime: f.arrTime, arrNote: f.arrNote,
+    dur: f.dur, direct: f.direct, cls: f.cls, fare: f.fare, plane: f.plane, meal: "", bags: "",
+    paid: f.paid ? `₪${f.paid.toLocaleString("he-IL")}` : "",
+    checkin: `נסגר 45 דק' לפני ההמראה — בשער עד ${subMin(f.depTime, 45)}`,
+    pax: (f.pax || []).map(p => ({ name: p.name, seat: p.seat, bag: p.bag, extra: p.extra, status: p.status, infant: !hasDigit(p.seat) })),
+    note: f.note || ""
+  });
+
+  const TICKETS = {
+    "intl-out": intlTicket(out),
+    "intl-back": intlTicket(back),
+    "dom-out": domTicket(dom)
+  };
+  if (domBack) TICKETS["dom-back"] = domTicket(domBack);
+
+  /* ---------- הנקודות ---------- */
+  const NODES = [
+    {
+      id: "intl-out", status: "done", ticket: true,
+      date: out.depDate, endDate: out.arrDate,
+      title: "טיסה בינלאומית · תל אביב → בנגקוק",
+      sum: `${esc(FLIGHTS.airline)} · ${mono(out.no)} · המראה ${mono(out.depTime)}, נחיתה ${mono(out.arrTime)} למחרת`
+    },
+    {
+      id: "bkk-hotel", status: bkkHotel && bkkHotel.booked ? "done" : "todo",
+      date: landBKK, endDate: toPhuket,
+      title: `מלון בבנגקוק · ${bkkNights === 1 ? "לילה אחד" : bkkNights + " לילות"}`,
+      need: bkkHotel && bkkHotel.booked ? "" : "לבחור מלון צמוד לשדה סוברנבומי ולהזמין",
+      sum: bkkHotel
+        ? `${esc(bkkHotel.name)}${bkkHotel.ref ? " · הזמנה " + mono(bkkHotel.ref) : ""} · ${mono(dm(landBKK))} → ${mono(dm(toPhuket))}`
+        : `${mono(dm(landBKK))} → ${mono(dm(toPhuket))} · צ'ק-אאוט מוקדם בבוקר למחרת`,
+      body: kv([
+        bkkHotel ? ["המלון", `<b>${esc(bkkHotel.name)}</b>${bkkHotel.note ? " · " + esc(bkkHotel.note) : ""}`] : ["", ""],
+        ["לילות", mono(String(bkkNights))],
+        ["הגעה", `${esc(dow(landBKK))} ${mono(dm(landBKK))}, נחיתה ${mono(out.arrTime)} + עמידה בבידוק ~שעה`],
+        ["יציאה", `${esc(dow(toPhuket))} ${mono(dm(toPhuket))}, צריך להיות בטרמינל D עד ${mono(subMin(dom.depTime, 75))}`]
+      ]) + seg("מה חשוב במלון הזה", [
+        `<b>קרוב לשדה</b> — הטיסה לפוקט ממריאה ב-${dom.depTime}, לא שווה לנסוע לעיר ובחזרה`,
+        "<b>שאטל לשדה</b> או הליכה מקורה מהטרמינל",
+        "<b>עריסה לתינוקת</b> — לבקש מראש",
+        "ארוחת בוקר מוקדמת או ארוחה ארוזה — יוצאים לפני 06:00"
+      ]) + seg("כיוונים לבדיקה", [
+        "<b>Novotel Bangkok Suvarnabhumi Airport</b> — מחובר לטרמינל בגשר הליכה, הכי פשוט עם עגלה ומזוודות",
+        "מלונות באזור לאט קראבאנג עם שאטל חינם — זולים יותר, 10–15 דק' נסיעה"
+      ]) + note("זה הלילה הקל ביותר לסגור: מלון אחד, קריטריון אחד (קרבה לשדה). כדאי לסגור אותו יחד עם המלון בפוקט.")
+        + actions([
+          { l: "חיפוש ב-Booking", u: booking("Suvarnabhumi Airport Bangkok", landBKK, toPhuket), p: true },
+          { l: "מפה — מלונות ליד השדה", u: gmaps("hotels near Suvarnabhumi Airport") }
+        ])
+    },
+    {
+      id: "dom-out", status: "done", ticket: true,
+      date: dom.depDate,
+      title: "טיסה פנימית · בנגקוק → פוקט",
+      sum: `${esc(dom.airline)} · ${mono(dom.no)} · ${mono(dom.depTime)} → ${mono(dom.arrTime)}`
+    },
+    {
+      id: "phuket-hotel", status: phuketBooked ? "done" : "todo",
+      date: toPhuket, endDate: phuketEnd,
+      title: `מלון בפוקט · ${phuketNights} לילות`,
+      need: phuketBooked ? "" : phuketHotel ? `המלון נבחר (${esc(phuketHotel.name)}) — נשאר להזמין` : "לבחור מלון ולהזמין",
+      sum: phuketHotel
+        ? `${esc(phuketHotel.name)} · ${esc(phuketHotel.area)} · ${mono(dm(toPhuket))} → ${mono(dm(phuketEnd))}`
+        : `${mono(dm(toPhuket))} → ${mono(dm(phuketEnd))} · עוד לא נבחר מלון`,
+      body: kv([
+        ["צ'ק-אין", `${esc(dow(toPhuket))} ${mono(dm(toPhuket))} — נוחתים ${mono(dom.arrTime)}, במלון בערך ב-${mono("10:30")} (חדר בד"כ מוכן מ-14:00, לבקש early check-in)`],
+        ["צ'ק-אאוט", `${esc(dow(phuketEnd))} ${mono(dm(phuketEnd))} — וממשיכים ברכב ל${esc(dest2Name)} (~1.5 ש')`],
+        ["לילות", mono(String(phuketNights))],
+        phuketHotel ? ["המלון שנבחר", `<b>${esc(phuketHotel.name)}</b> · ${esc(phuketHotel.area)}`] : ["", ""],
+        phuketBooked && hotels.phuket.ref ? ["מספר הזמנה", mono(hotels.phuket.ref)] : ["", ""],
+        phuketHotel && phuketHotel.booking ? ["ציון Booking", mono(phuketHotel.booking)] : ["", ""],
+        phuketHotel && phuketHotel.usd ? ["מחיר ללילה", mono(`$${phuketHotel.usd[0]}–${phuketHotel.usd[1]}`) + ` · לכל השהות ~${mono("$" + (phuketHotel.usd[0] * phuketNights) + "–" + (phuketHotel.usd[1] * phuketNights))}`] : ["", ""],
+        phuketHotel && phuketHotel.phone ? ["טלפון", mono(phuketHotel.phone)] : ["", ""]
+      ]) + (phuketHotel ? seg("למה דווקא הוא", phuketHotel.pros.map(esc)) : "")
+        + (phuketHotel && phuketHotel.warns && phuketHotel.warns.length ? note("⚠ " + esc(phuketHotel.warns[0])) : "")
+        + actions([
+          { l: "להזמין ב-Booking", u: booking(phuketHotel ? phuketHotel.name : "Phuket", toPhuket, phuketEnd), p: true },
+          phuketHotel && phuketHotel.site ? { l: "אתר המלון", u: phuketHotel.site } : null,
+          { l: "מפה", u: gmaps(phuketHotel ? phuketHotel.name : "Phuket hotels") }
+        ].filter(Boolean))
+    },
+    {
+      id: "dest2-hotel", status: dest2.decided ? (secondBooked ? "done" : "todo") : "open",
+      date: phuketEnd, endDate: dest2End,
+      title: dest2.decided ? `מלון ב${esc(dest2Name)} · ${dest2Nights} לילות` : `יעד שני · ${esc(dest2Name)} · ${dest2Nights} לילות`,
+      need: dest2.decided
+        ? (secondBooked ? "" : `לבחור ריזורט ב${esc(dest2Name)} ולהזמין`)
+        : "להחליט בין אאו נאנג לקאו לאק — ורק אז לחפש מלון",
+      sum: secondHotel.name
+        ? `${esc(secondHotel.name)}${secondHotel.ref ? " · הזמנה " + mono(secondHotel.ref) : ""} · ${mono(dm(phuketEnd))} → ${mono(dm(dest2End))}`
+        : `${mono(dm(phuketEnd))} → ${mono(dm(dest2End))} · ${dest2.decided ? "היעד סגור, עוד לא נבחר מלון" : "ההחלטה נשארת לסוף"}`,
+      body: kv([
+        ["צ'ק-אין", `${esc(dow(phuketEnd))} ${mono(dm(phuketEnd))} — נסיעה מפוקט ברכב פרטי עם כיסא בטיחות, ~1.5 ש'`],
+        ["צ'ק-אאוט", `${esc(dow(dest2End))} ${mono(dm(dest2End))} — ${domBack ? `לשדה פוקט (HKT) לטיסה ${mono(domBack.no)} ב-${mono(domBack.depTime)}; לצאת מהמלון עד ${mono(subMin(domBack.depTime, 210))}` : "חוזרים לשדה פוקט"}`],
+        ["לילות", mono(String(dest2Nights))],
+        secondHotel.name ? ["המלון", `<b>${esc(secondHotel.name)}</b>${secondHotel.ref ? " · " + mono(secondHotel.ref) : ""}`] : ["", ""],
+        ["מה נשאר", secondBooked ? "הכול סגור" : "רק המלון — היעד והטיסות סגורים"]
+      ]) + seg("מה חשוב במלון הזה", [
+        "<b>ריזורט על החוף</b> — קאו לאק זה לא עיירה; כל השהות סביב המלון, החוף והבריכה",
+        "<b>בריכת ילדים / מים רדודים</b> ומועדון תינוקות אם יש",
+        "<b>מסעדות בהליכה</b> — רצועת באנג ניאנג או נאנג תונג, לא ריזורט מבודד",
+        "<b>עריסה + הסעה מפוקט</b> — לרוב המלונות יש שירות רכב מהשדה/מפוקט"
+      ]) + seg("כיוונים לבדיקה", [
+        "<b>JW Marriott Khao Lak</b> — בריכה ענקית, מועדון ילדים, חוף ארוך",
+        "<b>Le Méridien Khao Lak</b> — קרוב לרצועת המסעדות של קוק קאק",
+        "<b>The Sarojin</b> / <b>Khao Lak Laguna</b> — שקטים יותר, ברמת בוטיק"
+      ]) + note(`היעד סגור (${esc(dest2Name)}, ${dest2Nights} לילות) והטיסה חזרה לבנגקוק ${domBack ? "כבר קנויה" : "עדיין פתוחה"} — זה המלון האחרון שנשאר לסגור.`)
+        + actions([
+          { l: "חיפוש ב-Booking", u: booking("Khao Lak", phuketEnd, dest2End), p: true },
+          { l: "מפה — קאו לאק", u: gmaps("Khao Lak beach resorts") }
+        ])
+    },
+    domBack ? {
+      id: "dom-back", status: "done", ticket: true,
+      date: domBack.depDate,
+      title: "טיסה פנימית · פוקט → בנגקוק",
+      sum: `${esc(domBack.airline)} · ${mono(domBack.no)} · ${mono(domBack.depTime)} → ${mono(domBack.arrTime)} · המשך לאל על ב-${mono(back.depTime)}`
+    } : {
+      id: "dom-back", status: "todo",
+      date: dest2End,
+      title: "טיסה פנימית · חזרה לבנגקוק",
+      need: "להזמין טיסה שנוחתת בסוברנבומי עד 19:30",
+      sum: `${mono(dm(dest2End))} · חייבים לנחות בבנגקוק מספיק זמן לפני ${mono(back.depTime)}`,
+      body: kv([
+        ["תאריך", `${esc(dow(dest2End))} ${mono(dm(dest2End))}`],
+        ["דדליין נחיתה", "לנחות בסוברנבומי (BKK) עד ~" + mono("19:30")]
+      ]) + actions([{ l: "טיסות HKT → BKK", u: `https://www.google.com/travel/flights?q=Flights%20from%20HKT%20to%20BKK%20on%20${dest2End}`, p: true }])
+    },
+    {
+      id: "intl-back", status: "done", ticket: true,
+      date: back.depDate, endDate: back.arrDate,
+      title: "טיסה בינלאומית · בנגקוק → תל אביב",
+      sum: `${esc(FLIGHTS.airline)} · ${mono(back.no)} · המראה ${mono(back.depTime)}, נחיתה ${mono(back.arrTime)} למחרת`
+    }
+  ];
+
+  /* ---------- שפת המצב: תג אחד בכל הדף ---------- */
+  const LABEL = { done: "סגור", todo: "לפעולה", open: "פתוח" };
+  const badge = st => `<span class="badge ${st}"><i></i>${LABEL[st]}</span>`;
+  const count = s => NODES.filter(n => n.status === s).length;
+
+  /* ---------- לוח מצב: התקדמות + סינון ---------- */
+  document.getElementById("progNum").textContent = `${count("done")}/${NODES.length}`;
+  document.getElementById("progress").innerHTML = NODES.map(n => `<i class="${n.status}"></i>`).join("");
+
+  const FILTERS = [
+    { k: "all", l: "הכול", n: NODES.length },
+    { k: "todo", l: LABEL.todo, n: count("todo") },
+    { k: "open", l: LABEL.open, n: count("open") },
+    { k: "done", l: LABEL.done, n: count("done") }
+  ];
+  document.getElementById("filters").innerHTML = FILTERS.map((f, i) =>
+    `<button type="button" role="tab" data-k="${f.k}" aria-selected="${i === 0}"><i class="${f.k}"></i>${f.l}<b>${f.n}</b></button>`
+  ).join("");
+
+  /* ---------- רצועת ימים ---------- */
+  const today = iso(new Date());
+  const days = [];
+  for (let s = out.depDate; s <= back.arrDate; s = addDays(s, 1)) days.push(s);
+  const where = s => {
+    if (s === out.depDate || s === back.arrDate) return "air";
+    if (s >= landBKK && s < toPhuket) return "bkk";
+    if (s >= toPhuket && s < phuketEnd) return "hkt";
+    if (s >= phuketEnd && s < dest2End) return "dest2";
+    return "air";
+  };
+  const LBL = { air: "במטוס", bkk: "בנגקוק", hkt: "פוקט", dest2: dest2.decided ? dest2Name : "יעד שני (?)" };
+  const fixed = dest2.decided ? " fixed" : "";
+  document.getElementById("dayStrip").innerHTML = days.map(s =>
+    `<div class="d ${where(s)}${s === today ? " today" : ""}${fixed}" title="${dm(s)} · ${LBL[where(s)]}"><small>${d(s).getDate()}</small><i></i></div>`
+  ).join("");
+  document.getElementById("stripLegend").innerHTML = `
+    <span><i class="bkk"></i>בנגקוק · ${bkkNights}</span>
+    <span><i class="hkt"></i>פוקט · ${phuketNights}</span>
+    <span><i class="dest2${fixed}"></i>${esc(LBL.dest2)} · ${dest2Nights}</span>
+    <span><i class="air"></i>לילה במטוס</span>`;
+
+  /* ---------- ציר הזמן ---------- */
+  const whenHtml = n => {
+    const a = d(n.date);
+    const range = n.endDate && n.endDate !== n.date ? `<em>→ ${dm(n.endDate)}</em>` : "";
+    return `<span class="when"><b>${a.getDate()}</b><small>${MON[a.getMonth()]}</small>${range}</span>`;
+  };
+  const chevIcon = `<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>`;
+  const tktIcon = `<svg viewBox="0 0 24 24"><path d="M3 9V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 6v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-6z"/><path d="M9 5v14" stroke-dasharray="2 2"/></svg>`;
+  let html = "";
+  NODES.forEach((n, i) => {
+    const t = n.ticket ? TICKETS[n.id] : null;
+    html += `
+      <article class="node ${n.status}${n.ticket ? " flight" : ""}" id="${n.id}" data-status="${n.status}">
+        <span class="knob" aria-hidden="true"></span>
+        <div class="card">
+          <button class="head" ${n.ticket ? `data-ticket="${n.id}" aria-haspopup="dialog"` : `aria-expanded="false" aria-controls="${n.id}-body"`}>
+            ${whenHtml(n)}
+            <span class="ttl">
+              <span class="row1"><span class="h">${n.title}</span>${badge(n.status)}</span>
+              <span class="sum">${n.sum}</span>
+              ${n.need ? `<span class="need">${n.need}</span>` : ""}
+              ${t ? `<span class="mini-route" dir="ltr"><b>${esc(t.from.code)}</b><i></i><b>${esc(t.to.code)}</b><small>${esc(t.dur)}</small></span>` : ""}
+            </span>
+            <span class="chev${n.ticket ? " tkt-hint" : ""}">${n.ticket ? tktIcon + "<small>כרטיס</small>" : chevIcon}</span>
+          </button>
+          ${n.ticket ? "" : `<div class="body" id="${n.id}-body"><div><div class="body-in">${n.body}</div></div></div>`}
+        </div>
+      </article>`;
+    const next = NODES[i + 1];
+    if (next && n.endDate && next.date > n.endDate) {
+      const g = diffDays(n.endDate, next.date);
+      html += `<div class="gap">${g} ימים בלי תוכנית</div>`;
+    }
+  });
+  document.getElementById("tlList").innerHTML = html;
+
+  /* ---------- כרטיס טיסה (דיאלוג) ---------- */
+  // צללית מטוס שפונה ימינה (+x); rotate="auto" מסובב אותה לפי כיוון הקשת
+  const PLANE = "M23 0 L9 -3.2 L1.5 -12.5 H-3 L1 -3.6 H-9.5 L-13 -7 H-16 L-13.8 -1.2 V1.2 L-16 7 H-13 L-9.5 3.6 H1 L-3 12.5 H1.5 L9 3.2 Z";
+  const ARC = "M14 70 C 70 -6, 230 -6, 286 70";
+  const routeSvg = t => `
+    <svg class="tkt-sky" viewBox="0 0 300 84" aria-hidden="true">
+      <path class="rail" d="${ARC}" pathLength="1"/>
+      <path class="trail" d="${ARC}" pathLength="1"/>
+      <circle class="pin" cx="14" cy="70" r="4"/>
+      <circle class="pin" cx="286" cy="70" r="4"/>
+      <circle class="pulse" cx="286" cy="70" r="4"/>
+      ${reduced()
+        ? `<g class="plane" transform="translate(286 70) rotate(54)"><path d="${PLANE}"/></g>`
+        : `<g class="plane"><path d="${PLANE}"/><animateMotion dur="3.4s" begin="indefinite" repeatCount="indefinite" rotate="auto" calcMode="spline" keyPoints="0;1;1" keyTimes="0;0.68;1" keySplines="0.42 0 0.18 1;0 0 1 1" path="${ARC}"/></g>`}
+      <text class="dur" x="150" y="38" text-anchor="middle">${esc(t.dur)}${t.direct ? " · ישיר" : ""}</text>
+    </svg>`;
+  const ticketHtml = t => {
+    const rows = [
+      ["מחלקה", t.cls], ["בסיס תעריף", t.fare], ["מטוס", t.plane], ["ארוחות", t.meal],
+      ["כבודה", t.bags], ["הזמנה", t.ref], ["שולם", t.paid], ["צ'ק-אין", t.checkin]
+    ].filter(r => r[1]);
+    return `
+      <div class="tkt-top">
+        <div class="tkt-air"><span class="tkt-air-name">${esc(t.airline)}</span><span class="tkt-dir">${esc(t.dir)} · ${t.kind === "intl" ? "טיסה בינלאומית" : "טיסה פנימית"}</span></div>
+        <div class="tkt-no mono">${esc(t.no)}</div>
+        <div class="tkt-status"><i></i>${esc(t.status)}</div>
+      </div>
+      <div class="tkt-route" dir="ltr">
+        <div class="tkt-ap tkt-from">
+          <span class="code">${esc(t.from.code)}</span>
+          <span class="time">${esc(t.depTime)}</span>
+          <span class="city">${esc(t.from.city)}</span>
+          <span class="date">${esc(longDate(t.depDate))}</span>
+          <span class="term">${esc(t.from.term || "")}</span>
+        </div>
+        ${routeSvg(t)}
+        <div class="tkt-ap tkt-to">
+          <span class="code">${esc(t.to.code)}</span>
+          <span class="time">${esc(t.arrTime)}${t.arrNote ? `<sup>${esc(t.arrNote)}</sup>` : ""}</span>
+          <span class="city">${esc(t.to.city)}</span>
+          <span class="date">${esc(longDate(t.arrDate))}</span>
+          <span class="term">${esc(t.to.term || "")}</span>
+        </div>
+      </div>
+      <div class="tkt-tear" aria-hidden="true"></div>
+      <dl class="tkt-grid">${rows.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>
+      <div class="tkt-pax">
+        <h4>נוסעים${t.seatsNote ? ` <span class="tkt-seatnote">· מושבים: ${esc(t.seatsNote)}</span>` : ""}</h4>
+        ${t.pax.map(p => `
+          <div class="tkt-p${p.infant ? " infant" : ""}">
+            <span class="seat mono">${p.infant ? "INF" : esc(p.seat)}</span>
+            <span class="who"><b>${esc(p.name)}</b>${p.ticket ? `<small class="mono">${esc(p.ticket)}</small>` : ""}${p.infant ? `<small>${esc(p.seat)}${p.status ? " · " + esc(p.status) : ""}</small>` : ""}</span>
+            <span class="bag"><svg viewBox="0 0 24 24"><rect x="5" y="7" width="14" height="14" rx="2"/><path d="M9 7V4h6v3M9 11v6M15 11v6"/></svg>${esc(p.bag || "—")}</span>
+            ${p.extra ? `<span class="ex">${esc(p.extra)}</span>` : ""}
+          </div>`).join("")}
+      </div>
+      ${t.note ? `<p class="tkt-note">${esc(t.note)}</p>` : ""}
+      <div class="tkt-code" aria-hidden="true"><i></i><span class="mono">${esc(t.ref || t.no)} · ${esc(t.depDate.replace(/-/g, ""))} · ${esc(t.from.code)}${esc(t.to.code)}</span></div>`;
+  };
+
+  const overlay = document.getElementById("tktOverlay");
+  const dialog = overlay.querySelector(".tkt");
+  const inner = overlay.querySelector(".tkt-in");
+  let lastFocus = null;
+  const openTicket = id => {
+    const t = TICKETS[id]; if (!t) return;
+    lastFocus = document.activeElement;
+    inner.innerHTML = ticketHtml(t);
+    dialog.setAttribute("aria-label", `כרטיס טיסה ${t.no} ${t.from.code} → ${t.to.code}`);
+    overlay.hidden = false;
+    document.body.classList.add("tkt-lock");
+    requestAnimationFrame(() => requestAnimationFrame(() => overlay.classList.add("on")));
+    // המטוס ממריא רגע אחרי שהכרטיס עלה (SMIL מתחיל מפורשות — לא תלוי בשעון המסמך)
+    const fly = inner.querySelector("animateMotion");
+    if (fly && fly.beginElement) setTimeout(() => { try { fly.beginElement(); } catch (e) { } }, 350);
+    overlay.querySelector(".tkt-close").focus();
+    if (history.replaceState) history.replaceState(null, "", "#" + id);
+  };
+  const closeTicket = () => {
+    if (overlay.hidden) return;
+    overlay.classList.remove("on");
+    document.body.classList.remove("tkt-lock");
+    const done = () => { overlay.hidden = true; inner.innerHTML = ""; };
+    if (reduced()) done(); else setTimeout(done, 240);
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  };
+  overlay.addEventListener("click", e => { if (e.target.closest(".tkt-close") || e.target.classList.contains("tkt-scrim")) closeTicket(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape") closeTicket(); });
+
+  /* ---------- אינטראקציה: לחיצה בלבד ---------- */
+  const nodes = Array.from(document.querySelectorAll(".node"));
+  const gaps = Array.from(document.querySelectorAll(".gap"));
+  const setOpen = (node, on) => {
+    if (node.classList.contains("flight")) return;
+    node.classList.toggle("is-open", on);
+    node.querySelector(".head").setAttribute("aria-expanded", String(on));
+  };
+  nodes.forEach(node => {
+    const head = node.querySelector(".head");
+    head.addEventListener("click", () => {
+      if (head.dataset.ticket) openTicket(head.dataset.ticket);
+      else setOpen(node, !node.classList.contains("is-open"));
+    });
+  });
+
+  // פתח/סגור הכול (רק נקודות מלון — טיסות נפתחות ככרטיס)
+  const toggleAll = document.getElementById("toggleAll");
+  toggleAll.addEventListener("click", () => {
+    const vis = nodes.filter(n => !n.hidden && !n.classList.contains("flight"));
+    const on = !vis.every(n => n.classList.contains("is-open"));
+    vis.forEach(n => setOpen(n, on));
+    toggleAll.textContent = on ? "סגור הכול" : "פתח הכול";
+  });
+
+  // סינון לפי מצב
+  const empty = document.getElementById("empty");
+  document.getElementById("filters").addEventListener("click", e => {
+    const btn = e.target.closest("button[data-k]");
+    if (!btn) return;
+    const k = btn.dataset.k;
+    document.querySelectorAll("#filters button").forEach(b => b.setAttribute("aria-selected", String(b === btn)));
+    nodes.forEach(n => { n.hidden = k !== "all" && n.dataset.status !== k; });
+    gaps.forEach(g => { g.hidden = k !== "all"; });
+    empty.hidden = nodes.some(n => !n.hidden);
+  });
+
+  // דיפ-לינק: #bkk-hotel פותח את הנקודה וגולל אליה · #dom-out פותח את כרטיס הטיסה
+  if (location.hash) {
+    const el = document.querySelector(location.hash);
+    if (el && el.classList.contains("node")) {
+      el.scrollIntoView({ block: "center" });
+      if (el.classList.contains("flight")) openTicket(el.id); else setOpen(el, true);
+    }
+  }
+}).catch(err => console.error("timeline:", err));
+
+</script>

@@ -11,109 +11,33 @@ const gmapsUrl = p => p.placeId
   : `https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`;
 const CHEV = '<svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>';
 
-function toast(msg, opts) {
-  const t = $("#toast");
-  t.innerHTML = esc(msg) + (opts && opts.action ? `<button id="toastAct">${esc(opts.action)}</button>` : "");
-  if (opts && opts.action) $("#toastAct").addEventListener("click", () => {
-    t.classList.remove("on");
-    opts.onAction();
-  });
-  t.classList.add("on");
-  clearTimeout(toast._h);
-  toast._h = setTimeout(() => t.classList.remove("on"), opts && opts.action ? 6000 : 2200);
-}
+/* ---------- נתוני הטיול: trip.js (לקריאה בלבד — עורכים את הקובץ ידנית) ---------- */
+let trip = null, FLIGHTS = null, DOMESTIC = [];
+let state = null; // תצוגה מנורמלת של trip.js לשימוש הרינדור
 
-/* ---------- מצב (state) ---------- */
-const LS_KEY = "thailand-hamal-v1";
-
-function defaultState() {
+function deriveState(t) {
+  const h = t.hotels || {};
+  const idOf = x => x && x.id ? x.id : null;
   return {
-    v: 2, updatedAt: "",
-    tasks: {},            // taskId -> true (בוצע)
-    custom: [],           // [{id,t,done}]
-    hotelChoice: { phuket: null, aonang: null },
-    split: "8+5",
-    payments: {},         // budgetId -> {amount, note}
-    saved: {},            // attractionId -> true
-    tripStart: "2026-10-31", tripEnd: "2026-11-15", // לפי הטיסות שנקנו (LY083/LY082)
-    hideHowto: false
+    tasks: Object.fromEntries((t.tasksDone || []).map(id => [id, true])),
+    custom: (t.myTasks || []).map((m, i) => typeof m === "string" ? { id: "c" + i, t: m, done: false } : { id: "c" + i, t: m.t, done: !!m.done }),
+    hotels: h,
+    hotelChoice: { phuket: idOf(h.phuket), aonang: idOf(h.second) }, // "aonang" = הבסיס השני בקטלוג
+    phuketNights: +t.phuketNights || 0,
+    secondDest: t.secondDest || { decided: false },
+    payments: t.payments || {},
+    saved: Object.fromEntries((t.savedAttractions || []).map(id => [id, true])),
+    tripStart: t.dates && t.dates.start, tripEnd: t.dates && t.dates.end
   };
 }
 
-function migrate(o) {
-  const d = defaultState();
-  if (!o || typeof o !== "object") return d;
-  const m = {
-    ...d, ...o,
-    tasks: o.tasks || {}, custom: Array.isArray(o.custom) ? o.custom : [],
-    hotelChoice: { ...d.hotelChoice, ...(o.hotelChoice || {}) },
-    payments: o.payments || {}, saved: o.saved || {}
-  };
-  // v<2: הטיסות נקנו (1.9.2026) — התאריכים נקבעים לפיהן בכל המכשירים
-  if (!o.v || o.v < 2) { m.v = 2; m.tripStart = d.tripStart; m.tripEnd = d.tripEnd; }
-  return m;
+/* שם היעד השני — כל עוד לא הוחלט מציגים "טרם הוחלט" */
+function dest2Name(short) {
+  const d = state.secondDest;
+  if (d && d.decided && d.name) return d.name;
+  return short ? "יעד שני" : "יעד שני (טרם הוחלט)";
 }
-
-let state = defaultState();
-try {
-  const raw = localStorage.getItem(LS_KEY);
-  if (raw) state = migrate(JSON.parse(raw));
-} catch (e) { /* אחסון לא זמין — ממשיכים בזיכרון */ }
-
-/* קאש מהריפו: build.mjs מטמיע את thailand-trip-data.json כ-SEED_STATE — נטען אם עדכני מהמקומי */
-try {
-  if (window.SEED_STATE) {
-    const s = migrate(window.SEED_STATE);
-    if (s.updatedAt && (!state.updatedAt || s.updatedAt > state.updatedAt)) state = s;
-  }
-} catch (e) { }
-
-/* ---------- סנכרון ענן (Artifact db) ---------- */
-let dbDoc = null, cloudTimer = null;
-
-function setSync(mode, label) {
-  const b = $("#syncBadge");
-  b.classList.remove("on", "local");
-  b.classList.add(mode === "on" ? "on" : "local");
-  $("#syncTxt").textContent = label || (mode === "on" ? "מסונכרן בענן" : "מקומי");
-}
-
-async function initCloud() {
-  if (!(window.claude && window.claude.use)) { setSync("local"); return; }
-  try {
-    const db = await window.claude.use("db");
-    if (!db) { setSync("local"); return; }
-    dbDoc = db.doc("state/main");
-    dbDoc.onSnapshot(snap => {
-      setSync("on");
-      if (snap.exists) {
-        const r = snap.data();
-        if (r && r.updatedAt && (!state.updatedAt || r.updatedAt > state.updatedAt)) {
-          state = migrate(r);
-          persistLocal();
-          renderAll();
-        }
-      }
-    }, () => setSync("local"));
-  } catch (e) { setSync("local"); }
-}
-
-function persistLocal() {
-  try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) { }
-}
-
-function save() {
-  state.updatedAt = new Date().toISOString();
-  persistLocal();
-  if (dbDoc) {
-    clearTimeout(cloudTimer);
-    cloudTimer = setTimeout(() => dbDoc.set(JSON.parse(JSON.stringify(state))).catch(() => { }), 700);
-  }
-  if (fsHandle) {
-    clearTimeout(fsTimer);
-    fsTimer = setTimeout(fsWrite, 900);
-  }
-}
+const fmtD = iso => { const d = new Date(iso + "T00:00:00"); return d.getDate() + "." + (d.getMonth() + 1); };
 
 /* ---------- ניווט ---------- */
 function gotoView(name) {
@@ -140,21 +64,6 @@ function allTasksFlat() {
   return out;
 }
 const isDone = t => t.custom ? !!t.done : !!state.tasks[t.id];
-
-function completeTask(t) {
-  if (t.custom) {
-    const c = state.custom.find(x => x.id === t.id);
-    if (c) c.done = true;
-  } else state.tasks[t.id] = true;
-  save(); renderTasksArea(); renderOverview();
-}
-
-/* רינדור דחוי קלות אחרי סימון — נותן לאנימציית ה-✓ להסתיים לפני שהרשימה מתעדכנת */
-function settleTasks() {
-  clearTimeout(settleTasks._h);
-  settleTasks._h = setTimeout(() => { renderTasksArea(); renderOverview(); }, 220);
-}
-function buzz() { try { navigator.vibrate && navigator.vibrate(8); } catch (e) { } }
 
 /* ---------- דדליינים לפי תאריך היציאה ---------- */
 const STAGE_DUE = { s0: 45, s1: 35, s2: 25, s3: 14, s4: 2 }; // כמה ימים לפני היציאה השלב צריך להיסגר
@@ -190,11 +99,11 @@ function actUrl(act) {
     case "flIntl": return gf(s && e ? `flights from TLV to BKK on ${s} through ${e}` : "flights from TLV to BKK");
     case "flOut": return gf(s ? `flights from BKK to HKT on ${s}` : "flights from BKK to HKT");
     case "flBack": return gf(e ? `flights from KBV to BKK on ${e}` : "flights from KBV to BKK");
-    case "bkPhuket": { const h = hotel("phuket");
-      return bk(h ? h.name + " Phuket" : "Kata Beach Phuket", s, s && addDays(s, n.phuket)); }
-    case "bkAonang": { const h = hotel("aonang");
-      return bk(h ? h.name + " Ao Nang" : "Ao Nang Krabi", s && addDays(s, n.phuket), s && addDays(s, n.phuket + n.aonang)); }
-    case "bkBkk": return bk("Suvarnabhumi Airport Bangkok", s, s && addDays(s, 1));
+    case "bkPhuket": { const h = hotel("phuket"), a = hotelStart();
+      return bk(h ? h.name + " Phuket" : "Kata Beach Phuket", a && addDays(a, n.bangkok), a && addDays(a, n.bangkok + n.phuket)); }
+    case "bkAonang": { const h = hotel("aonang"), a = hotelStart();
+      return bk(h ? h.name + " Ao Nang" : "Ao Nang Krabi", a && addDays(a, n.bangkok + n.phuket), a && addDays(a, n.bangkok + n.phuket + n.aonang)); }
+    case "bkBkk": { const a = hotelStart(); return bk("Suvarnabhumi Airport Bangkok", a, a && addDays(a, Math.max(1, n.bangkok))); }
     default: return "#";
   }
 }
@@ -223,20 +132,14 @@ function renderNowNext() {
   }
   const [first, ...rest] = open;
   const di = first.custom ? null : dueInfo(STAGES[first.stage] && STAGES[first.stage].id);
-  const dueHtml = di
-    ? `<span class="nn-due ${di.cls}">⏳ ${esc(di.txt)}</span>`
-    : !state.tripStart
-      ? `<span class="nn-due"><button type="button" class="tlink" data-go="overview">בחרו תאריכי טיול לקבלת דדליינים</button></span>`
-      : "";
+  const dueHtml = di ? `<span class="nn-due ${di.cls}">⏳ ${esc(di.txt)}</span>` : "";
   box.innerHTML = `
     <div class="nn-first">
       <span class="seq">${esc(first.seq)}</span>
       <span class="txt"><b>${esc(first.t)}</b>${first.n ? `<span class="n">${esc(first.n)}</span>` : ""}${dueHtml}${taskLinksHtml(first)}</span>
-      <button class="nn-done" id="nnDone">סיימתי ✓</button>
     </div>
     ${rest.length ? `<ul class="nn-rest">${rest.slice(0, 2).map(t =>
       `<li><span class="seq">${esc(t.seq)}</span><span>אחר כך: ${esc(t.t)}</span></li>`).join("")}</ul>` : ""}`;
-  $("#nnDone").addEventListener("click", () => { completeTask(first); toast("יפה! הלאה 💪"); });
   wireGoLinks(box);
 }
 
@@ -258,14 +161,13 @@ function renderStages() {
   const openCount = flat.filter(t => !isDone(t)).length;
   $("#tasksCount").textContent = `נותרו ${openCount} מתוך ${flat.length}`;
 
-  const taskRow = (t, seq, checked, delBtn) => {
+  const taskRow = (t, seq, checked) => {
     if (onlyOpen && checked) return "";
-    return `<label class="task ${checked ? "done" : ""}">
-      <input type="checkbox" ${t.custom ? `data-custom="${t.id}"` : `data-task="${t.id}"`} ${checked ? "checked" : ""}>
+    return `<div class="task ${checked ? "done" : ""}">
+      <span class="chk ${checked ? "on" : ""}" aria-label="${checked ? "בוצע" : "פתוח"}"></span>
       <span class="seq">${esc(seq)}</span>
       <span><span class="t">${esc(t.t)}</span>${t.n ? `<div class="n">${esc(t.n)}</div>` : ""}${checked ? "" : taskLinksHtml(t)}</span>
-      ${delBtn ? `<button class="del" data-del="${t.id}" aria-label="מחיקה">✕</button>` : ""}
-    </label>`;
+    </div>`;
   };
 
   let html = STAGES.map((s, si) => {
@@ -285,70 +187,38 @@ function renderStages() {
       </summary>
       <div class="stage-body">
         ${s.why ? `<div class="why">${esc(s.why)}</div>` : ""}
-        ${s.tasks.map((t, ti) => taskRow(t, si + "." + (ti + 1), !!state.tasks[t.id], false)).join("")}
+        ${s.tasks.map((t, ti) => taskRow(t, si + "." + (ti + 1), !!state.tasks[t.id])).join("")}
       </div>
     </details>`;
   }).join("");
 
-  // המשימות שלי
-  const myDone = state.custom.filter(t => t.done).length;
-  const myOpen = stageOpenMap["mine"] ?? state.custom.length > 0;
-  html += `<details class="stage-acc" data-sid="mine" ${myOpen ? "open" : ""}>
-    <summary>
-      <span class="snum">★</span>
-      <span class="stitle"><b>המשימות שלי</b><span class="when">דברים שהוספתם</span></span>
-      <span class="sprog"><span class="cnt">${myDone}/${state.custom.length}</span></span>
-      ${CHEV}
-    </summary>
-    <div class="stage-body">
-      ${state.custom.map(t => taskRow({ ...t, custom: true }, "★", !!t.done, true)).join("")}
-      <div class="addtask">
-        <input id="newTask" placeholder="משהו שחשבתם עליו? הוסיפו כאן" maxlength="140">
-        <button id="addTaskBtn">הוספה</button>
+  // המשימות שלי (myTasks ב-trip.js)
+  if (state.custom.length) {
+    const myDone = state.custom.filter(t => t.done).length;
+    const myOpen = stageOpenMap["mine"] ?? true;
+    html += `<details class="stage-acc" data-sid="mine" ${myOpen ? "open" : ""}>
+      <summary>
+        <span class="snum">★</span>
+        <span class="stitle"><b>המשימות שלי</b><span class="when">מ-trip.js</span></span>
+        <span class="sprog"><span class="cnt">${myDone}/${state.custom.length}</span></span>
+        ${CHEV}
+      </summary>
+      <div class="stage-body">
+        ${state.custom.map(t => taskRow({ ...t, custom: true }, "★", !!t.done)).join("")}
       </div>
-    </div>
-  </details>`;
+    </details>`;
+  }
 
   box.innerHTML = html;
 
   box.querySelectorAll("details.stage-acc").forEach(d =>
     d.addEventListener("toggle", () => { stageOpenMap[d.dataset.sid] = d.open; }));
-  box.querySelectorAll("input[data-task]").forEach(cb => cb.addEventListener("change", () => {
-    if (cb.checked) { state.tasks[cb.dataset.task] = true; buzz(); }
-    else delete state.tasks[cb.dataset.task];
-    save(); settleTasks();
-  }));
-  box.querySelectorAll("input[data-custom]").forEach(cb => cb.addEventListener("change", () => {
-    const t = state.custom.find(x => x.id === cb.dataset.custom);
-    if (t) t.done = cb.checked;
-    if (cb.checked) buzz();
-    save(); settleTasks();
-  }));
-  box.querySelectorAll("button[data-del]").forEach(b => b.addEventListener("click", ev => {
-    ev.preventDefault();
-    const removed = state.custom.find(x => x.id === b.dataset.del);
-    state.custom = state.custom.filter(x => x.id !== b.dataset.del);
-    save(); renderTasksArea(); renderOverview();
-    if (removed) toast(`המשימה "${removed.t.length > 26 ? removed.t.slice(0, 26) + "…" : removed.t}" נמחקה`, {
-      action: "ביטול",
-      onAction: () => { state.custom.push(removed); save(); renderTasksArea(); renderOverview(); }
-    });
-  }));
-  const add = () => {
-    const inp = $("#newTask"), v = inp.value.trim();
-    if (!v) return;
-    state.custom.push({ id: "c" + Date.now(), t: v, done: false });
-    stageOpenMap["mine"] = true;
-    save(); renderTasksArea(); renderOverview();
-  };
-  $("#addTaskBtn").addEventListener("click", add);
-  $("#newTask").addEventListener("keydown", e => { if (e.key === "Enter") add(); });
   wireGoLinks(box);
 }
 
 function renderTasksArea() { renderNowNext(); renderStages(); }
 
-$("#onlyOpen").addEventListener("change", e => { onlyOpen = e.target.checked; renderStages(); });
+$("#onlyOpen")?.addEventListener("change", e => { onlyOpen = e.target.checked; renderStages(); });
 
 /* ---------- סקירה ---------- */
 function renderOverview() {
@@ -390,30 +260,20 @@ function renderOverview() {
   $("#ovBarL").textContent = "שולם " + ils(tot.paid);
   $("#ovBarR").textContent = "מתוך ~" + ils(tot.typ);
 
-  $("#tripStart").value = state.tripStart || "";
-  $("#tripEnd").value = state.tripEnd || "";
-
+  /* הירו: תאריכים, מסלול ולילות — מ-trip.js */
+  const n = nights();
+  const d2 = dest2Name(true);
+  $("#dateRange").innerHTML = state.tripStart && state.tripEnd
+    ? `יציאה <b class="num">${fmtD(state.tripStart)}</b> · חזרה <b class="num">${fmtD(state.tripEnd)}</b>` : "תאריכים טרם נקבעו";
   const dn = $("#dateNights");
-  if (state.tripStart && state.tripEnd) {
-    const diff = Math.round((new Date(state.tripEnd) - new Date(state.tripStart)) / 864e5);
-    if (diff < 1) { dn.hidden = false; dn.innerHTML = `⚠️ תאריך החזרה לפני היציאה`; }
-    else {
-      const n = nights();
-      dn.hidden = false;
-      dn.innerHTML = `<b class="num">${n.total}</b> לילות מלון · <span class="num">${n.phuket}</span> פוקט + <span class="num">${n.aonang}</span> אאו נאנג`;
-    }
-  } else dn.hidden = true;
-
-  $("#howtoCard").hidden = !!state.hideHowto;
+  dn.hidden = false;
+  dn.innerHTML = `<b class="num">${n.total}</b> לילות מלון · ${n.bangkok ? `<span class="num">${n.bangkok}</span> בנגקוק + ` : ""}<span class="num">${n.phuket}</span> פוקט + <span class="num">${n.aonang}</span> ${esc(d2)}`;
+  $("#heroRoute").textContent = `ת"א ✈ בנגקוק ✈ פוקט ${state.secondDest.decided ? "→ " + d2 : "→ ?"} ✈ הביתה`;
+  $("#heroMeta").textContent = `2 מבוגרים + תינוקת בת שנה · ${n.total} לילות בתאילנד · אל על ישיר, הלוך ${fmtD(FLIGHTS.legs[0].depDate)} · חזור ${fmtD(FLIGHTS.legs[1].depDate)}`
+    + (state.secondDest.decided ? "" : " · היעד השני אחרי פוקט עדיין פתוח");
+  $("#brandSub").textContent = `‎${fmtD(state.tripStart)} – ${fmtD(state.tripEnd)}.${new Date(state.tripEnd).getFullYear()} · הטיסות סגורות ✈`;
+  $("#dataStamp").textContent = trip.updated ? "עודכן " + fmtD(trip.updated) : "";
 }
-
-$("#howtoClose").addEventListener("click", () => { state.hideHowto = true; save(); renderOverview(); });
-function onDatesChanged() {
-  save(); renderOverview(); renderWxTrip(); renderTasksArea();
-  renderLegs(); renderHotels(); renderBudget(); // הלילות והעלויות נגזרים מהתאריכים
-}
-$("#tripStart").addEventListener("change", e => { state.tripStart = e.target.value; onDatesChanged(); });
-$("#tripEnd").addEventListener("change", e => { state.tripEnd = e.target.value; onDatesChanged(); });
 
 /* ---------- כרטיסי הטיסה ---------- */
 function renderFlights() {
@@ -468,7 +328,57 @@ function renderFlights() {
         <ul>${FLIGHTS.pax.map(p => `<li><span>${esc(p.name)} · מושב הלוך ${esc(p.seat)}</span><b class="num">${esc(p.ticket)}</b></li>`).join("")}</ul>
       </details>
       <p class="ft-note">צ'ק-אין אונליין נפתח 24 שעות לפני ההמראה. לא לשכוח: עריסת טיסה (Bassinet) לארבל + מושבים לטיסת החזור.</p>
-    </div>`;
+    </div>
+    ${domesticHtml()}`;
+
+  /* כרטיסי הטיסות הפנימיות — עיצוב "כרטיס עלייה למטוס" קומפקטי, בצבעי ים, עם דגל תאילנד */
+  function domesticHtml() {
+    if (typeof DOMESTIC === "undefined" || !DOMESTIC.length) return "";
+    const card = L => `
+    <article class="fticket ft-dom">
+      <div class="ft-top">
+        <span class="ft-dirtag">🇹🇭 טיסה פנימית</span>
+        <span class="ft-no num">${esc(L.no)}</span>
+        <span class="ft-airline">${esc(L.airline)}</span>
+      </div>
+      <div class="ft-route">
+        <div class="ft-ep">
+          <div class="ft-code">${esc(L.from.code)}</div>
+          <div class="ft-time num">${esc(L.depTime)}</div>
+          <div class="ft-edate">${ftD(L.depDate)}</div>
+          <div class="ft-city">${esc(L.from.city)} · ${esc(L.from.term)}</div>
+        </div>
+        <div class="ft-path" role="img" aria-label="טיסה פנימית, ${esc(L.dur)} שעות">
+          <i class="ft-pin ft-pin-a"></i><i class="ft-pin ft-pin-b"></i>
+          <span class="ft-fly">${PLANE}</span>
+          <span class="ft-dur num">${esc(L.dur)}${L.direct ? " · ישירה" : ""}</span>
+        </div>
+        <div class="ft-ep ft-to">
+          <div class="ft-code">${esc(L.to.code)}</div>
+          <div class="ft-time num">${esc(L.arrTime)}</div>
+          <div class="ft-edate">${ftD(L.arrDate)}</div>
+          <div class="ft-city">${esc(L.to.city)} · ${esc(L.to.term)}</div>
+        </div>
+      </div>
+      <div class="ft-tear" aria-hidden="true"></div>
+      <div class="ft-stub ft-dom-stub">
+        <ul class="ft-seats">
+          ${L.pax.map(p => `<li>
+            <span class="ft-seat num">${esc(p.seat)}</span>
+            <span class="ft-seat-who"><b>${esc(p.name)}</b><small>כבודה ${esc(p.bag)} · ${esc(p.status)}${p.extra ? " · " + esc(p.extra) : ""}</small></span>
+          </li>`).join("")}
+        </ul>
+        <div class="ft-dom-meta">
+          <div class="ft-fact"><span>מחלקה</span><b class="num">${esc(L.cls)}</b></div>
+          <span class="ft-barcode" aria-hidden="true"></span>
+        </div>
+      </div>
+      ${L.note ? `<p class="ft-note ft-dom-note">${esc(L.note)}</p>` : ""}
+    </article>`;
+    return `
+    <div class="eyebrow ft-eyebrow ft-dom-eyebrow">🛩 טיסות פנימיות בתאילנד · 3 כרטיסים · סטטוס: מאושר ✓</div>
+    ${DOMESTIC.map(card).join("")}`;
+  }
 }
 
 /* ---------- השוואת יעדים + בייביסיטר (מחקר ספטמבר 2026) ---------- */
@@ -582,14 +492,7 @@ function renderWxTrip() {
   const box = $("#wxTrip");
   const days = tripDays();
   if (!days.length) {
-    box.innerHTML = `<div class="wxt-set">
-      <span>בחרו תאריכי יציאה וחזרה למעלה — או התחילו מהצעה:</span>
-      <button id="wxSuggest">25.10 – 07.11 (14 יום)</button></div>
-      <p class="wxt-note">התאריכים משפיעים גם על הספירה לאחור ועל חישוב הלילות.</p>`;
-    $("#wxSuggest").addEventListener("click", () => {
-      state.tripStart = "2026-10-25"; state.tripEnd = "2026-11-07";
-      onDatesChanged(); toast("נקבע טווח לדוגמה — אפשר לשנות");
-    });
+    box.innerHTML = `<p class="wxt-note">אין תאריכים ב-trip.js (dates.start / dates.end).</p>`;
     return;
   }
 
@@ -676,12 +579,26 @@ function totalNights() {
   }
   return 13;
 }
-/* "8+5" = יותר פוקט, "7+6" = חלוקה מאוזנת — הערכים נשמרים כמזהים גם כשהסה"כ שונה מ-13 */
+/* תאריך תחילת לילות המלון: יום הנחיתה בבנגקוק כשהיציאה היא תאריך הטיסה, אחרת תאריך היציאה שנבחר */
+function hotelStart() {
+  const s = state.tripStart;
+  if (s && typeof FLIGHTS !== "undefined" && s === FLIGHTS.legs[0].depDate) return FLIGHTS.legs[0].arrDate;
+  return s;
+}
+/* לילות בבנגקוק בתחילת הטיול — בין הנחיתה לטיסה הפנימית לפוקט (PG271 ב-2.11 בבוקר → לילה אחד) */
+function bangkokNights() {
+  const s = hotelStart();
+  if (!s || typeof DOMESTIC === "undefined" || !DOMESTIC.length) return 0;
+  const n = Math.round((new Date(DOMESTIC[0].depDate) - new Date(s)) / 864e5);
+  return n >= 0 && n <= 3 ? n : 0;
+}
+/* לילות בנגקוק (הפתיחה) יורדים מהסה"כ; פוקט לפי phuketNights ב-trip.js; השאר ליעד השני ("aonang" בקוד) */
 function nights() {
   const total = totalNights();
-  const half = Math.floor(total / 2);
-  const aonang = state.split === "7+6" ? half : Math.max(1, half - 1);
-  return { phuket: total - aonang, aonang, total };
+  const bangkok = Math.min(bangkokNights(), total - 2);
+  const rest = total - bangkok;
+  const phuket = Math.min(rest - 1, Math.max(1, state.phuketNights || Math.ceil(rest / 2)));
+  return { phuket, aonang: rest - phuket, bangkok, total };
 }
 
 const IC = {
@@ -693,45 +610,48 @@ const IC = {
 
 function renderLegs() {
   const n = nights();
+  const H = state.hotels, d2 = state.secondDest;
+  const out = FLIGHTS.legs[0], back = FLIGHTS.legs[1], dom = DOMESTIC[0];
+  const dow = iso => new Date(iso + "T00:00:00").toLocaleDateString("he-IL", { weekday: "short" });
+  const hotelName = base => { const h = HOTELS.find(x => x.id === state.hotelChoice[base]); return h ? h.name : ""; };
+  const hotelTxt = (hb, fallbackName) => {
+    const name = (hb && hb.name) || fallbackName;
+    if (!name) return "עוד לא נבחר מלון";
+    return `${hb && hb.booked ? "✓ הוזמן" : "נבחר, עוד לא הוזמן"} · ${name}${hb && hb.ref ? " · " + hb.ref : ""}`;
+  };
   const legs = [
-    { ic: "plane", t: "✓ אל על LY083 · ת\"א → בנגקוק", d: "מוצ\"ש 31.10 · המראה 21:40, נחיתה 13:50 למחרת · ישיר · הוזמן!", dur: "11:10" },
-    { ic: "plane", t: "טיסה פנימית · בנגקוק → פוקט (HKT)", d: "נחיתה 13:50 → פנימית ~17:30–18:30 מספיקה בנוח (Thai / AirAsia / VietJet)", dur: "‎~1:25" },
-    { ic: "bed", t: `בסיס 1 · פוקט`, d: "חופים, שווקי לילה, קאטה נוי / באנג טאו", dur: n.phuket + " לילות", base: true },
-    { ic: "car", t: "מעבר יבשתי · פוקט → אאו נאנג", d: "רכב פרטי עם כיסא בטיחות, כביש טוב, אפשר לעצור באמצע", dur: "‎~3 ש'" },
-    { ic: "bed", t: `בסיס 2 · אאו נאנג (קראבי)`, d: "חוף, Walking Street, שוק לילה, נוף צוקים — הכול בהליכה", dur: n.aonang + " לילות", base: true },
-    { ic: "plane", t: "טיסה פנימית · קראבי (KBV) → בנגקוק", d: "בלי לחזור לפוקט — חוסך 3 שעות. מומלץ יום-יומיים לפני הטיסה הביתה (ראו \"מבנה מומלץ\" למטה)", dur: "‎~1:25" },
-    { ic: "plane", t: "✓ אל על LY082 · בנגקוק → ת\"א", d: "שבת 14.11 · המראה 23:55, נחיתה 06:20 · ישיר · הוזמן!", dur: "11:25" }
-  ];
+    { ic: "plane", t: `✓ אל על ${out.no} · ת"א → בנגקוק`, d: `${dow(out.depDate)} ${fmtD(out.depDate)} · המראה ${out.depTime}, נחיתה ${out.arrTime} למחרת · ישיר · הוזמן!`, dur: out.dur },
+    n.bangkok ? { ic: "moon", t: "לילה בבנגקוק · ליד השדה", d: hotelTxt(H.bangkok, "") + " — נוחתים " + out.arrTime + ", בבוקר ממשיכים לפוקט", dur: n.bangkok + " לילה" } : null,
+    dom ? { ic: "plane", t: `✓ ${dom.airline} ${dom.no} · בנגקוק → פוקט`, d: `${dow(dom.depDate)} ${fmtD(dom.depDate)} · המראה ${dom.depTime} מ${dom.from.term.replace("סוברנבומי · ", "")}, נחיתה ${dom.arrTime} · ישיר · הוזמן!`, dur: dom.dur } : null,
+    { ic: "bed", t: "בסיס 1 · פוקט", d: hotelTxt(H.phuket, hotelName("phuket")), dur: n.phuket + " לילות", base: true },
+    { ic: "car", t: `מעבר · פוקט → ${dest2Name(true)}`, d: d2.decided ? "רכב פרטי עם כיסא בטיחות" : "תלוי ביעד: אאו נאנג ~3 ש' ברכב · קאו לאק ~1.5 ש' · בנגקוק בטיסה", dur: "" },
+    { ic: "bed", t: `בסיס 2 · ${dest2Name()}`, d: d2.decided ? hotelTxt(H.second, hotelName("aonang")) : "האפשרויות: " + (d2.options || []).join(" / ") + " — ההשוואה למטה", dur: n.aonang + " לילות", base: true },
+    { ic: "plane", t: "טיסה פנימית · חזרה לבנגקוק", d: d2.decided ? "לסגור אחרי המלון — לנחות בסוברנבומי (BKK) עד ~19:30" : "נסגרת אחרי ההחלטה על היעד השני (KBV או HKT → BKK)", dur: "‎~1:25" },
+    { ic: "plane", t: `✓ אל על ${back.no} · בנגקוק → ת"א`, d: `${dow(back.depDate)} ${fmtD(back.depDate)} · המראה ${back.depTime}, נחיתה ${back.arrTime} · ישיר · הוזמן!`, dur: back.dur }
+  ].filter(Boolean);
   $("#legsBox").innerHTML = legs.map(l => `
     <li class="leg ${l.base ? "base" : ""}"><span class="ic">${IC[l.ic]}</span>
       <span class="bd"><b>${esc(l.t)}</b><div class="d">${esc(l.d)}</div></span>
       ${l.dur ? `<span class="dur">${esc(l.dur)}</span>` : ""}</li>`).join("");
-
-  const half = Math.floor(n.total / 2);
-  $$("#splitToggle button").forEach(b => {
-    const ao = b.dataset.split === "7+6" ? half : Math.max(1, half - 1);
-    b.textContent = `${n.total - ao} לילות פוקט + ${ao} אאו נאנג`;
-    b.classList.toggle("active", b.dataset.split === state.split);
-  });
+  $("#legsSub").textContent = `${n.total} לילות · ${n.bangkok} בנגקוק + ${n.phuket} פוקט + ${n.aonang} ${dest2Name(true)}`;
 }
-
-$$("#splitToggle button").forEach(b => b.addEventListener("click", () => {
-  state.split = b.dataset.split;
-  save(); renderLegs(); renderHotels(); renderBudget(); renderOverview(); renderTasksArea();
-}));
 
 /* ---------- מפה ---------- */
 const MAP_VIEWS = {
-  overview: { lon0: 98.20, lon1: 99.34, lat0: 7.70, lat1: 8.21 },
-  phuket: { lon0: 98.22, lon1: 98.47, lat0: 7.72, lat1: 8.12 },
-  aonang: { lon0: 98.64, lon1: 98.98, lat0: 7.93, lat1: 8.15 }
+  overview: { lon0: 98.16, lon1: 99.34, lat0: 7.70, lat1: 8.78 },
+  phuket: { lon0: 98.22, lon1: 98.47, lat0: 7.72, lat1: 8.17 },
+  aonang: { lon0: 98.64, lon1: 98.98, lat0: 7.93, lat1: 8.15 },
+  khaolak: { lon0: 98.15, lon1: 98.37, lat0: 8.50, lat1: 8.76 },
+  bangkok: { lon0: 100.68, lon1: 100.86, lat0: 13.63, lat1: 13.79 }
 };
 let mapView = "overview", mapKind = "all", leafState = null;
 
 /* קווי חוף מקורבים (lon,lat) */
 const GEO = {
   phuketIsland: [[98.30, 8.20], [98.27, 8.14], [98.245, 8.05], [98.25, 7.93], [98.268, 7.82], [98.30, 7.748], [98.335, 7.78], [98.36, 7.79], [98.40, 7.80], [98.412, 7.82], [98.42, 7.90], [98.437, 7.99], [98.428, 8.06], [98.40, 8.10], [98.35, 8.16]],
-  mainland: [[98.70, 8.21], [98.715, 8.115], [98.735, 8.062], [98.758, 8.047], [98.79, 8.05], [98.807, 8.038], [98.818, 8.030], [98.83, 8.016], [98.836, 8.002], [98.85, 8.0], [98.868, 8.012], [98.884, 8.024], [98.9, 8.038], [98.908, 8.052], [98.92, 8.09], [98.94, 8.06], [98.96, 8.02], [99.0, 7.95], [99.08, 7.88], [99.2, 7.82], [99.34, 7.78], [99.34, 8.21]],
+  mainland: [[98.22, 8.95], [98.235, 8.78], [98.238, 8.66], [98.230, 8.56], [98.255, 8.45], [98.275, 8.33], [98.30, 8.205],
+    [98.36, 8.20], [98.42, 8.22], [98.47, 8.26], [98.51, 8.33], [98.545, 8.44], [98.575, 8.37], [98.61, 8.30], [98.66, 8.24],
+    [98.70, 8.21], [98.715, 8.115], [98.735, 8.062], [98.758, 8.047], [98.79, 8.05], [98.807, 8.038], [98.818, 8.030], [98.83, 8.016], [98.836, 8.002], [98.85, 8.0], [98.868, 8.012], [98.884, 8.024], [98.9, 8.038], [98.908, 8.052], [98.92, 8.09], [98.94, 8.06], [98.96, 8.02], [99.0, 7.95], [99.08, 7.88], [99.2, 7.82], [99.34, 7.78], [99.34, 8.95]],
   islands: [[98.686, 8.072, 0.014], [98.676, 8.050, 0.009], [98.82, 7.952, 0.008]]
 };
 
@@ -740,8 +660,16 @@ const HOTEL_SHORT = {
   dusit: "Dusit", "kata-palm": "Kata Palm", "centara-aonang": "Centara", avani: "Avani", "holiday-inn": "Holiday Inn"
 };
 
+const candidates = () => (trip && Array.isArray(trip.candidates)) ? trip.candidates : [];
+const candNights = c => Math.max(1, Math.round((new Date(c.to + "T00:00:00") - new Date(c.from + "T00:00:00")) / 864e5));
+
 function mapPlaces() {
   const pl = [];
+  candidates().forEach(c => pl.push({
+    kind: "cand", id: "c_" + c.id, name: c.name, short: c.short || "", cand: c,
+    desc: `מועמד · ${c.room} · $${(+c.usd).toLocaleString("en-US")} ל-${candNights(c)} לילות (${c.src || ""})`,
+    extra: c.area, lat: c.lat, lng: c.lng, placeId: c.placeId, site: c.site, img: c.img && c.img[0], address: c.address
+  }));
   HOTELS.forEach(h => pl.push({
     kind: "hotel", id: "h_" + h.id, name: h.name, short: HOTEL_SHORT[h.id] || "", desc: h.area + (h.rating ? " · דירוג " + h.rating : ""),
     lat: h.lat, lng: h.lng, placeId: h.placeId, phone: h.phone, site: h.site,
@@ -754,6 +682,14 @@ function mapPlaces() {
   MEDICAL.forEach(m => pl.push({
     kind: "med", id: "m_" + m.id, name: m.name, short: "בי\"ח", desc: m.desc, lat: m.lat, lng: m.lng, phone: m.phone
   }));
+  AIRPORTS.forEach(a => pl.push({
+    kind: "air", id: "p_" + a.id, name: a.name, short: a.short, desc: a.desc,
+    lat: a.lat, lng: a.lng, placeId: a.placeId, site: a.site
+  }));
+  KHAOLAK.forEach(k => pl.push({
+    kind: k.kind, id: "k_" + k.id, name: k.name, short: k.short, desc: k.desc + (k.area ? " · " + k.area : ""),
+    extra: k.extra, cost: k.cost, time: k.time, lat: k.lat, lng: k.lng, placeId: k.placeId, site: k.site
+  }));
   return pl;
 }
 
@@ -762,13 +698,18 @@ function showPlaceSheet(p) {
   sh.className = "place-sheet on";
   sh.innerHTML = `<button class="close" id="sheetClose" aria-label="סגירה">✕</button>
     <b>${esc(p.name)}</b><div class="d">${esc(p.desc || "")}</div>
-    ${p.extra ? `<div class="d">👶 ${esc(p.extra)}</div>` : ""}
+    ${p.kind === "cand" ? (p.extra ? `<div class="d">${esc(p.extra)}</div>` : "") : (p.extra ? `<div class="d">👶 ${esc(p.extra)}</div>` : "")}
+    ${p.address ? `<div class="d">📍 ${esc(p.address)}</div>` : ""}
+    ${p.img ? `<img class="sheet-img" src="${esc(p.img)}" alt="">` : ""}
     ${p.cost || p.time ? `<div class="d">${esc([p.cost, p.time].filter(Boolean).join(" · "))}</div>` : ""}
     <div class="links">
       <a target="_blank" rel="noopener" href="${gmapsUrl(p)}">פתיחה ב-Google Maps</a>
       ${p.phone ? `<a href="tel:${p.phone.replace(/\s/g, "")}">חיוג</a>` : ""}
       ${p.site ? `<a target="_blank" rel="noopener" href="${esc(p.site)}">אתר</a>` : ""}
+      ${p.kind === "cand" ? `<a href="#cand-${esc(p.cand.id)}" class="cand-open" data-id="${esc(p.cand.id)}">כל הפרטים</a>` : ""}
     </div>`;
+  const co = sh.querySelector(".cand-open");
+  if (co) co.addEventListener("click", e => { e.preventDefault(); openCandidate(co.dataset.id); });
   $("#sheetClose").addEventListener("click", () => { sh.className = "place-sheet"; sh.innerHTML = ""; });
 }
 
@@ -796,15 +737,17 @@ function renderSchemap() {
 
   const detail = mapView !== "overview";
   const dots = places.map(p => {
-    const col = { hotel: "var(--map-hotel)", att: "var(--map-att)", med: "var(--map-med)" }[p.kind];
-    const r = p.kind === "att" ? 14 : 19;
+    const col = { hotel: "var(--map-hotel)", att: "var(--map-att)", med: "var(--map-med)", air: "var(--map-air)", cand: "var(--map-cand)" }[p.kind];
+    const r = p.kind === "att" ? 14 : p.kind === "cand" ? 21 : 19;
     const ring = p.chosen ? `<circle cx="${p.x}" cy="${p.y}" r="${r + 11}" fill="none" stroke="var(--map-hotel)" stroke-width="5"/>` : "";
     const cross = p.kind === "med" ? `<path d="M${p.x - 7} ${p.y}h14M${p.x} ${p.y - 7}v14" stroke="#fff" stroke-width="4.5"/>` : "";
-    const label = detail && p.short
+    const plane = p.kind === "air" ? `<text x="${p.x}" y="${p.y + 7}" font-size="21" text-anchor="middle" fill="#fff">✈</text>`
+      : p.kind === "cand" ? `<text x="${p.x}" y="${p.y + 8}" font-size="24" text-anchor="middle" fill="#fff">★</text>` : "";
+    const label = (detail || p.kind === "air" || p.kind === "cand") && p.short
       ? `<text class="mklabel" x="${p.x + r + 8}" y="${p.y + 8}" font-size="36">${esc(p.short)}</text>` : "";
     return `<g class="mk" data-place="${p.id}" tabindex="0" role="button" aria-label="${esc(p.name)}">
       <circle cx="${p.x}" cy="${p.y}" r="${r + 18}" fill="transparent"/>
-      ${ring}<circle cx="${p.x}" cy="${p.y}" r="${r}" fill="${col}" stroke="var(--surface)" stroke-width="4"/>${cross}${label}</g>`;
+      ${ring}<circle cx="${p.x}" cy="${p.y}" r="${r}" fill="${col}" stroke="var(--surface)" stroke-width="4"/>${cross}${plane}${label}</g>`;
   }).join("");
 
   const islands = GEO.islands
@@ -813,12 +756,16 @@ function renderSchemap() {
 
   let labels = "";
   if (mapView === "overview") {
-    const l1 = px(98.34, 7.92), l2 = px(98.99, 8.10), sea = px(98.52, 7.83);
+    const l1 = px(98.34, 7.92), l2 = px(98.99, 8.10), l3 = px(98.30, 8.60), sea = px(98.52, 7.83);
     labels = `<text x="${l1.x}" y="${l1.y}" font-size="34" fill="var(--muted)">פוקט</text>
       <text x="${l2.x}" y="${l2.y}" font-size="34" fill="var(--muted)">קראבי</text>
+      <text x="${l3.x}" y="${l3.y}" font-size="34" fill="var(--muted)">קאו לאק</text>
       <text x="${sea.x}" y="${sea.y}" font-size="30" fill="var(--sea-ink)" opacity=".8">הים האנדמני</text>`;
   } else if (mapView === "aonang") {
     const s = px(98.70, 8.00);
+    labels = `<text x="${s.x}" y="${s.y}" font-size="30" fill="var(--sea-ink)" opacity=".75">הים האנדמני</text>`;
+  } else if (mapView === "khaolak") {
+    const s = px(98.165, 8.62);
     labels = `<text x="${s.x}" y="${s.y}" font-size="30" fill="var(--sea-ink)" opacity=".75">הים האנדמני</text>`;
   } else {
     const s = px(98.245, 7.77);
@@ -834,9 +781,11 @@ function renderSchemap() {
   attachSchemapPanZoom(W, H);
 
   $("#mapLegend").innerHTML = `
+    <span class="k"><i class="swatch" style="background:var(--map-cand)"></i>מועמדים ★</span>
     <span class="k"><i class="swatch" style="background:var(--map-hotel)"></i>מלונות</span>
     <span class="k"><i class="swatch" style="background:var(--map-att)"></i>אטרקציות</span>
-    <span class="k"><i class="swatch" style="background:var(--map-med)"></i>בתי חולים</span>`;
+    <span class="k"><i class="swatch" style="background:var(--map-med)"></i>בתי חולים</span>
+    <span class="k"><i class="swatch" style="background:var(--map-air)"></i>שדה תעופה</span>`;
 
   const open = id => { const p = places.find(q => q.id === id); if (p) showPlaceSheet(p); };
   $$("#schemap .mk").forEach(g => {
@@ -941,6 +890,98 @@ function attachSchemapPanZoom(W, H) {
 }
 
 /* שדרוג למפה אמיתית (Leaflet) כשהאריחים נגישים — למשל בפתיחה מקומית */
+/* ---------- מועמדים למלונות (trip.js → candidates) ---------- */
+const BASE_LABEL = { bangkok: "בנגקוק", phuket: "פוקט", khaolak: "קאו לאק", aonang: "אאו נאנג" };
+const usd = n => "$" + Math.round(n).toLocaleString("en-US");
+
+function candHtml(c) {
+  const nn = candNights(c), total = +c.usd || 0;
+  const imgs = (c.img || []).map((src, i) => `<figure><img src="${esc(src)}" alt="" loading="lazy"><figcaption>${i === 0 ? "המלון" : "החדר / הבריכה"}</figcaption></figure>`).join("");
+  return `<details class="cand" id="cand-${esc(c.id)}">
+    <summary>
+      ${c.img && c.img[0] ? `<img src="${esc(c.img[0])}" alt="" loading="lazy">` : `<span class="noimg">🏨</span>`}
+      <span class="t"><b>${esc(c.name)}</b><small>${esc(c.area)}${c.room ? " · " + esc(c.room) : ""}</small></span>
+      <span class="p"><b>${usd(total)}</b><small>≈ ${ils(total * RATES.usd)}</small></span>
+      ${CHEV}
+    </summary>
+    <div class="cand-body">
+      <dl>
+        <dt>חדר</dt><dd>${esc(c.room || "—")}</dd>
+        <dt>תאריכים</dt><dd>${fmtD(c.from)} ← ${fmtD(c.to)} · ${nn} לילות</dd>
+        ${c.board ? `<dt>הסעדה</dt><dd>${esc(c.board)}</dd>` : ""}
+        <dt>מחיר</dt><dd><b>${usd(total)}</b> לכל הלילות, לכולם${c.src ? ` (${esc(c.src)})` : ""} · ≈ ${ils(total * RATES.usd)} · ${usd(total / nn)} ללילה</dd>
+        <dt>כתובת</dt><dd>${esc(c.address || "")}</dd>
+      </dl>
+      ${c.note ? `<p class="cand-note">${esc(c.note)}</p>` : ""}
+      ${imgs ? `<div class="cand-imgs">${imgs}</div>` : ""}
+      <div class="links">
+        <a class="linkbtn" target="_blank" rel="noopener" href="${gmapsUrl(c)}">📍 Google Maps</a>
+        <a class="linkbtn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${c.lat},${c.lng}">ניווט</a>
+        ${c.site ? `<a class="linkbtn" target="_blank" rel="noopener" href="${esc(c.site)}">אתר המלון</a>` : ""}
+        <button type="button" class="linkbtn cand-map" data-id="${esc(c.id)}">★ הצג במפה</button>
+      </div>
+    </div>
+  </details>`;
+}
+
+function renderCandidates() {
+  const box = $("#candList");
+  if (!box) return;
+  const list = candidates();
+  const bases = [...new Set(list.map(c => c.base))];
+  box.innerHTML = list.length ? bases.map(b => {
+    const items = list.filter(c => c.base === b);
+    const c0 = items[0];
+    return `<div class="cand-group">
+      <div class="cand-head"><b>${esc(BASE_LABEL[b] || b)}</b><span>${fmtD(c0.from)}–${fmtD(c0.to)} · ${candNights(c0)} לילות · ${items.length === 1 ? "מועמד אחד" : items.length + " מועמדים"}</span></div>
+      ${items.map(candHtml).join("")}
+    </div>`;
+  }).join("") : `<p class="cost-empty">אין עדיין מועמדים — מוסיפים ב-trip.js תחת candidates.</p>`;
+  $$("#candList .cand-map").forEach(b => b.addEventListener("click", () => showCandOnMap(b.dataset.id)));
+  $("#candSub").textContent = list.length ? `${list.length} מלונות · ${bases.length} יעדים` : "";
+}
+
+/* פתיחת הכרטיס של מועמד וגלילה אליו */
+function openCandidate(id) {
+  const d = $("#cand-" + CSS.escape(id));
+  if (!d) return;
+  d.open = true;
+  setTimeout(() => d.scrollIntoView({ behavior: "smooth", block: "start" }), 40);
+}
+
+/* קפיצה מהמועמד אל המפה */
+function showCandOnMap(id) {
+  const c = candidates().find(x => x.id === id);
+  if (!c) return;
+  setMapKind("all");
+  setMapView(MAP_VIEWS[c.base] ? c.base : "overview");
+  const p = mapPlaces().find(q => q.id === "c_" + id);
+  if (p) showPlaceSheet(p);
+  if (leafState) setTimeout(() => leafState.map.setView([c.lat, c.lng], 14, { animate: true }), 30);
+  setTimeout(() => $("#mapbox").scrollIntoView({ behavior: "smooth", block: "center" }), 80);
+}
+
+/* ---------- עלויות (trip.js → costs) ---------- */
+const fmtDate = iso => { const d = new Date(iso + "T00:00:00"); return isNaN(d) ? "" : d.getDate() + "." + (d.getMonth() + 1) + "." + d.getFullYear(); };
+function renderCosts() {
+  const box = $("#costRows");
+  if (!box) return;
+  const costs = Array.isArray(trip.costs) ? trip.costs : [];
+  const paid = costs.filter(c => c.paid);
+  const paidSum = paid.reduce((s, c) => s + (+c.amount || 0), 0);
+  const openSum = costs.filter(c => !c.paid).reduce((s, c) => s + (+c.amount || 0), 0);
+  box.innerHTML = costs.length ? costs.map(c => `<div class="cost-row${c.paid ? " paid" : " open"}">
+      <span class="tag">${c.paid ? "✓ שולם" : "טרם שולם"}</span>
+      <div class="body"><b>${esc(c.what)}</b>
+        ${c.note || c.date ? `<small>${[c.note, c.date && fmtDate(c.date)].filter(Boolean).map(esc).join(" · ")}</small>` : ""}</div>
+      <b class="amt">${ils(+c.amount || 0)}</b>
+    </div>`).join("") : `<p class="cost-empty">אין עדיין עלויות — מוסיפים ב-trip.js תחת costs.</p>`;
+  $("#costPaid").textContent = ils(paidSum);
+  $("#costsSub").textContent = paid.length === costs.length
+    ? `${costs.length} תשלומים · הכול שולם`
+    : `${paid.length} מתוך ${costs.length} שולמו · פתוח ${ils(openSum)}`;
+}
+
 function tryLeaflet() {
   if (typeof L === "undefined") return;
   const test = new Image();
@@ -955,16 +996,18 @@ function initLeaflet() {
     box.style.display = "block";
     $("#schemap").style.display = "none";
     $("#mapNote").textContent = "מפה מלאה (OpenStreetMap). הקשה על נקודה — פרטים; הכפתורים למעלה ממקדים ומסננים.";
-    const map = L.map(box, { scrollWheelZoom: true }).setView([7.95, 98.55], 9);
+    const OV = MAP_VIEWS.overview;
+    const map = L.map(box, { scrollWheelZoom: true }).fitBounds([[OV.lat0, OV.lon0], [OV.lat1, OV.lon1]], { padding: [14, 14] });
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "© OpenStreetMap" }).addTo(map);
-    const colors = { hotel: "#2E6650", att: "#C05B38", med: "#B3362B" };
-    const groups = { hotel: L.layerGroup(), att: L.layerGroup(), med: L.layerGroup() };
+    const colors = { hotel: "#2E6650", att: "#C05B38", med: "#B3362B", air: "#8A6A17", cand: "#9F7420" };
+    const groups = { hotel: L.layerGroup(), att: L.layerGroup(), med: L.layerGroup(), air: L.layerGroup(), cand: L.layerGroup() };
     mapPlaces().forEach(p => {
       const m = L.circleMarker([p.lat, p.lng], {
-        radius: p.kind === "att" ? 6 : 8, color: "#fff", weight: 1.5,
+        radius: p.kind === "att" ? 6 : p.kind === "cand" ? 10 : 8, color: "#fff", weight: 1.5,
         fillColor: colors[p.kind], fillOpacity: p.chosen ? 1 : 0.9
       });
-      m.bindTooltip(p.name, { direction: "top", opacity: 0.9 });
+      m.bindTooltip(p.kind === "air" ? "✈ " + (p.short || p.name) : p.kind === "cand" ? "★ " + (p.short || p.name) : p.name,
+        { direction: "top", opacity: 0.9, permanent: p.kind === "air" || p.kind === "cand", className: p.kind === "air" ? "tt-air" : p.kind === "cand" ? "tt-cand" : "" });
       m.on("click", () => showPlaceSheet(p));
       m.addTo(groups[p.kind]);
     });
@@ -978,13 +1021,14 @@ function initLeaflet() {
 function refreshMap() {
   if (leafState) {
     Object.values(leafState.groups).forEach(g => g.clearLayers());
-    const colors = { hotel: "#2E6650", att: "#C05B38", med: "#B3362B" };
+    const colors = { hotel: "#2E6650", att: "#C05B38", med: "#B3362B", air: "#8A6A17", cand: "#9F7420" };
     mapPlaces().forEach(p => {
       const m = L.circleMarker([p.lat, p.lng], {
-        radius: p.kind === "att" ? 6 : 8, color: "#fff", weight: 1.5,
+        radius: p.kind === "att" ? 6 : p.kind === "cand" ? 10 : 8, color: "#fff", weight: 1.5,
         fillColor: colors[p.kind], fillOpacity: p.chosen ? 1 : 0.9
       });
-      m.bindTooltip(p.name, { direction: "top", opacity: 0.9 });
+      m.bindTooltip(p.kind === "air" ? "✈ " + (p.short || p.name) : p.kind === "cand" ? "★ " + (p.short || p.name) : p.name,
+        { direction: "top", opacity: 0.9, permanent: p.kind === "air" || p.kind === "cand", className: p.kind === "air" ? "tt-air" : p.kind === "cand" ? "tt-cand" : "" });
       m.on("click", () => showPlaceSheet(p));
       m.addTo(leafState.groups[p.kind]);
     });
@@ -1021,7 +1065,7 @@ function renderAtts() {
   $("#attBox").innerHTML = list.length ? list.map(a => `
     <details class="att-acc ${state.saved[a.id] ? "saved" : ""}">
       <summary>
-        <button class="star" data-star="${a.id}" aria-label="סימון">${state.saved[a.id] ? "★" : "☆"}</button>
+        <span class="star" aria-label="${state.saved[a.id] ? "מסומן" : ""}">${state.saved[a.id] ? "★" : "☆"}</span>
         <span class="atitle"><b>${esc(a.name)}</b>
           <span class="apills">
             <span class="pill warm">${esc(a.cost)}</span>
@@ -1037,14 +1081,7 @@ function renderAtts() {
           <a class="linkbtn" target="_blank" rel="noopener" href="${gmapsUrl(a)}">Google Maps</a>
         </div>
       </div>
-    </details>`).join("") : `<p style="font-size:13px;color:var(--muted);margin-top:10px">עוד לא סימנתם כלום — הקישו על הכוכב ליד אטרקציה כדי לבנות רשימה שלכם.</p>`;
-
-  $$("#attBox [data-star]").forEach(b => b.addEventListener("click", e => {
-    e.preventDefault(); e.stopPropagation();
-    if (state.saved[b.dataset.star]) delete state.saved[b.dataset.star];
-    else state.saved[b.dataset.star] = true;
-    save(); renderAtts();
-  }));
+    </details>`).join("") : `<p style="font-size:13px;color:var(--muted);margin-top:10px">עוד לא סימנתם כלום — מוסיפים מזהי אטרקציות ל-savedAttractions ב-trip.js.</p>`;
 }
 
 /* ---------- מלונות ---------- */
@@ -1057,20 +1094,20 @@ let hotelFilter = "all";
 
 function hotelPicksHtml(n) {
   const typCost = (h, nn) => (h.usd[0] + h.usd[1]) / 2 * nn * RATES.usd;
-  const pick = base => {
-    const label = (base === "phuket" ? "פוקט" : "אאו נאנג") + ` · ${n[base]} לילות`;
+  const H = state.hotels;
+  const pick = (base, label, hb) => {
     const h = HOTELS.find(x => x.id === state.hotelChoice[base]);
-    if (!h) return `<div class="pick empty"><span class="b">${label}</span><span>עוד לא נבחר — גללו ולחצו "בחירה"</span></div>`;
-    return `<div class="pick"><span class="b">${label}</span><b>${esc(h.name)}</b>
-      <span class="est num">~${ils(typCost(h, n[base]))} לכל השהות</span></div>`;
+    const name = h ? h.name : (hb && hb.name);
+    if (!name) return `<div class="pick empty"><span class="b">${label}</span><span>עוד לא נבחר</span></div>`;
+    const status = hb && hb.booked ? `<span class="pill good">הוזמן ✓${hb.ref ? " · " + esc(hb.ref) : ""}</span>` : `<span class="pill warm">נבחר · עוד לא הוזמן</span>`;
+    return `<div class="pick"><span class="b">${label}</span><b>${esc(name)}</b> ${status}
+      ${h ? `<span class="est num">~${ils(typCost(h, n[base]))} לכל השהות</span>` : ""}</div>`;
   };
-  const chosen = ["phuket", "aonang"].map(b => HOTELS.find(x => x.id === state.hotelChoice[b]));
-  const total = chosen[0] && chosen[1]
-    ? typCost(chosen[0], n.phuket) + typCost(chosen[1], n.aonang) : 0;
+  const bkk = n.bangkok ? `<div class="pick ${H.bangkok && H.bangkok.name ? "" : "empty"}"><span class="b">בנגקוק · ${n.bangkok} לילה</span>
+      ${H.bangkok && H.bangkok.name ? `<b>${esc(H.bangkok.name)}</b> ${H.bangkok.booked ? '<span class="pill good">הוזמן ✓</span>' : '<span class="pill warm">עוד לא הוזמן</span>'}` : `<span>עוד לא נבחר — ליד סוברנבומי</span>`}</div>` : "";
   return `<div class="card">
-    <h2>הבחירות שלכם <span class="sub">מתעדכן אוטומטית בתקציב</span></h2>
-    <div class="picks">${pick("phuket")}${pick("aonang")}</div>
-    ${total ? `<div class="picks-total">סה"כ לינה משוער לשני הבסיסים: <b class="num">${ils(total)}</b></div>` : ""}
+    <h2>המלונות שלכם <span class="sub">מ-trip.js · נכנס לתקציב</span></h2>
+    <div class="picks">${bkk}${pick("phuket", `פוקט · ${n.phuket} לילות`, H.phuket)}${pick("aonang", `${esc(dest2Name())} · ${n.aonang} לילות`, H.second)}</div>
   </div>`;
 }
 
@@ -1078,7 +1115,7 @@ function renderHotels() {
   const n = nights();
   const groups = [
     ["phuket", `בסיס 1 — פוקט · ${n.phuket} לילות`],
-    ["aonang", `בסיס 2 — אאו נאנג · ${n.aonang} לילות`]
+    ["aonang", `בסיס 2 — ${esc(dest2Name())} · ${n.aonang} לילות · הקטלוג: אאו נאנג`]
   ].filter(([base]) => hotelFilter === "all" || base === hotelFilter);
   $("#hotelsBox").innerHTML = hotelPicksHtml(n) + `
     <div class="hotels-toolbar"><div class="seg" id="hotelSeg">
@@ -1089,10 +1126,11 @@ function renderHotels() {
     <h2 style="font-size:17px;margin-top:20px">${title}</h2>
     ${HOTELS.filter(h => h.base === base).map(h => {
     const chosen = state.hotelChoice[base] === h.id;
+    const hb = base === "phuket" ? state.hotels.phuket : state.hotels.second;
     const ilsRange = `₪${Math.round(h.usd[0] * RATES.usd)}–${Math.round(h.usd[1] * RATES.usd)}`;
     return `<div class="hotel ${chosen ? "chosen" : ""}">
       ${h.img ? `<img class="photo" src="${esc(h.img)}" alt="${esc(h.name)}" loading="lazy" onerror="this.remove()">` : ""}
-      <div class="hd"><span><b>${esc(h.name)}</b> ${h.rec ? '<span class="pill good">מומלץ</span>' : ""}
+      <div class="hd"><span><b>${esc(h.name)}</b> ${chosen ? `<span class="pill good">${hb && hb.booked ? "✓ הוזמן" : "✓ נבחר"}</span>` : h.rec ? '<span class="pill good">מומלץ</span>' : ""}
         <div class="area">${esc(h.area)}</div></span>
         <span class="rate">$${h.usd[0]}–${h.usd[1]}<br><small>${ilsRange} ללילה</small></span></div>
       <div class="bd">
@@ -1108,7 +1146,6 @@ function renderHotels() {
         <button class="linkbtn" data-onmap="${h.id}" data-base="${base}">במפה</button>
         ${h.phone ? `<a class="linkbtn" href="tel:${h.phone.replace(/\s/g, "")}">חיוג</a>` : ""}
         ${h.site ? `<a class="linkbtn" target="_blank" rel="noopener" href="${esc(h.site)}">אתר</a>` : ""}
-        <button class="choose" data-choose="${h.id}" data-base="${base}">${chosen ? "✓ נבחר" : "בחירה"}</button>
       </div></div>`;
   }).join("")}`).join("") +
     `<p style="font-size:12px;color:var(--muted);margin-top:14px">
@@ -1119,12 +1156,6 @@ function renderHotels() {
   $$("#hotelSeg [data-hb]").forEach(b => b.addEventListener("click", () => {
     hotelFilter = b.dataset.hb;
     renderHotels();
-  }));
-  $$("#hotelsBox [data-choose]").forEach(b => b.addEventListener("click", () => {
-    const base = b.dataset.base;
-    state.hotelChoice[base] = state.hotelChoice[base] === b.dataset.choose ? null : b.dataset.choose;
-    save(); renderHotels(); renderBudget(); renderOverview(); refreshMap(); renderTasksArea();
-    if (state.hotelChoice[base]) { buzz(); toast("המלון נבחר — התקציב התעדכן לפי הלילות"); }
   }));
   $$("#hotelsBox [data-onmap]").forEach(b => b.addEventListener("click", () =>
     showHotelOnMap(b.dataset.onmap, b.dataset.base)));
@@ -1168,25 +1199,11 @@ function renderBudget() {
       <div class="top"><b>${esc(r.name)}</b>
         <span class="est">${ils(r.low)} · <b>${ils(r.typ)}</b> · ${ils(r.high)}</span></div>
       ${r.note ? `<div class="note">${esc(r.note)}</div>` : ""}
-      <div class="pay">
-        <input type="number" min="0" inputmode="numeric" placeholder="₪ שולם" data-pay="${b.id}" value="${p.amount ?? ""}">
-        <input type="text" placeholder="הערה (למשל: אל על, שולם 15.9)" data-note="${b.id}" value="${esc(p.note ?? "")}">
-        ${+p.amount ? `<span class="paidtag">✓</span>` : ""}
-      </div></div>`;
+      ${+p.amount
+        ? `<div class="pay paid"><span class="paidtag">✓ שולם</span><b class="num">${ils(+p.amount)}</b>${p.note ? `<span class="pnote">${esc(p.note)}</span>` : ""}</div>`
+        : `<div class="pay open"><span class="pnote">טרם שולם</span></div>`}
+    </div>`;
   }).join("");
-
-  box.querySelectorAll("[data-pay]").forEach(inp => inp.addEventListener("input", () => {
-    const id = inp.dataset.pay;
-    state.payments[id] = state.payments[id] || {};
-    state.payments[id].amount = inp.value === "" ? "" : +inp.value;
-    save(); renderBudgetTotals(); renderOverview();
-  }));
-  box.querySelectorAll("[data-note]").forEach(inp => inp.addEventListener("input", () => {
-    const id = inp.dataset.note;
-    state.payments[id] = state.payments[id] || {};
-    state.payments[id].note = inp.value;
-    save();
-  }));
   renderBudgetTotals();
 }
 
@@ -1275,167 +1292,17 @@ async function loadWeather() {
   } catch (e) { /* אין רשת/CSP — נשארים עם הממוצעים */ }
 }
 
-/* ---------- קובץ שמירה אוטומטית (File System Access) ---------- */
-let fsHandle = null, fsTimer = null;
-const idb = {
-  db: null,
-  open() {
-    return new Promise((res, rej) => {
-      const r = indexedDB.open("hamal-fs", 1);
-      r.onupgradeneeded = () => r.result.createObjectStore("kv");
-      r.onsuccess = () => res(r.result);
-      r.onerror = () => rej(r.error);
-    });
-  },
-  async set(k, v) {
-    const db = this.db || (this.db = await this.open());
-    return new Promise((res, rej) => {
-      const tx = db.transaction("kv", "readwrite");
-      tx.objectStore("kv").put(v, k);
-      tx.oncomplete = res; tx.onerror = () => rej(tx.error);
-    });
-  },
-  async get(k) {
-    const db = this.db || (this.db = await this.open());
-    return new Promise((res, rej) => {
-      const tx = db.transaction("kv", "readonly");
-      const q = tx.objectStore("kv").get(k);
-      q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error);
-    });
-  }
-};
-
-function fsStatusUI(html) { const el = $("#fsStatus"); if (el) el.innerHTML = html; }
-
-async function fsWrite() {
-  if (!fsHandle) return;
-  try {
-    const w = await fsHandle.createWritable();
-    await w.write(JSON.stringify(state, null, 2));
-    await w.close();
-    fsStatusUI(`<span class="ok">✓ נשמר אוטומטית אל ${esc(fsHandle.name)}</span>
-      <span>(${new Date().toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" })})</span>`);
-  } catch (e) {
-    fsStatusUI(`<span>השמירה לקובץ נכשלה — <button class="linkbtn" id="fsReconnect">חיבור מחדש</button></span>`);
-    const b = $("#fsReconnect"); if (b) b.addEventListener("click", fsConnect);
-  }
-}
-
-async function fsAdoptNewer() {
-  try {
-    const f = await fsHandle.getFile();
-    if (!f.size) return;
-    const r = migrate(JSON.parse(await f.text()));
-    if (r.updatedAt && (!state.updatedAt || r.updatedAt > state.updatedAt)) {
-      state = r; persistLocal(); renderAll();
-      toast("נטענו נתונים עדכניים יותר מהקובץ");
-    }
-  } catch (e) { /* קובץ ריק/לא תקין — מתעלמים */ }
-}
-
-async function fsConnect() {
-  if (!window.showOpenFilePicker) {
-    toast("שמירה לקובץ נתמכת בכרום/אדג' במחשב. בנייד הסנכרון בענן פעיל דרך הקישור");
-    return;
-  }
-  try {
-    /* בחירת קובץ קיים — לא "שמירה בשם" שפותחת ב-Downloads ויוצרת עותק שגוי */
-    const [h] = await showOpenFilePicker({
-      types: [{ description: "JSON", accept: { "application/json": [".json"] } }],
-      multiple: false
-    });
-    if (await h.requestPermission({ mode: "readwrite" }) !== "granted") return;
-    fsHandle = h;
-    try { await idb.set("handle", fsHandle); } catch (e) { }
-    await fsAdoptNewer();
-    await fsWrite();
-    toast("מחובר! כל שינוי נשמר לקובץ");
-  } catch (e) { /* המשתמש ביטל */ }
-}
-
-async function fsRestore() {
-  if (!window.showSaveFilePicker) return;
-  let h;
-  try { h = await idb.get("handle"); } catch (e) { return; }
-  if (!h) return;
-  try {
-    const perm = await h.queryPermission({ mode: "readwrite" });
-    if (perm === "granted") {
-      fsHandle = h;
-      await fsAdoptNewer();
-      fsWrite();
-    } else {
-      const reauth = async () => {
-        if (fsHandle) return;
-        if (await h.requestPermission({ mode: "readwrite" }) === "granted") {
-          fsHandle = h;
-          await fsAdoptNewer();
-          fsWrite();
-        }
-      };
-      fsStatusUI(`<span>הקובץ <b>${esc(h.name)}</b> חובר בעבר.</span>
-        <button class="linkbtn" id="fsReauth">חידוש החיבור</button>`);
-      $("#fsReauth").addEventListener("click", reauth);
-      /* לחיצה ראשונה בעמוד נחשבת user gesture — מחדשים את החיבור בלי לחפש את הכפתור */
-      document.addEventListener("click", reauth, { once: true, capture: true });
-    }
-  } catch (e) { /* דפדפן בלי תמיכה מלאה */ }
-}
-
-/* ---------- ייצוא / ייבוא ---------- */
-$("#btnConnectFile").addEventListener("click", fsConnect);
-$("#btnExport").addEventListener("click", async () => {
-  const data = JSON.stringify(state, null, 2);
-  const filename = "thailand-trip-data.json";
-  if (fsHandle) { await fsWrite(); toast("נשמר לקובץ הפרויקט"); return; }
-  try {
-    if (window.claude && window.claude.use) {
-      const dl = await window.claude.use("downloads");
-      if (dl) { await dl.save({ filename, data }); toast("הקובץ נשמר"); return; }
-    }
-  } catch (e) { if (e && e.code === "cancelled") return; }
-  try {
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([data], { type: "application/json" }));
-    a.download = filename; a.click();
-    toast("הקובץ ירד");
-  } catch (e) { toast("הייצוא נכשל — נסו העתקה ללוח"); }
-});
-
-$("#btnCopy").addEventListener("click", async () => {
-  try { await navigator.clipboard.writeText(JSON.stringify(state, null, 2)); toast("הועתק ללוח"); }
-  catch (e) { toast("ההעתקה נכשלה"); }
-});
-
-$("#fileImport").addEventListener("change", e => {
-  const f = e.target.files[0];
-  if (!f) return;
-  const rd = new FileReader();
-  rd.onload = () => {
-    try {
-      state = migrate(JSON.parse(rd.result));
-      save(); renderAll(); toast("הנתונים נטענו");
-    } catch (err) { toast("קובץ לא תקין"); }
-  };
-  rd.readAsText(f);
-  e.target.value = "";
-});
-
-/* ---------- הפעלה ---------- */
-function renderAll() {
-  renderTasksArea(); renderLegs(); refreshMap(); renderAttFilter(); renderAtts();
-  renderHotels(); renderBudget(); renderOverview(); renderWxTrip();
-}
-
-renderEmergency();
-renderFlights();
-renderDests();
-renderNovTable();
-renderSitters();
-renderRainChart();
-renderAll();
-initCloud();
-fsRestore();
-loadWeather();
-loadTripForecast();
-tryLeaflet();
+/* ---------- הפעלה ----------
+   הדף הראשי כולל כרגע רק את המפה, לכן מרנדרים רק אותה.
+   שאר פונקציות הרינדור (משימות, מסלול, מלונות, תקציב, מזג אוויר) עדיין בקובץ
+   ומחכות למרקאפ שיחזור — כל אחת מהן דורשת את האלמנטים שלה ב-index.html. */
+loadTrip().then(t => {
+  trip = t;
+  FLIGHTS = t.flights.intl;
+  DOMESTIC = t.flights.domestic || [];
+  state = deriveState(t);
+  renderCandidates();
+  renderCosts();
+  refreshMap();
+  tryLeaflet();
+}).catch(err => console.error("trip.js:", err));

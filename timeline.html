@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="ציר הזמן של הטיול לתאילנד — מה סגור, מה צריך לסגור ומה עוד פתוח">
+<meta name="theme-color" content="#FAFAF9" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#15161A" media="(prefers-color-scheme: dark)">
+<title>ציר הזמן · תאילנד</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="timeline.css">
+</head>
+<body>
+<div id="tl">
+  <header class="tl-head">
+    <a class="back" href="index.html" id="backLink">‹ לחמ"ל</a>
+    <div class="kicker">31.10 – 15.11.2026 · 16 ימים</div>
+    <h1>ציר הזמן</h1>
+    <p class="lede">שבע נקודות. כל אחת היא דבר אחד שצריך לסגור. לוחצים על מלון כדי לפתוח את הפרטים, ועל טיסה כדי לראות את כרטיס הטיסה.</p>
+  </header>
+
+  <!-- מצב: כמה סגור, כמה נשאר -->
+  <section class="board" aria-label="מצב ההכנות">
+    <div class="board-top">
+      <div class="board-num"><b id="progNum">0/0</b><span>נקודות סגורות</span></div>
+      <button class="ghost" id="toggleAll" type="button">פתח הכול</button>
+    </div>
+    <div class="progress" id="progress" aria-hidden="true"></div>
+    <div class="filters" id="filters" role="tablist" aria-label="סינון לפי מצב"></div>
+  </section>
+
+  <!-- רצועת הימים: איפה ישנים בכל לילה -->
+  <section class="strip-wrap" aria-label="איפה ישנים בכל לילה">
+    <h2 class="sec-title">איפה ישנים בכל לילה</h2>
+    <div class="strip" id="dayStrip"></div>
+    <div class="strip-legend" id="stripLegend"></div>
+  </section>
+
+  <!-- ציר הזמן -->
+  <main class="tl-list" id="tlList" aria-label="ציר הזמן"></main>
+  <p class="empty" id="empty" hidden>אין נקודות במצב הזה.</p>
+
+  <footer class="tl-foot">
+    <h2 class="sec-title">מקרא</h2>
+    <ul class="legend">
+      <li><span class="badge done"><i></i>סגור</span> הוזמן ושולם — אין מה לעשות</li>
+      <li><span class="badge todo"><i></i>לפעולה</span> ידוע מה צריך, רק להזמין</li>
+      <li><span class="badge open"><i></i>פתוח</span> עוד לא הוחלט מה עושים</li>
+    </ul>
+    <p class="hint">הנתונים נקראים מ-trip.js (טיסות, מלונות, לילות) — אותו מקור כמו החמ"ל.</p>
+  </footer>
+</div>
+
+<!-- כרטיס טיסה — נפתח בלחיצה על נקודת טיסה בציר -->
+<div class="tkt-overlay" id="tktOverlay" hidden>
+  <div class="tkt-scrim"></div>
+  <div class="tkt" role="dialog" aria-modal="true" aria-label="כרטיס טיסה">
+    <button class="tkt-close" type="button" aria-label="סגירה"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <div class="tkt-in"></div>
+  </div>
+</div>
+
+<script src="trip.js"></script>
+<script src="data.js"></script>
+<script src="trip-loader.js"></script>
+<script src="timeline.js"></script>
+</body>
+</html>
