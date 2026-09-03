@@ -1334,15 +1334,18 @@ async function fsAdoptNewer() {
 }
 
 async function fsConnect() {
-  if (!window.showSaveFilePicker) {
+  if (!window.showOpenFilePicker) {
     toast("שמירה לקובץ נתמכת בכרום/אדג' במחשב. בנייד הסנכרון בענן פעיל דרך הקישור");
     return;
   }
   try {
-    fsHandle = await showSaveFilePicker({
-      suggestedName: "thailand-trip-data.json",
-      types: [{ description: "JSON", accept: { "application/json": [".json"] } }]
+    /* בחירת קובץ קיים — לא "שמירה בשם" שפותחת ב-Downloads ויוצרת עותק שגוי */
+    const [h] = await showOpenFilePicker({
+      types: [{ description: "JSON", accept: { "application/json": [".json"] } }],
+      multiple: false
     });
+    if (await h.requestPermission({ mode: "readwrite" }) !== "granted") return;
+    fsHandle = h;
     try { await idb.set("handle", fsHandle); } catch (e) { }
     await fsAdoptNewer();
     await fsWrite();
@@ -1362,15 +1365,19 @@ async function fsRestore() {
       await fsAdoptNewer();
       fsWrite();
     } else {
-      fsStatusUI(`<span>הקובץ <b>${esc(h.name)}</b> חובר בעבר.</span>
-        <button class="linkbtn" id="fsReauth">חידוש החיבור</button>`);
-      $("#fsReauth").addEventListener("click", async () => {
+      const reauth = async () => {
+        if (fsHandle) return;
         if (await h.requestPermission({ mode: "readwrite" }) === "granted") {
           fsHandle = h;
           await fsAdoptNewer();
           fsWrite();
         }
-      });
+      };
+      fsStatusUI(`<span>הקובץ <b>${esc(h.name)}</b> חובר בעבר.</span>
+        <button class="linkbtn" id="fsReauth">חידוש החיבור</button>`);
+      $("#fsReauth").addEventListener("click", reauth);
+      /* לחיצה ראשונה בעמוד נחשבת user gesture — מחדשים את החיבור בלי לחפש את הכפתור */
+      document.addEventListener("click", reauth, { once: true, capture: true });
     }
   } catch (e) { /* דפדפן בלי תמיכה מלאה */ }
 }
@@ -1380,6 +1387,7 @@ $("#btnConnectFile").addEventListener("click", fsConnect);
 $("#btnExport").addEventListener("click", async () => {
   const data = JSON.stringify(state, null, 2);
   const filename = "thailand-trip-data.json";
+  if (fsHandle) { await fsWrite(); toast("נשמר לקובץ הפרויקט"); return; }
   try {
     if (window.claude && window.claude.use) {
       const dl = await window.claude.use("downloads");

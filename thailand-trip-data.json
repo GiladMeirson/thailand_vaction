@@ -1,13 +1,30 @@
 {
   "v": 2,
-  "updatedAt": "",
-  "tasks": {},
+  "updatedAt": "2026-09-01T19:42:51.002Z",
+  "tasks": {
+    "t03": true,
+    "t04": true,
+    "t06": true,
+    "t01": true,
+    "t02": true,
+    "t05": true,
+    "t11": true,
+    "t12": true
+  },
   "custom": [],
-  "hotelChoice": { "phuket": null, "aonang": null },
+  "hotelChoice": {
+    "phuket": "saii",
+    "aonang": null
+  },
   "split": "8+5",
-  "payments": {},
+  "payments": {
+    "flightsIntl": {
+      "amount": 10090,
+      "note": "טיסה הלוך חזור לבנגקוק"
+    }
+  },
   "saved": {},
   "tripStart": "2026-10-31",
   "tripEnd": "2026-11-15",
-  "hideHowto": false
+  "hideHowto": true
 }

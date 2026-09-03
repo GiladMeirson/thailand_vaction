@@ -934,7 +934,8 @@ table.nov td.h4{background:var(--crit-soft); color:var(--crit)}
       <h2>גיבוי וסנכרון בין מחשבים</h2>
       <p style="font-size:13.5px; color:var(--ink2); margin:6px 0 0">
         מקור האמת הוא הקובץ <b>thailand-trip-data.json</b> בתיקיית הפרויקט (שמור ב-git וב-OneDrive — מגיע לכל מחשב).
-        לוחצים "חיבור קובץ" פעם אחת בכל מחשב, ומאז כל סימון נשמר אליו אוטומטית.
+        לוחצים "חיבור קובץ" פעם אחת בכל מחשב, מנווטים לתיקיית הפרויקט ובוחרים את הקובץ הקיים —
+        ובאישור ההרשאה בוחרים "אפשר בכל ביקור" כדי שהחיבור ישרוד סגירת דפדפן. מאז כל סימון נשמר אליו אוטומטית.
         במקביל יש סנכרון ענן כשפותחים דרך הקישור (בשביל הטלפון), ושמירה מקומית בדפדפן כגיבוי חירום.
       </p>
       <div class="io-row">
@@ -973,7 +974,7 @@ table.nov td.h4{background:var(--crit-soft); color:var(--crit)}
 <div class="toast" id="toast"></div>
 <div class="charttip" id="charttip"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script>window.SEED_STATE={"v":2,"updatedAt":"","tasks":{},"custom":[],"hotelChoice":{"phuket":null,"aonang":null},"split":"8+5","payments":{},"saved":{},"tripStart":"2026-10-31","tripEnd":"2026-11-15","hideHowto":false}</script>
+<script>window.SEED_STATE={"v":2,"updatedAt":"2026-09-01T19:42:51.002Z","tasks":{"t03":true,"t04":true,"t06":true,"t01":true,"t02":true,"t05":true,"t11":true,"t12":true},"custom":[],"hotelChoice":{"phuket":"saii","aonang":null},"split":"8+5","payments":{"flightsIntl":{"amount":10090,"note":"טיסה הלוך חזור לבנגקוק"}},"saved":{},"tripStart":"2026-10-31","tripEnd":"2026-11-15","hideHowto":true}</script>
 <script>
 /* ================= DATA (מחקר: אוגוסט 2026) ================= */
 const RATES = { usd: 2.98, thb: 0.089, note: "שער: ‎$1 ≈ ₪2.98 · ‎฿1 ≈ ₪0.089 (סוף אוגוסט 2026)" };
@@ -1080,7 +1081,8 @@ const STAGES = [
     { id:"t15", t:"החלטה על חלוקת הלילות בין פוקט לאאו נאנג", n:"יותר פוקט או חלוקה מאוזנת — אפשר לשחק עם זה בלשונית המסלול, המספרים מתעדכנים לפי התאריכים שבחרתם", links:[{l:"ללשונית המסלול", go:"route"}] },
     { id:"t16", t:"מלון בפוקט", n:"Katathani או SAii Laguna. לבקש חדר בלי מדרגות + מיטת תינוק. עדיף ביטול חינם", links:[{l:"Booking עם התאריכים", act:"bkPhuket"},{l:"השוואת המלונות", go:"hotels"}] },
     { id:"t17", t:"מלון באאו נאנג", n:"Centara Ao Nang / Avani Cliff — זה הראשון שייגמר, לסגור קודם!", links:[{l:"Booking עם התאריכים", act:"bkAonang"},{l:"השוואת המלונות", go:"hotels"}] },
-    { id:"t18", t:"החלטה: לסיים עם 2 לילות בבנגקוק (מומלץ) או להישאר 7+6", n:"הטיסה הביתה ממריאה 23:55 — סיום בבנגקוק מוריד את לחץ הקונקשן ביום האחרון ונותן ערב זוגי עם בייביסיטר מהמלון. ההשוואה המלאה בלשונית המסלול", links:[{l:"להשוואת היעדים", go:"route"},{l:"מלונות בבנגקוק", act:"bkBkk"}] }
+    { id:"t18", t:"החלטה: לסיים עם 2 לילות בבנגקוק (מומלץ) או להישאר 7+6", n:"הטיסה הביתה ממריאה 23:55 — סיום בבנגקוק מוריד את לחץ הקונקשן ביום האחרון ונותן ערב זוגי עם בייביסיטר מהמלון. ההשוואה המלאה בלשונית המסלול", links:[{l:"להשוואת היעדים", go:"route"},{l:"מלונות בבנגקוק", act:"bkBkk"}] },
+    { id:"t19", t:"פנסיון לכלבה — לסגור ל-31.10 עד 15.11", n:"פנסיונים טובים מתמלאים — לסגור מוקדם. לוודא: מסירה ב-31.10 לפני הטיסה, איסוף ב-15.11, ולהשאיר מספר חירום של מישהו בארץ", links:[{l:"חיפוש פנסיון לכלבים", u:"https://www.google.com/search?q=%D7%A4%D7%A0%D7%A1%D7%99%D7%95%D7%9F%20%D7%9C%D7%9B%D7%9C%D7%91%D7%99%D7%9D%20%D7%9E%D7%95%D7%9E%D7%9C%D7%A5"}] }
   ]},
   { id:"s2", name:"שלב 2 — ביטוח ובריאות", why:"הביטוח דורש תאריכים ופרטי טיסה, לכן אחרי שלב 1 — אבל לא לדחות, חייב להיות תקף מרגע היציאה.", tasks:[
     { id:"t21", t:"ביטוח נסיעות ל-3 נפשות", n:"לוודא במפורש שהתינוקת מכוסה + כיסוי ביטול. ‎~₪600–800 למשפחה ל-14 יום", links:[{l:"השוואת ביטוחים", u:"https://www.google.com/search?q=%D7%91%D7%99%D7%98%D7%95%D7%97%20%D7%A0%D7%A1%D7%99%D7%A2%D7%95%D7%AA%20%D7%AA%D7%90%D7%99%D7%9C%D7%A0%D7%93%20%D7%94%D7%A9%D7%95%D7%95%D7%90%D7%94%20%D7%AA%D7%99%D7%A0%D7%95%D7%A7"}] },
@@ -2545,15 +2547,18 @@ async function fsAdoptNewer() {
 }
 
 async function fsConnect() {
-  if (!window.showSaveFilePicker) {
+  if (!window.showOpenFilePicker) {
     toast("שמירה לקובץ נתמכת בכרום/אדג' במחשב. בנייד הסנכרון בענן פעיל דרך הקישור");
     return;
   }
   try {
-    fsHandle = await showSaveFilePicker({
-      suggestedName: "thailand-trip-data.json",
-      types: [{ description: "JSON", accept: { "application/json": [".json"] } }]
+    /* בחירת קובץ קיים — לא "שמירה בשם" שפותחת ב-Downloads ויוצרת עותק שגוי */
+    const [h] = await showOpenFilePicker({
+      types: [{ description: "JSON", accept: { "application/json": [".json"] } }],
+      multiple: false
     });
+    if (await h.requestPermission({ mode: "readwrite" }) !== "granted") return;
+    fsHandle = h;
     try { await idb.set("handle", fsHandle); } catch (e) { }
     await fsAdoptNewer();
     await fsWrite();
@@ -2573,15 +2578,19 @@ async function fsRestore() {
       await fsAdoptNewer();
       fsWrite();
     } else {
-      fsStatusUI(`<span>הקובץ <b>${esc(h.name)}</b> חובר בעבר.</span>
-        <button class="linkbtn" id="fsReauth">חידוש החיבור</button>`);
-      $("#fsReauth").addEventListener("click", async () => {
+      const reauth = async () => {
+        if (fsHandle) return;
         if (await h.requestPermission({ mode: "readwrite" }) === "granted") {
           fsHandle = h;
           await fsAdoptNewer();
           fsWrite();
         }
-      });
+      };
+      fsStatusUI(`<span>הקובץ <b>${esc(h.name)}</b> חובר בעבר.</span>
+        <button class="linkbtn" id="fsReauth">חידוש החיבור</button>`);
+      $("#fsReauth").addEventListener("click", reauth);
+      /* לחיצה ראשונה בעמוד נחשבת user gesture — מחדשים את החיבור בלי לחפש את הכפתור */
+      document.addEventListener("click", reauth, { once: true, capture: true });
     }
   } catch (e) { /* דפדפן בלי תמיכה מלאה */ }
 }
@@ -2591,6 +2600,7 @@ $("#btnConnectFile").addEventListener("click", fsConnect);
 $("#btnExport").addEventListener("click", async () => {
   const data = JSON.stringify(state, null, 2);
   const filename = "thailand-trip-data.json";
+  if (fsHandle) { await fsWrite(); toast("נשמר לקובץ הפרויקט"); return; }
   try {
     if (window.claude && window.claude.use) {
       const dl = await window.claude.use("downloads");
