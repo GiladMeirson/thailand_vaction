@@ -5,7 +5,8 @@
    updated: תאריך העדכון האחרון (מוצג בכותרת האפליקציה).
    tasksDone: מזהי משימות שבוצעו (t01, t12 ...) — המזהים בקובץ data.js תחת STAGES.
    myTasks: משימות משלכם [{ "t": "טקסט", "done": false }].
-   hotels: לכל בסיס — id מהקטלוג ב-data.js (HOTELS) או name חופשי, booked=true אחרי הזמנה, ref=מספר הזמנה.
+   hotels: לכל בסיס — candId = המזהה מרשימת candidates (המלון שנסגר), name, booked=true אחרי הזמנה, ref=מספר הזמנה, board=הסעדה, usd=מחיר כולל.
+          (id = מזהה מהקטלוג הישן ב-data.js — לא בשימוש יותר.)
    secondDest: היעד השני אחרי פוקט — decided=false כל עוד לא הוחלט; כשמחליטים: decided=true + id (aonang / khaolak / bangkok) + name.
    phuketNights: כמה לילות בפוקט. השאר (אחרי לילות בנגקוק שנגזרים מהטיסה הפנימית) הולך ליעד השני.
    payments: לפי מזהי BUDGET ב-data.js — { "amount": ₪, "note": "..." }.
@@ -13,12 +14,13 @@
           מוסיפים שורה לכל הוצאה (טיסה, מלון, ביטוח...). paid=true אחרי ששולם בפועל.
    candidates: מועמדים למלונות שמוצגים בדף הראשי (רשימה נפתחת + נקודות זהב על המפה) —
           [{ "id", "base": bangkok/phuket/khaolak, "name", "area", "room", "from", "to", "board", "usd": מחיר כולל לכל הלילות, "src": מקור המחיר,
-             "address", "lat", "lng", "placeId" (אופציונלי), "site", "flyall": קישור לדף המלון באתר flyall, "rec": true = תג "מומלץ", "img": ["img/..."], "note" }]. מוסיפים/מוחקים מועמדים כאן.
+             "address", "lat", "lng", "placeId" (אופציונלי), "site", "flyall": קישור לדף המלון באתר flyall, "booked": true = המלון שנסגר (מוצג ראשון, עם ✓), "img": ["img/..."], "note" }].
+          מועמדים בלי booked מוצגים מקופלים תחת "אופציות שירדו". מוסיפים/מוחקים מועמדים כאן.
    savedAttractions: מזהי אטרקציות מסומנות בכוכב (ATTS ב-data.js). */
 
 window.TRIP = {
 
-  "updated": "2026-09-03",
+  "updated": "2026-09-08",
 
   "dates": { "start": "2026-10-31", "end": "2026-11-15" },
 
@@ -110,9 +112,12 @@ window.TRIP = {
   },
 
   "hotels": {
-    "bangkok": { "name": "", "booked": false, "ref": "", "note": "לילה אחד 1.11→2.11, חייב להיות ליד סוברנבומי" },
-    "phuket":  { "id": null, "name": "", "booked": false, "ref": "", "note": "6 לילות 2.11→8.11 — לבחור מבין המועמדים (Marriott Merlin / Centara Grand / Kalima). SAii Laguna ירד מהאופציות 3.9." },
-    "second":  { "id": null, "name": "", "booked": false, "ref": "", "note": "קאו לאק · 6 לילות 8.11→14.11 — לבחור ריזורט על החוף ולהזמין" }
+    "bangkok": { "candId": "canalis", "name": "Canalis Suvarnabhumi Airport Hotel", "booked": true, "ref": "", "board": "ללא ארוחת בוקר", "usd": 116,
+                 "note": "לילה אחד 1.11→2.11 · Suite · שאטל חינם לסוברנבומי — לתאם שאטל לבוקר המוקדם (טיסה 08:00)" },
+    "phuket":  { "candId": "merlin", "id": null, "name": "Phuket Marriott Resort & Spa, Merlin Beach", "booked": true, "ref": "", "board": "ארוחת בוקר", "usd": 2627,
+                 "note": "6 לילות 2.11→8.11 · 1 King Bed Guest Room with Pool Access · ארוחת בוקר" },
+    "second":  { "candId": "jw-khaolak", "id": null, "name": "JW Marriott Khao Lak Resort & Spa", "booked": true, "ref": "", "board": "חצי פנסיון", "usd": 2210,
+                 "note": "קאו לאק · 6 לילות 8.11→14.11 · Deluxe Room · Pool Access · חצי פנסיון" }
   },
 
   "tasksDone": ["t01", "t02", "t03", "t04", "t05", "t06", "t11", "t12"],
@@ -121,27 +126,32 @@ window.TRIP = {
 
   "payments": {
     "flightsIntl": { "amount": 10090, "note": "אל על 923R6Y — הלוך חזור לבנגקוק, שולם 1.9.2026" },
-    "flightsDom":  { "amount": 1200,  "note": "Bangkok Airways — PG 271 בנגקוק→פוקט ₪550 + PG 284 פוקט→בנגקוק ₪650" }
+    "flightsDom":  { "amount": 1200,  "note": "Bangkok Airways — PG 271 בנגקוק→פוקט ₪550 + PG 284 פוקט→בנגקוק ₪650" },
+    "hotelPhuket": { "amount": 7830,  "note": "Marriott Merlin Beach · 6 לילות עם ארוחת בוקר · $2,627 (flyall)" },
+    "hotelAonang": { "amount": 6590,  "note": "JW Marriott Khao Lak · 6 לילות חצי פנסיון · $2,210 (flyall)" }
   },
 
   "costs": [
     { "what": "טיסה הלוך-חזור תל אביב ↔ בנגקוק", "amount": 10090, "paid": true, "date": "2026-09-01", "note": "אל על · 923R6Y · 2 מבוגרים + תינוקת" },
     { "what": "טיסה פנימית בנגקוק → פוקט",        "amount": 550,   "paid": true, "date": "2026-09-03", "note": "Bangkok Airways · PG 271" },
-    { "what": "טיסה פנימית פוקט → בנגקוק",        "amount": 650,   "paid": true, "date": "2026-09-03", "note": "Bangkok Airways · PG 284" }
+    { "what": "טיסה פנימית פוקט → בנגקוק",        "amount": 650,   "paid": true, "date": "2026-09-03", "note": "Bangkok Airways · PG 284" },
+    { "what": "מלון בבנגקוק · לילה אחד",           "amount": 350,   "paid": true, "date": "2026-09-08", "note": "Canalis Suvarnabhumi · Suite · ללא ארוחת בוקר · ‎$116 בערך" },
+    { "what": "מלון בפוקט · 6 לילות",              "amount": 7830,  "paid": true, "date": "2026-09-08", "note": "Marriott Merlin Beach · Pool Access · ארוחת בוקר · ‎$2,627 בערך" },
+    { "what": "מלון בקאו לאק · 6 לילות",           "amount": 6590,  "paid": true, "date": "2026-09-08", "note": "JW Marriott Khao Lak · Pool Access · חצי פנסיון · ‎$2,210 בערך" }
   ],
 
   "candidates": [
     {
-      "id": "canalis", "base": "bangkok", "short": "Canalis",
+      "id": "canalis", "base": "bangkok", "short": "Canalis", "booked": true,
       "name": "Canalis Suvarnabhumi Airport Hotel", "area": "לאט קראבאנג · שאטל חינם לסוברנבומי",
-      "room": "Suite", "from": "2026-11-01", "to": "2026-11-02", "board": "ארוחת בוקר (בלי ארוחת בוקר: $116)",
-      "usd": 129, "src": "flyall",
+      "room": "Suite", "from": "2026-11-01", "to": "2026-11-02", "board": "ללא ארוחת בוקר",
+      "usd": 116, "src": "flyall",
       "address": "1599/1 Lat Krabang Soi 13, Lat Krabang Road, Lat Krabang, Bangkok 10520",
       "lat": 13.72238, "lng": 100.77491,
       "site": "https://www.canalissuvarnabhumi.com/",
       "flyall": "https://flyall.club/hotels/h12591086?name=canalis-suvarnabhumi-airport-hotel-free-shuttle-from-hotel-to-suvarnabhumi-airport&hc=12591086&dcode=BKK&fdate=01/11/26&tdate=02/11/26&isdomestic=false&dport=587136&rooms=1&adt1=2&chd1=1&chdr1a1=1&code=BKK",
       "img": ["img/cand-canalis.jpg", "img/cand-canalis-room.jpg"],
-      "note": "לילה אחד בין הנחיתה (13:50) לטיסה ל-PG271 ב-08:00 למחרת — לבדוק שעות השאטל ללילה/בוקר מוקדם."
+      "note": "נסגר 8.9 · לילה אחד בין הנחיתה (13:50) לטיסה PG271 ב-08:00 למחרת — לתאם שאטל לבוקר המוקדם."
     },
     {
       "id": "kalima", "base": "phuket", "short": "Kalima",
@@ -168,7 +178,7 @@ window.TRIP = {
       "note": "נהר עצל ומגלשות — נהדר לפעוטות. ביקורות 2025–26 על חדרים מיושנים והרבה מדרגות; אם בוחרים — חדר צמוד למעלית."
     },
     {
-      "id": "merlin", "base": "phuket", "short": "Marriott", "rec": true,
+      "id": "merlin", "base": "phuket", "short": "Marriott", "booked": true,
       "name": "Phuket Marriott Resort & Spa, Merlin Beach", "area": "חוף טרי טראנג · 3 ק\"מ מפאטונג, מפרץ שקט",
       "room": "1 King Bed Guest Room with Pool Access", "from": "2026-11-02", "to": "2026-11-08", "board": "ארוחת בוקר",
       "usd": 2627, "src": "flyall",
@@ -180,7 +190,7 @@ window.TRIP = {
       "note": "3 בריכות + בריכת ילדים עם מגלשות, חוף פרטי עם שונית. מבודד — לפאטונג בשאטל/מונית."
     },
     {
-      "id": "jw-khaolak", "base": "khaolak", "short": "JW Marriott",
+      "id": "jw-khaolak", "base": "khaolak", "short": "JW Marriott", "booked": true,
       "name": "JW Marriott Khao Lak Resort & Spa", "area": "קוק קאק, פאנג נגה · על החוף",
       "room": "Deluxe Room · 1 King Bed · Pool Access · Sofa Bed", "from": "2026-11-08", "to": "2026-11-14", "board": "חצי פנסיון",
       "usd": 2210, "src": "flyall",

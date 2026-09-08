@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="חמ&quot;ל התכנון לטיול לתאילנד — המפה">
+<meta name="description" content="חמ&quot;ל התכנון לטיול לתאילנד — המפה, המלונות והעלויות">
 <meta name="theme-color" content="#F3EEE3" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#111813" media="(prefers-color-scheme: dark)">
 <title>חמ"ל תאילנד</title>
@@ -14,6 +14,11 @@
 <body>
 <div id="app">
   <section class="view active" id="view-route">
+    <div class="card" id="stayCard">
+      <h2>השהייה <span class="sub" id="staySub"></span></h2>
+      <div id="stayStrip"></div>
+    </div>
+
     <div class="card">
       <h2>המפה <span class="sub">הקש על נקודה לפרטים</span></h2>
       <div class="map-controls">
@@ -21,13 +26,11 @@
           <button data-mv="overview" class="active">הכול</button>
           <button data-mv="bangkok">בנגקוק</button>
           <button data-mv="phuket">פוקט</button>
-          <button data-mv="aonang">אאו נאנג</button>
           <button data-mv="khaolak">קאו לאק</button>
         </div>
         <div class="seg" id="mapKinds">
           <button data-mk="all" class="active">הכול</button>
-          <button data-mk="hotel">מלונות</button>
-          <button data-mk="cand">מועמדים</button>
+          <button data-mk="cand">המלונות שלנו</button>
           <button data-mk="att">אטרקציות</button>
           <button data-mk="med">רפואה</button>
           <button data-mk="air">תעופה</button>
@@ -43,14 +46,15 @@
     </div>
 
     <div class="card" id="candCard">
-      <h2>מועמדים למלונות <span class="sub" id="candSub"></span></h2>
+      <h2>המלונות <span class="sub" id="candSub"></span></h2>
       <div id="candList"></div>
-      <p class="map-note">המחירים מאתר flyall — סה"כ לכל הלילות, לכולם. הקשה על מלון פותחת את כל הפרטים; ★ זהב על המפה = מועמד.</p>
+      <p class="map-note">המחירים לפי ההזמנה ב-flyall — סה"כ לכל הלילות, לכולם. הקשה על מלון פותחת את כל הפרטים; ★ זהב על המפה = המלון שלנו.</p>
     </div>
 
     <div class="card" id="costsCard">
       <h2>עלויות <span class="sub" id="costsSub"></span></h2>
       <div id="costRows"></div>
+      <div class="cost-break" id="costBreak"></div>
       <div class="cost-total"><span>סה"כ שולם עד כה</span><b id="costPaid"></b></div>
     </div>
 

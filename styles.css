@@ -767,5 +767,36 @@ table.nov td.h4{background:var(--crit-soft); color:var(--crit)}
 #leafmap .leaflet-tooltip.tt-cand{background:var(--surface); color:var(--warm); border:1px solid var(--map-cand); font-weight:700; font-family:inherit; box-shadow:none; padding:2px 6px}
 #leafmap .leaflet-tooltip.tt-cand::before{border-top-color:var(--map-cand)}
 .linkbtn.fa,.place-sheet .links a.fa{border-color:var(--warm); color:var(--warm); background:var(--warm-soft)}
-.cand .rec{display:inline-block; font-style:normal; font-size:10.5px; font-weight:700; line-height:1; padding:3px 6px; border-radius:6px; background:var(--good); color:#fff; margin-inline-end:6px; vertical-align:2px; letter-spacing:.2px}
-.cand.is-rec{border-color:var(--good)}
+.cand .bk{display:inline-block; font-style:normal; font-size:10.5px; font-weight:700; line-height:1; padding:3px 6px; border-radius:6px; background:var(--good); color:#fff; margin-inline-end:6px; vertical-align:2px; letter-spacing:.2px}
+.cand.is-booked{border-color:var(--good); background:var(--surface)}
+.cand.is-booked summary .p b{color:var(--good)}
+.cand.is-booked[open]{border-color:var(--good)}
+.cand-body dd b.ok{color:var(--good)}
+.cand-body .mono{font-variant-numeric:tabular-nums; letter-spacing:.3px}
+/* אופציות שירדו — מקופל */
+.cand-dropped{margin-top:16px; border-top:1px dashed var(--line); padding-top:6px}
+.cand-dropped > summary{display:flex; align-items:center; gap:8px; padding:8px 2px; cursor:pointer; list-style:none; font-size:14px; font-weight:600; color:var(--muted)}
+.cand-dropped > summary::-webkit-details-marker{display:none}
+.cand-dropped > summary span{flex:1; font-size:12.3px; font-weight:400}
+.cand-dropped > summary .chev{transition:transform .25s var(--ease)}
+.cand-dropped[open] > summary .chev{transform:rotate(180deg)}
+.cand-dropped .cand{opacity:.78}
+.cand-dropped .cand[open]{opacity:1}
+
+/* ---------- רצועת השהייה ---------- */
+.stay-bar{display:flex; gap:4px; margin-top:12px}
+.stay{flex:var(--w,1) 1 0; min-width:0; display:flex; flex-direction:column; gap:2px; padding:10px 10px 9px; border-radius:12px; color:var(--on-deep); background:var(--deep2); text-decoration:none; position:relative; overflow:hidden; transition:transform .2s var(--ease), box-shadow .2s var(--ease)}
+.stay::after{content:"✓"; position:absolute; top:7px; inset-inline-start:9px; font-size:11px; font-weight:800; color:var(--on-deep2)}
+.stay:hover{transform:translateY(-1px); box-shadow:var(--shadow)}
+.stay b{font-family:"Frank Ruhl Libre","Heebo",serif; font-size:15.5px; line-height:1.1; padding-inline-start:16px}
+.stay small{font-size:11.5px; opacity:.8}
+.stay span{font-size:12px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:3px; opacity:.95}
+.stay-dates{display:flex; gap:4px; margin-top:6px; font-size:11.5px; color:var(--muted); font-variant-numeric:tabular-nums}
+.stay-dates span{flex:var(--w,1) 1 0; min-width:0; position:relative; padding-inline-start:2px}
+.stay-dates span::before{content:""; position:absolute; top:-6px; inset-inline-start:0; width:1px; height:5px; background:var(--line)}
+.stay-dates span.end{flex:0 0 auto; padding-inline-start:0}
+@media (max-width:380px){ .stay{padding:8px 7px} .stay b{font-size:14px} .stay span{display:none} }
+
+/* ---------- פירוט עלויות ---------- */
+.cost-break{display:flex; gap:14px; flex-wrap:wrap; margin-top:10px; font-size:12.8px; color:var(--muted)}
+.cost-break b{color:var(--ink); font-variant-numeric:tabular-nums; margin-inline-start:4px}

@@ -42,6 +42,12 @@ loadTrip().then(function (trip) {
   const bkkHotel = hotels.bangkok && hotels.bangkok.name ? hotels.bangkok : null;
   const secondHotel = hotels.second || {};
   const secondBooked = !!secondHotel.booked;
+  /* המלון שנסגר — הרשומה המלאה מתוך trip.candidates לפי candId (חדר, הסעדה, מחיר, כתובת, קישורים) */
+  const CANDS = Array.isArray(trip.candidates) ? trip.candidates : [];
+  const candOf = hb => (hb && hb.candId && CANDS.find(c => c.id === hb.candId)) || null;
+  const bkkC = candOf(hotels.bangkok), phC = candOf(hotels.phuket), d2C = candOf(hotels.second);
+  const RATE = (typeof RATES !== "undefined" && RATES.usd) || 2.98;
+  const ils = n => "₪" + Math.round(n).toLocaleString("he-IL");
 
   /* ---------- עוזרים ---------- */
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -54,6 +60,23 @@ loadTrip().then(function (trip) {
   const booking = (q, ci, co) => `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(q)}&checkin=${ci}&checkout=${co}&group_adults=2&group_children=1&age=1&no_rooms=1`;
   const hasDigit = s => /\d/.test(String(s || ""));
   const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ---------- מלון סגור: שורות פרטים + קישורים (משותף לשלוש נקודות המלון) ---------- */
+  const nightsOf = c => Math.max(1, diffDays(c.from, c.to));
+  const hotelRows = (hb, c) => !c ? [] : [
+    ["המלון", `<b>${esc(c.name)}</b> · ${esc(c.area || "")}`],
+    ["חדר", esc(c.room || "")],
+    ["הסעדה", esc(c.board || hb.board || "")],
+    ["מחיר", `${mono("$" + (+c.usd).toLocaleString("en-US"))} לכל ${nightsOf(c)} הלילות · ≈ ${mono(ils(c.usd * RATE))} · ${mono("$" + Math.round(c.usd / nightsOf(c)))} ללילה`],
+    ["הזמנה", hb.ref ? mono(hb.ref) : "טרם הוזן מספר הזמנה ב-trip.js"],
+    ["כתובת", esc(c.address || "")]
+  ];
+  const hotelActions = c => !c ? [] : [
+    c.flyall ? { l: "ההזמנה ב-flyall", u: c.flyall, p: true } : null,
+    c.site ? { l: "אתר המלון", u: c.site } : null,
+    { l: "מפה", u: c.placeId ? `https://www.google.com/maps/search/?api=1&query=${c.lat},${c.lng}&query_place_id=${c.placeId}` : gmaps(c.name) },
+    { l: "ניווט", u: `https://www.google.com/maps/dir/?api=1&destination=${c.lat},${c.lng}` }
+  ].filter(Boolean);
 
   /* ---------- כרטיסי טיסה: נורמליזציה של הנתונים ---------- */
   const flightsPaid = paid.flightsIntl && paid.flightsIntl.amount ? `₪${paid.flightsIntl.amount.toLocaleString("he-IL")}` : "";
@@ -105,11 +128,17 @@ loadTrip().then(function (trip) {
         ? `${esc(bkkHotel.name)}${bkkHotel.ref ? " · הזמנה " + mono(bkkHotel.ref) : ""} · ${mono(dm(landBKK))} → ${mono(dm(toPhuket))}`
         : `${mono(dm(landBKK))} → ${mono(dm(toPhuket))} · צ'ק-אאוט מוקדם בבוקר למחרת`,
       body: kv([
-        bkkHotel ? ["המלון", `<b>${esc(bkkHotel.name)}</b>${bkkHotel.note ? " · " + esc(bkkHotel.note) : ""}`] : ["", ""],
+        ...(bkkC ? hotelRows(hotels.bangkok, bkkC) : bkkHotel ? [["המלון", `<b>${esc(bkkHotel.name)}</b>${bkkHotel.note ? " · " + esc(bkkHotel.note) : ""}`]] : []),
         ["לילות", mono(String(bkkNights))],
         ["הגעה", `${esc(dow(landBKK))} ${mono(dm(landBKK))}, נחיתה ${mono(out.arrTime)} + עמידה בבידוק ~שעה`],
         ["יציאה", `${esc(dow(toPhuket))} ${mono(dm(toPhuket))}, צריך להיות בטרמינל D עד ${mono(subMin(dom.depTime, 75))}`]
-      ]) + seg("מה חשוב במלון הזה", [
+      ]) + (bkkC ? seg("לפני הנסיעה", [
+        `<b>שאטל לשדה</b> — לתאם מראש שאטל ליציאה סביב ${mono(subMin(dom.depTime, 105))} (צ'ק-אין נסגר ${mono(subMin(dom.depTime, 45))})`,
+        "<b>עריסה לתינוקת</b> — לבקש במייל למלון",
+        "<b>ארוחת בוקר לא כלולה</b> — לקנות משהו מראש או לאכול בלאונג' של Bangkok Airways בטרמינל",
+        bkkC.note ? esc(bkkC.note) : ""
+      ].filter(Boolean)) + note("הלילה הזה סגור ✓ — נשאר רק לתאם את השאטל ואת העריסה.") + actions(hotelActions(bkkC))
+      : seg("מה חשוב במלון הזה", [
         `<b>קרוב לשדה</b> — הטיסה לפוקט ממריאה ב-${dom.depTime}, לא שווה לנסוע לעיר ובחזרה`,
         "<b>שאטל לשדה</b> או הליכה מקורה מהטרמינל",
         "<b>עריסה לתינוקת</b> — לבקש מראש",
@@ -121,7 +150,7 @@ loadTrip().then(function (trip) {
         + actions([
           { l: "חיפוש ב-Booking", u: booking("Suvarnabhumi Airport Bangkok", landBKK, toPhuket), p: true },
           { l: "מפה — מלונות ליד השדה", u: gmaps("hotels near Suvarnabhumi Airport") }
-        ])
+        ]))
     },
     {
       id: "dom-out", status: "done", ticket: true,
@@ -134,10 +163,23 @@ loadTrip().then(function (trip) {
       date: toPhuket, endDate: phuketEnd,
       title: `מלון בפוקט · ${phuketNights} לילות`,
       need: phuketBooked ? "" : phuketHotel ? `המלון נבחר (${esc(phuketHotel.name)}) — נשאר להזמין` : "לבחור מלון ולהזמין",
-      sum: phuketHotel
+      sum: phC
+        ? `${esc(phC.name)}${hotels.phuket.ref ? " · הזמנה " + mono(hotels.phuket.ref) : ""} · ${esc(phC.board || "")} · ${mono(dm(toPhuket))} → ${mono(dm(phuketEnd))}`
+        : phuketHotel
         ? `${esc(phuketHotel.name)} · ${esc(phuketHotel.area)} · ${mono(dm(toPhuket))} → ${mono(dm(phuketEnd))}`
         : `${mono(dm(toPhuket))} → ${mono(dm(phuketEnd))} · עוד לא נבחר מלון`,
-      body: kv([
+      body: phC ? kv([
+        ...hotelRows(hotels.phuket, phC),
+        ["צ'ק-אין", `${esc(dow(toPhuket))} ${mono(dm(toPhuket))} — נוחתים ${mono(dom.arrTime)}, במלון בערך ב-${mono("10:30")} (חדר בד"כ מוכן מ-15:00, לבקש early check-in)`],
+        ["צ'ק-אאוט", `${esc(dow(phuketEnd))} ${mono(dm(phuketEnd))} — וממשיכים ברכב ל${esc(dest2Name)} (~1.5 ש')`],
+        ["לילות", mono(String(phuketNights))]
+      ]) + seg("לפני הנסיעה", [
+        "<b>הסעה מהשדה</b> — לבדוק אם למלון יש שירות הסעה עם כיסא בטיחות, אחרת להזמין מראש",
+        "<b>עריסה + חדר בלי מדרגות</b> — לבקש במייל למלון (Marriott מאשרים בקשות מיוחדות מראש)",
+        "<b>Early check-in</b> — מגיעים בבוקר; לבקש",
+        phC.note ? esc(phC.note) : ""
+      ].filter(Boolean)) + note("המלון סגור ✓ — נשאר רק לתאם הסעה, עריסה ו-early check-in.") + actions(hotelActions(phC))
+      : kv([
         ["צ'ק-אין", `${esc(dow(toPhuket))} ${mono(dm(toPhuket))} — נוחתים ${mono(dom.arrTime)}, במלון בערך ב-${mono("10:30")} (חדר בד"כ מוכן מ-14:00, לבקש early check-in)`],
         ["צ'ק-אאוט", `${esc(dow(phuketEnd))} ${mono(dm(phuketEnd))} — וממשיכים ברכב ל${esc(dest2Name)} (~1.5 ש')`],
         ["לילות", mono(String(phuketNights))],
@@ -162,9 +204,20 @@ loadTrip().then(function (trip) {
         ? (secondBooked ? "" : `לבחור ריזורט ב${esc(dest2Name)} ולהזמין`)
         : "להחליט בין אאו נאנג לקאו לאק — ורק אז לחפש מלון",
       sum: secondHotel.name
-        ? `${esc(secondHotel.name)}${secondHotel.ref ? " · הזמנה " + mono(secondHotel.ref) : ""} · ${mono(dm(phuketEnd))} → ${mono(dm(dest2End))}`
+        ? `${esc(secondHotel.name)}${secondHotel.ref ? " · הזמנה " + mono(secondHotel.ref) : ""}${d2C && d2C.board ? " · " + esc(d2C.board) : ""} · ${mono(dm(phuketEnd))} → ${mono(dm(dest2End))}`
         : `${mono(dm(phuketEnd))} → ${mono(dm(dest2End))} · ${dest2.decided ? "היעד סגור, עוד לא נבחר מלון" : "ההחלטה נשארת לסוף"}`,
-      body: kv([
+      body: d2C ? kv([
+        ...hotelRows(hotels.second, d2C),
+        ["צ'ק-אין", `${esc(dow(phuketEnd))} ${mono(dm(phuketEnd))} — נסיעה מפוקט ברכב פרטי עם כיסא בטיחות, ~1.5 ש'`],
+        ["צ'ק-אאוט", `${esc(dow(dest2End))} ${mono(dm(dest2End))} — ${domBack ? `לשדה פוקט (HKT) לטיסה ${mono(domBack.no)} ב-${mono(domBack.depTime)}; לצאת מהמלון עד ${mono(subMin(domBack.depTime, 210))}` : "חוזרים לשדה פוקט"}`],
+        ["לילות", mono(String(dest2Nights))]
+      ]) + seg("לפני הנסיעה", [
+        "<b>הסעה מפוקט</b> — לבדוק שירות רכב של המלון (JW מציעים הסעה בתשלום) או להזמין רכב פרטי עם כיסא בטיחות",
+        "<b>הסעה חזרה לשדה פוקט</b> ב-14.11 — ~1.5 ש' נסיעה, לצאת מוקדם",
+        "<b>עריסה + חדר קרוב לבריכת הילדים</b> — לבקש במייל",
+        d2C.note ? esc(d2C.note) : ""
+      ].filter(Boolean)) + note("המלון סגור ✓ — כל 13 הלילות של הטיול סגורים. נשארו רק הסעות ובקשות לחדר.") + actions(hotelActions(d2C))
+      : kv([
         ["צ'ק-אין", `${esc(dow(phuketEnd))} ${mono(dm(phuketEnd))} — נסיעה מפוקט ברכב פרטי עם כיסא בטיחות, ~1.5 ש'`],
         ["צ'ק-אאוט", `${esc(dow(dest2End))} ${mono(dm(dest2End))} — ${domBack ? `לשדה פוקט (HKT) לטיסה ${mono(domBack.no)} ב-${mono(domBack.depTime)}; לצאת מהמלון עד ${mono(subMin(domBack.depTime, 210))}` : "חוזרים לשדה פוקט"}`],
         ["לילות", mono(String(dest2Nights))],

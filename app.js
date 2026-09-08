@@ -638,7 +638,7 @@ function renderLegs() {
 
 /* ---------- מפה ---------- */
 const MAP_VIEWS = {
-  overview: { lon0: 98.16, lon1: 99.34, lat0: 7.70, lat1: 8.78 },
+  overview: { lon0: 97.72, lon1: 98.78, lat0: 7.70, lat1: 8.78 },   // פוקט + קאו לאק בלבד (אאו נאנג ירדה 8.9)
   phuket: { lon0: 98.22, lon1: 98.47, lat0: 7.72, lat1: 8.17 },
   aonang: { lon0: 98.64, lon1: 98.98, lat0: 7.93, lat1: 8.15 },
   khaolak: { lon0: 98.15, lon1: 98.37, lat0: 8.50, lat1: 8.76 },
@@ -665,28 +665,24 @@ const candNights = c => Math.max(1, Math.round((new Date(c.to + "T00:00:00") - n
 
 function mapPlaces() {
   const pl = [];
-  candidates().forEach(c => pl.push({
+  candidates().filter(c => c.booked).forEach(c => pl.push({
     kind: "cand", id: "c_" + c.id, name: c.name, short: c.short || "", cand: c,
-    desc: `${c.rec ? "מומלץ ✓ · " : ""}מועמד · ${c.room} · $${(+c.usd).toLocaleString("en-US")} ל-${candNights(c)} לילות (${c.src || ""})`,
+    desc: `המלון שלנו ✓ · ${fmtD(c.from)}–${fmtD(c.to)} · ${candNights(c)} לילות · ${c.room}${c.board ? " · " + c.board : ""}`,
     extra: c.area, lat: c.lat, lng: c.lng, placeId: c.placeId, site: c.site, flyall: c.flyall, img: c.img && c.img[0], address: c.address
   }));
-  HOTELS.forEach(h => pl.push({
-    kind: "hotel", id: "h_" + h.id, name: h.name, short: HOTEL_SHORT[h.id] || "", desc: h.area + (h.rating ? " · דירוג " + h.rating : ""),
-    lat: h.lat, lng: h.lng, placeId: h.placeId, phone: h.phone, site: h.site,
-    chosen: state.hotelChoice[h.base] === h.id
-  }));
-  ATTS.forEach(a => pl.push({
+  // קטלוג המלונות (HOTELS) לא מוצג יותר — על המפה רק המלונות שנסגרו (★). אאו נאנג ירדה מהמסלול.
+  ATTS.filter(a => a.base !== "aonang").forEach(a => pl.push({
     kind: "att", id: "a_" + a.id, name: a.name, desc: a.desc, extra: a.baby,
     cost: a.cost, time: a.time, lat: a.lat, lng: a.lng
   }));
-  MEDICAL.forEach(m => pl.push({
+  MEDICAL.filter(m => m.base !== "aonang").forEach(m => pl.push({
     kind: "med", id: "m_" + m.id, name: m.name, short: "בי\"ח", desc: m.desc, lat: m.lat, lng: m.lng, phone: m.phone
   }));
   AIRPORTS.forEach(a => pl.push({
     kind: "air", id: "p_" + a.id, name: a.name, short: a.short, desc: a.desc,
     lat: a.lat, lng: a.lng, placeId: a.placeId, site: a.site
   }));
-  KHAOLAK.forEach(k => pl.push({
+  KHAOLAK.filter(k => k.kind !== "hotel").forEach(k => pl.push({
     kind: k.kind, id: "k_" + k.id, name: k.name, short: k.short, desc: k.desc + (k.area ? " · " + k.area : ""),
     extra: k.extra, cost: k.cost, time: k.time, lat: k.lat, lng: k.lng, placeId: k.placeId, site: k.site
   }));
@@ -757,14 +753,10 @@ function renderSchemap() {
 
   let labels = "";
   if (mapView === "overview") {
-    const l1 = px(98.34, 7.92), l2 = px(98.99, 8.10), l3 = px(98.30, 8.60), sea = px(98.52, 7.83);
+    const l1 = px(98.34, 7.92), l3 = px(98.30, 8.60), sea = px(97.95, 8.20);
     labels = `<text x="${l1.x}" y="${l1.y}" font-size="34" fill="var(--muted)">פוקט</text>
-      <text x="${l2.x}" y="${l2.y}" font-size="34" fill="var(--muted)">קראבי</text>
       <text x="${l3.x}" y="${l3.y}" font-size="34" fill="var(--muted)">קאו לאק</text>
       <text x="${sea.x}" y="${sea.y}" font-size="30" fill="var(--sea-ink)" opacity=".8">הים האנדמני</text>`;
-  } else if (mapView === "aonang") {
-    const s = px(98.70, 8.00);
-    labels = `<text x="${s.x}" y="${s.y}" font-size="30" fill="var(--sea-ink)" opacity=".75">הים האנדמני</text>`;
   } else if (mapView === "khaolak") {
     const s = px(98.165, 8.62);
     labels = `<text x="${s.x}" y="${s.y}" font-size="30" fill="var(--sea-ink)" opacity=".75">הים האנדמני</text>`;
@@ -782,8 +774,7 @@ function renderSchemap() {
   attachSchemapPanZoom(W, H);
 
   $("#mapLegend").innerHTML = `
-    <span class="k"><i class="swatch" style="background:var(--map-cand)"></i>מועמדים ★</span>
-    <span class="k"><i class="swatch" style="background:var(--map-hotel)"></i>מלונות</span>
+    <span class="k"><i class="swatch" style="background:var(--map-cand)"></i>המלונות שלנו ★</span>
     <span class="k"><i class="swatch" style="background:var(--map-att)"></i>אטרקציות</span>
     <span class="k"><i class="swatch" style="background:var(--map-med)"></i>בתי חולים</span>
     <span class="k"><i class="swatch" style="background:var(--map-air)"></i>שדה תעופה</span>`;
@@ -897,56 +888,96 @@ const usd = n => "$" + Math.round(n).toLocaleString("en-US");
 
 function candHtml(c) {
   const nn = candNights(c), total = +c.usd || 0;
+  const hb = hotelRec(c.base);
   const imgs = (c.img || []).map((src, i) => `<figure><img src="${esc(src)}" alt="" loading="lazy"><figcaption>${i === 0 ? "המלון" : "החדר / הבריכה"}</figcaption></figure>`).join("");
-  return `<details class="cand${c.rec ? " is-rec" : ""}" id="cand-${esc(c.id)}">
+  return `<details class="cand${c.booked ? " is-booked" : ""}" id="cand-${esc(c.id)}">
     <summary>
       ${c.img && c.img[0] ? `<img src="${esc(c.img[0])}" alt="" loading="lazy">` : `<span class="noimg">🏨</span>`}
-      <span class="t"><b>${c.rec ? `<i class="rec">מומלץ</i>` : ""}${esc(c.name)}</b><small>${esc(c.area)}${c.room ? " · " + esc(c.room) : ""}</small></span>
-      <span class="p"><b>${usd(total)}</b><small>≈ ${ils(total * RATES.usd)}</small></span>
+      <span class="t"><b>${c.booked ? `<i class="bk">✓ סגור</i>` : ""}${esc(c.name)}</b><small>${c.booked ? `${fmtD(c.from)}–${fmtD(c.to)} · ${nn} לילות${c.board ? " · " + esc(c.board) : ""}` : esc(c.area) + (c.room ? " · " + esc(c.room) : "")}</small></span>
+      <span class="p"><b>${c.booked ? ils(total * RATES.usd) : usd(total)}</b><small>${c.booked ? "≈ " + usd(total) : "≈ " + ils(total * RATES.usd)}</small></span>
       ${CHEV}
     </summary>
     <div class="cand-body">
       <dl>
+        ${c.booked ? `<dt>מצב</dt><dd><b class="ok">הוזמן ✓</b>${hb && hb.ref ? ` · הזמנה <span class="mono">${esc(hb.ref)}</span>` : " · טרם הוזן מספר הזמנה"}</dd>` : ""}
         <dt>חדר</dt><dd>${esc(c.room || "—")}</dd>
         <dt>תאריכים</dt><dd>${fmtD(c.from)} ← ${fmtD(c.to)} · ${nn} לילות</dd>
         ${c.board ? `<dt>הסעדה</dt><dd>${esc(c.board)}</dd>` : ""}
+        <dt>אזור</dt><dd>${esc(c.area || "")}</dd>
         <dt>מחיר</dt><dd><b>${usd(total)}</b> לכל הלילות, לכולם${c.src ? ` (${esc(c.src)})` : ""} · ≈ ${ils(total * RATES.usd)} · ${usd(total / nn)} ללילה</dd>
         <dt>כתובת</dt><dd>${esc(c.address || "")}</dd>
       </dl>
       ${c.note ? `<p class="cand-note">${esc(c.note)}</p>` : ""}
       ${imgs ? `<div class="cand-imgs">${imgs}</div>` : ""}
       <div class="links">
-        ${c.flyall ? `<a class="linkbtn fa" target="_blank" rel="noopener" href="${esc(c.flyall)}">✈ flyall · ההצעה</a>` : ""}
+        ${c.flyall ? `<a class="linkbtn fa" target="_blank" rel="noopener" href="${esc(c.flyall)}">✈ flyall · ${c.booked ? "ההזמנה" : "ההצעה"}</a>` : ""}
         <a class="linkbtn" target="_blank" rel="noopener" href="${gmapsUrl(c)}">📍 Google Maps</a>
         <a class="linkbtn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${c.lat},${c.lng}">ניווט</a>
         ${c.site ? `<a class="linkbtn" target="_blank" rel="noopener" href="${esc(c.site)}">אתר המלון</a>` : ""}
-        <button type="button" class="linkbtn cand-map" data-id="${esc(c.id)}">★ הצג במפה</button>
+        ${c.booked ? `<button type="button" class="linkbtn cand-map" data-id="${esc(c.id)}">★ הצג במפה</button>` : ""}
       </div>
     </div>
   </details>`;
+}
+
+/* רשומת המלון הסגור מתוך trip.hotels לפי בסיס (bangkok / phuket / khaolak→second) */
+function hotelRec(base) {
+  const h = state.hotels || {};
+  return base === "bangkok" ? h.bangkok : base === "phuket" ? h.phuket : h.second;
 }
 
 function renderCandidates() {
   const box = $("#candList");
   if (!box) return;
   const list = candidates();
-  const bases = [...new Set(list.map(c => c.base))];
-  box.innerHTML = list.length ? bases.map(b => {
-    const items = list.filter(c => c.base === b);
+  const booked = list.filter(c => c.booked), dropped = list.filter(c => !c.booked);
+  const BASE_ORDER = ["bangkok", "phuket", "khaolak", "aonang"];
+  const bases = [...new Set(booked.map(c => c.base))].sort((a, b) => BASE_ORDER.indexOf(a) - BASE_ORDER.indexOf(b));
+  const groups = bases.map(b => {
+    const items = booked.filter(c => c.base === b);
     const c0 = items[0];
     return `<div class="cand-group">
-      <div class="cand-head"><b>${esc(BASE_LABEL[b] || b)}</b><span>${fmtD(c0.from)}–${fmtD(c0.to)} · ${candNights(c0)} לילות · ${items.length === 1 ? "מועמד אחד" : items.length + " מועמדים"}</span></div>
+      <div class="cand-head"><b>${esc(BASE_LABEL[b] || b)}</b><span>${fmtD(c0.from)}–${fmtD(c0.to)} · ${candNights(c0)} לילות</span></div>
       ${items.map(candHtml).join("")}
     </div>`;
-  }).join("") : `<p class="cost-empty">אין עדיין מועמדים — מוסיפים ב-trip.js תחת candidates.</p>`;
+  }).join("");
+  const droppedHtml = dropped.length ? `<details class="cand-dropped">
+      <summary>אופציות שירדו <span>${dropped.length === 1 ? "מלון אחד" : dropped.length + " מלונות"} · נשמרו לעיון</span>${CHEV}</summary>
+      ${dropped.map(candHtml).join("")}
+    </details>` : "";
+  box.innerHTML = list.length ? groups + droppedHtml : `<p class="cost-empty">אין עדיין מלונות — מוסיפים ב-trip.js תחת candidates.</p>`;
   $$("#candList .cand-map").forEach(b => b.addEventListener("click", () => showCandOnMap(b.dataset.id)));
-  $("#candSub").textContent = list.length ? `${list.length} מלונות · ${bases.length} יעדים` : "";
+  const totalUsd = booked.reduce((s, c) => s + (+c.usd || 0), 0);
+  const nn = booked.reduce((s, c) => s + candNights(c), 0);
+  $("#candSub").textContent = booked.length ? `${booked.length} מלונות · ${nn} לילות · ${ils(totalUsd * RATES.usd)}` : list.length ? `${list.length} מועמדים` : "";
+}
+
+/* ---------- רצועת השהייה: בנגקוק → פוקט → קאו לאק (trip.js → hotels + candidates) ---------- */
+function renderStays() {
+  const box = $("#stayStrip");
+  if (!box) return;
+  const booked = candidates().filter(c => c.booked);
+  const order = ["bangkok", "phuket", "khaolak", "aonang"];
+  const stays = order.map(b => booked.find(c => c.base === b)).filter(Boolean);
+  if (!stays.length) { box.innerHTML = ""; return; }
+  const totalN = stays.reduce((s, c) => s + candNights(c), 0);
+  box.innerHTML = `<div class="stay-bar">${stays.map(c => `
+      <a class="stay" style="--w:${candNights(c)}" href="#cand-${esc(c.id)}" data-id="${esc(c.id)}">
+        <b>${esc(BASE_LABEL[c.base] || c.base)}</b><small>${candNights(c)} ${candNights(c) === 1 ? "לילה" : "לילות"}</small>
+        <span>${esc(c.short || c.name)}</span>
+      </a>`).join("")}</div>
+    <div class="stay-dates">${stays.map(c => `<span style="--w:${candNights(c)}">${fmtD(c.from)}</span>`).join("")}<span class="end">${fmtD(stays[stays.length - 1].to)}</span></div>`;
+  $$("#stayStrip .stay").forEach(a => a.addEventListener("click", e => { e.preventDefault(); openCandidate(a.dataset.id); }));
+  const allBooked = ["bangkok", "phuket", "second"].every(k => state.hotels[k] && state.hotels[k].booked);
+  $("#staySub").textContent = allBooked ? `${totalN} לילות · כל המלונות סגורים ✓` : `${totalN} לילות`;
 }
 
 /* פתיחת הכרטיס של מועמד וגלילה אליו */
 function openCandidate(id) {
   const d = $("#cand-" + CSS.escape(id));
   if (!d) return;
+  const parent = d.closest(".cand-dropped");
+  if (parent) parent.open = true;
   d.open = true;
   setTimeout(() => d.scrollIntoView({ behavior: "smooth", block: "start" }), 40);
 }
@@ -979,6 +1010,13 @@ function renderCosts() {
       <b class="amt">${ils(+c.amount || 0)}</b>
     </div>`).join("") : `<p class="cost-empty">אין עדיין עלויות — מוסיפים ב-trip.js תחת costs.</p>`;
   $("#costPaid").textContent = ils(paidSum);
+  const brk = $("#costBreak");
+  if (brk) {
+    const isHotel = c => /מלון/.test(c.what || "");
+    const fl = paid.filter(c => !isHotel(c)).reduce((s, c) => s + (+c.amount || 0), 0);
+    const ho = paid.filter(isHotel).reduce((s, c) => s + (+c.amount || 0), 0);
+    brk.innerHTML = fl && ho ? `<span>✈ טיסות <b>${ils(fl)}</b></span><span>🏨 מלונות <b>${ils(ho)}</b></span>` : "";
+  }
   $("#costsSub").textContent = paid.length === costs.length
     ? `${costs.length} תשלומים · הכול שולם`
     : `${paid.length} מתוך ${costs.length} שולמו · פתוח ${ils(openSum)}`;
@@ -1303,6 +1341,7 @@ loadTrip().then(t => {
   FLIGHTS = t.flights.intl;
   DOMESTIC = t.flights.domestic || [];
   state = deriveState(t);
+  renderStays();
   renderCandidates();
   renderCosts();
   refreshMap();
