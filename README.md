@@ -12,6 +12,7 @@
 | `timeline.html` · `timeline.css` · `timeline.js` | דף ציר הזמן (אותו `trip.js`). |
 | `build.mjs` | מאגד הכול ל-`dist/artifact.html` + `dist/timeline.html` (מטמיע את `trip.js` בתוך ה-HTML). |
 | `serve.mjs` | שרת מקומי לפיתוח (אופציונלי — לא נדרש יותר). |
+| `assets/` | פוליסת הביטוח (`insurance-migdal.pdf` + תמונת JPG לכל עמוד, `insurance-migdal-p*.jpg`) וקבלות המלונות מ-flyall (`receipt-*.pdf`) + תמונת JPG של כל קבלה (`receipt-*.jpg`, נוצרת מה-PDF) — התמונה מוטמעת ב-`dist/timeline.html` כי ב-Artifact אי אפשר לפתוח PDF. הקישור מהמלון לקבלה מוגדר ב-`hotels.*.receipt` ב-`trip.js`. |
 
 ## עבודה יומיומית
 
@@ -22,6 +23,9 @@
 ## מזהים שימושיים ב-trip.js
 
 - `tasksDone` — מזהי משימות מ-`STAGES` ב-`data.js` (t01…t46).
+- `hotels.*.receipt` — הקבלה של המלון (`file` = PDF, `img` = JPG, מספר קבלה, תיק נסיעה, סכום). כשמוסיפים קבלה חדשה: לשים את ה-PDF ב-`assets/`, ליצור ממנו JPG (למשל עם pypdfium2), ולמלא את השדה.
+- `insurance` — פוליסת הביטוח (מספר, תקופה, מבוטחים, מה מכוסה, מה לא נרכש, מספרי חירום). מוצגת כנקודה "ביטוח נסיעות" בציר הזמן עם דיאלוג שמציג את עמודי הפוליסה.
+- `tasksDone` כולל `t46` = טופס ה-TDAC מולא — נקודת ה-TDAC בציר הזמן (3 ימים לפני הנחיתה) הופכת ל"סגור".
 - `hotels.phuket.id` / `hotels.second.id` — מזהי מלונות מ-`HOTELS` ב-`data.js` (katathani, saii, centara-grand, angsana, dusit, kata-palm, centara-aonang, avani, holiday-inn). למלון שלא בקטלוג (למשל בנגקוק) כותבים `name`.
 - `payments` — מזהי סעיפים מ-`BUDGET` (flightsIntl, flightsDom, hotelPhuket, hotelAonang, transfers, food, activities, insurance, esim, misc).
 - `secondDest` — `decided:false` כל עוד היעד אחרי פוקט פתוח.

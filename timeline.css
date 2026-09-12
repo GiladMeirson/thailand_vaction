@@ -405,3 +405,30 @@ body.tkt-lock{overflow:hidden}
   *{transition:none !important; animation:none !important}
   .tkt-sky .trail{stroke-dashoffset:0}
 }
+
+/* ======================================================================
+   קבלה — כפתור בשורת הפעולות של המלון + דיאלוג באותה מעטפת של כרטיס הטיסה.
+   ====================================================================== */
+.actions button{
+  font:inherit; font-size:13px; font-weight:600; color:var(--ink); padding:7px 12px; border-radius:8px; cursor:pointer;
+  background:var(--paper2); border:1px solid var(--line);
+}
+.actions button.primary{background:var(--ink); color:var(--paper); border-color:var(--ink)}
+.actions button:hover{border-color:var(--line2)}
+.actions button.primary:hover{opacity:.88}
+.tkt.rcpt .tkt-grid{padding-top:18px}
+.rcpt-img{display:block; width:calc(100% - 40px); margin:16px 20px 0; border:1px solid var(--line); border-radius:10px; background:#fff}
+.rcpt-actions{margin:0; padding:16px 20px 22px}
+@media (max-width:480px){
+  .rcpt-img{width:calc(100% - 32px); margin:14px 16px 0}
+  .rcpt-actions{padding:14px 16px 20px}
+}
+
+/* ---------- פוליסת הביטוח בדיאלוג: עמודי המסמך + קישורי חירום ---------- */
+.ins-pages{display:flex; flex-direction:column; gap:14px; padding:16px 20px 0}
+.ins-pages figure{margin:0}
+.ins-pages img{display:block; width:100%; border:1px solid var(--line); border-radius:10px; background:#fff}
+.ins-pages figcaption{margin-top:5px; font-size:12px; color:var(--mute)}
+.seg li a{color:var(--ink); text-decoration:underline; text-decoration-color:var(--line2); text-underline-offset:2px}
+.seg li a:hover{text-decoration-color:var(--ink)}
+@media (max-width:480px){ .ins-pages{padding:14px 16px 0} }

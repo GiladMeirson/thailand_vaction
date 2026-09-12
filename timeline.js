@@ -55,7 +55,16 @@ loadTrip().then(function (trip) {
   const kv = rows => `<dl class="kv">${rows.filter(r => r[1]).map(([k, v]) => `<dt>${esc(k)}</dt><dd>${v}</dd>`).join("")}</dl>`;
   const seg = (h, items) => `<div class="seg"><h4>${esc(h)}</h4><ul>${items.map(i => `<li>${i}</li>`).join("")}</ul></div>`;
   const note = t => `<p class="note">${t}</p>`;
-  const actions = list => `<div class="actions">${list.map(a => `<a href="${a.u}" target="_blank" rel="noopener"${a.p ? ' class="primary"' : ""}>${esc(a.l)}</a>`).join("")}</div>`;
+  const actions = list => `<div class="actions">${list.map(a => a.r
+    ? `<button type="button" class="rcpt-btn${a.p ? " primary" : ""}" data-receipt="${esc(a.r)}">${esc(a.l)}</button>`
+    : a.ins
+    ? `<button type="button" class="rcpt-btn${a.p ? " primary" : ""}" data-insurance="1">${esc(a.l)}</button>`
+    : `<a href="${a.u}"${/^(tel|mailto):/.test(a.u) ? "" : ' target="_blank" rel="noopener"'}${a.p ? ' class="primary"' : ""}>${esc(a.l)}</a>`).join("")}</div>`;
+  const telHref = t => "tel:" + String(t).replace(/[^\d+*#]/g, "");
+  const waHref = n => "https://wa.me/" + String(n).replace(/\D/g, "").replace(/^0/, "972");
+  const money = (n, cur) => cur === "₪"
+    ? "₪" + (+n).toLocaleString("he-IL", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    : "$" + (+n).toLocaleString("en-US");
   const gmaps = q => "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q);
   const booking = (q, ci, co) => `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(q)}&checkin=${ci}&checkout=${co}&group_adults=2&group_children=1&age=1&no_rooms=1`;
   const hasDigit = s => /\d/.test(String(s || ""));
@@ -68,15 +77,18 @@ loadTrip().then(function (trip) {
     ["חדר", esc(c.room || "")],
     ["הסעדה", esc(c.board || hb.board || "")],
     ["מחיר", `${mono("$" + (+c.usd).toLocaleString("en-US"))} לכל ${nightsOf(c)} הלילות · ≈ ${mono(ils(c.usd * RATE))} · ${mono("$" + Math.round(c.usd / nightsOf(c)))} ללילה`],
-    ["הזמנה", hb.ref ? mono(hb.ref) : "טרם הוזן מספר הזמנה ב-trip.js"],
+    ["הזמנה", hb.ref ? `${mono(hb.ref)}${hb.receipt ? ` · תיק נסיעה ${esc(hb.receipt.agent || "FlyAll")}` : ""}` : "טרם הוזן מספר הזמנה ב-trip.js"],
+    ["שולם", hb.receipt ? `${mono(money(hb.receipt.ils, "₪"))} · ${mono(money(hb.receipt.usd, "$"))} · ${esc(dm(hb.receipt.issued))} · קבלה ${mono(hb.receipt.no)}` : ""],
     ["כתובת", esc(c.address || "")]
   ];
-  const hotelActions = c => !c ? [] : [
-    c.flyall ? { l: "ההזמנה ב-flyall", u: c.flyall, p: true } : null,
+  const HOTEL_CANDS = { bangkok: bkkC, phuket: phC, second: d2C };
+  const hotelActions = key => { const c = HOTEL_CANDS[key], hb = hotels[key] || {}; return !c ? [] : [
+    hb.receipt ? { l: "הקבלה", r: key, p: true } : null,
+    c.flyall ? { l: "ההזמנה ב-flyall", u: c.flyall, p: !hb.receipt } : null,
     c.site ? { l: "אתר המלון", u: c.site } : null,
     { l: "מפה", u: c.placeId ? `https://www.google.com/maps/search/?api=1&query=${c.lat},${c.lng}&query_place_id=${c.placeId}` : gmaps(c.name) },
     { l: "ניווט", u: `https://www.google.com/maps/dir/?api=1&destination=${c.lat},${c.lng}` }
-  ].filter(Boolean);
+  ].filter(Boolean); };
 
   /* ---------- כרטיסי טיסה: נורמליזציה של הנתונים ---------- */
   const flightsPaid = paid.flightsIntl && paid.flightsIntl.amount ? `₪${paid.flightsIntl.amount.toLocaleString("he-IL")}` : "";
@@ -111,8 +123,67 @@ loadTrip().then(function (trip) {
   };
   if (domBack) TICKETS["dom-back"] = domTicket(domBack);
 
+  /* ---------- TDAC — כרטיס הכניסה הדיגיטלי לתאילנד ---------- */
+  // אפשר להגיש רק ב-3 הימים (72 שעות) שלפני הנחיתה — המערכת לא מאפשרת קודם. done כשמסמנים t46 ב-tasksDone.
+  const TDAC_URL = "https://tdac.immigration.go.th/";
+  const tdacOpen = addDays(landBKK, -3);
+  const tdacDone = (trip.tasksDone || []).includes("t46");
+  const paxNames = (trip.travelers || []).map(t => t.name.split(" ")[0]);
+  const TDAC_NODE = {
+    id: "tdac", status: tdacDone ? "done" : "todo",
+    date: tdacOpen, endDate: out.depDate,
+    title: "TDAC · כרטיס כניסה דיגיטלי לתאילנד",
+    need: tdacDone ? "" : `למלא בין ${dm(tdacOpen)} ל-${dm(out.depDate)} — רק באתר הרשמי, בחינם`,
+    sum: `חובה לכל נוסע (גם התינוקת) · נפתח למילוי 3 ימים לפני הנחיתה ב-${mono(dm(landBKK))} · חינם · מקבלים QR למייל`,
+    body: kv([
+      ["חלון מילוי", `${esc(dow(tdacOpen))} ${mono(dm(tdacOpen))} → ${esc(dow(out.depDate))} ${mono(dm(out.depDate))} (עד ההמראה — לפני ${mono(dm(tdacOpen))} המערכת לא תאפשר)`],
+      ["מי", `${(trip.travelers || []).length || 3} טפסים — ${esc(paxNames.join(", "))}. גם תינוקת חייבת כרטיס משלה`],
+      ["עלות", "חינם. כל אתר שמבקש תשלום — מתחזה"],
+      ["מה מקבלים", "QR לכל נוסע במייל — לשמור בנייד + צילום מסך, מציגים בביקורת הדרכונים בסוברנבומי"],
+      ["הכתובת הרשמית", `${mono("tdac.immigration.go.th")} · לשכת ההגירה של תאילנד`]
+    ]) + seg("מה להכין לפני שממלאים", [
+      "<b>דרכונים</b> של שלושתכם — מספר ותוקף",
+      `<b>פרטי הטיסה</b> — ${mono(out.no)} ${esc(FLIGHTS.airline)}, נחיתה ${mono(dm(landBKK))} ב-${mono(out.arrTime)}`,
+      `<b>כתובת הלילה הראשון</b> — ${esc(bkkC ? `${bkkC.name}, ${bkkC.address}` : "המלון בבנגקוק")}`,
+      "<b>מייל</b> שנגיש מהנייד — לשם מגיע ה-QR"
+    ]) + note("⚠ יש הרבה אתרים מתחזים (גם במודעות הראשונות בגוגל) שגובים ‎$20–90 ואוספים פרטי דרכון. לא ללחוץ על מודעות — להקליד את הכתובת ידנית ולוודא שהדומיין מסתיים ב-<b>immigration.go.th</b>. אין תשלום, אין \"fast track\".")
+      + actions([
+        { l: "למלא TDAC — האתר הרשמי", u: TDAC_URL, p: true },
+        { l: "לשכת ההגירה (immigration.go.th)", u: "https://www.immigration.go.th/" }
+      ])
+  };
+
+  /* ---------- ביטוח נסיעות — מתוך trip.insurance ---------- */
+  const INS = trip.insurance || null;
+  const insDays = INS ? diffDays(INS.from, INS.to) + 1 : 0;
+  const INS_NODE = !INS ? null : {
+    id: "insurance", status: "done",
+    date: INS.from, endDate: INS.to,
+    title: `ביטוח נסיעות · ${esc(INS.company.split(" ")[0])}`,
+    sum: `${esc(INS.plan)} · פוליסה ${mono(INS.policyNo)} · ${INS.insured.length} מבוטחים · ${mono(dm(INS.from))} → ${mono(dm(INS.to))} · הוצאות רפואיות עד ${mono("$5,000,000")}`,
+    body: kv([
+      ["פוליסה", `${mono(INS.policyNo)} · ${esc(INS.plan)}${INS.planCode ? " " + mono("(" + INS.planCode + ")") : ""}`],
+      ["תקופה", `${esc(dow(INS.from))} ${mono(dm(INS.from))} → ${esc(dow(INS.to))} ${mono(dm(INS.to))} · ${insDays} ימים · ${esc(INS.dest || "")}`],
+      ["מבוטחים", INS.insured.map(i => `<b>${esc(i.name)}</b>${i.ext ? " · " + esc(i.ext) : ""}${i.usd ? " · " + mono("$" + i.usd) : ""}`).join("<br>")],
+      ["שולם", `${mono(money(INS.premiumIls, "₪"))} · ${mono(money(INS.premiumUsd, "$"))} · ${esc(dm(INS.purchased))} · ${esc(INS.agent || "")}`],
+      ["בחירום", INS.emergency && INS.emergency[0] ? `${esc(INS.emergency[0].l.split(" (")[0])} — ${mono(INS.emergency[0].tel)}${INS.emergency[0].wa ? " · וואטסאפ " + mono(INS.emergency[0].wa) : ""}` : ""]
+    ]) + seg("מה מכוסה", (INS.coverage || []).map(c => `<b>${esc(c.k)}</b> — ${esc(c.v)}`))
+      + seg("מה לא נרכש / לא מכוסה", (INS.notCovered || []).map(esc))
+      + seg("מספרי חירום 24/7", (INS.emergency || []).map(e =>
+          `<b>${esc(e.l)}</b> — <a href="${telHref(e.tel)}">${mono(e.tel)}</a>${e.wa ? ` · <a href="${waHref(e.wa)}" target="_blank" rel="noopener">וואטסאפ ${mono(e.wa)}</a>` : ""}${e.mail ? ` · <a href="mailto:${esc(e.mail)}">${esc(e.mail)}</a>` : ""}`))
+      + note("הפוליסה בתוקף ✓ לכל הטיול ולשלושתכם. לפני כל טיפול רפואי (חוץ מחירום מיידי) מתקשרים קודם ל-IMA — הם מפנים לבית חולים בהסדר ומשלמים ישירות. את האישורים באנגלית (עמודים 4–6) מציגים בקבלה של בית החולים.")
+      + actions([
+        { l: "הפוליסה", ins: true, p: true },
+        INS.emergency && INS.emergency[0] ? { l: "חיוג ל-IMA", u: telHref(INS.emergency[0].tel) } : null,
+        INS.emergency && INS.emergency[0] && INS.emergency[0].wa ? { l: "וואטסאפ IMA", u: waHref(INS.emergency[0].wa) } : null,
+        { l: "מגדל — אזור אישי", u: "https://www.migdal.co.il/" }
+      ].filter(Boolean))
+  };
+
   /* ---------- הנקודות ---------- */
   const NODES = [
+    TDAC_NODE,
+    INS_NODE,
     {
       id: "intl-out", status: "done", ticket: true,
       date: out.depDate, endDate: out.arrDate,
@@ -137,7 +208,7 @@ loadTrip().then(function (trip) {
         "<b>עריסה לתינוקת</b> — לבקש במייל למלון",
         "<b>ארוחת בוקר לא כלולה</b> — לקנות משהו מראש או לאכול בלאונג' של Bangkok Airways בטרמינל",
         bkkC.note ? esc(bkkC.note) : ""
-      ].filter(Boolean)) + note("הלילה הזה סגור ✓ — נשאר רק לתאם את השאטל ואת העריסה.") + actions(hotelActions(bkkC))
+      ].filter(Boolean)) + note("הלילה הזה סגור ✓ — נשאר רק לתאם את השאטל ואת העריסה.") + actions(hotelActions("bangkok"))
       : seg("מה חשוב במלון הזה", [
         `<b>קרוב לשדה</b> — הטיסה לפוקט ממריאה ב-${dom.depTime}, לא שווה לנסוע לעיר ובחזרה`,
         "<b>שאטל לשדה</b> או הליכה מקורה מהטרמינל",
@@ -178,7 +249,7 @@ loadTrip().then(function (trip) {
         "<b>עריסה + חדר בלי מדרגות</b> — לבקש במייל למלון (Marriott מאשרים בקשות מיוחדות מראש)",
         "<b>Early check-in</b> — מגיעים בבוקר; לבקש",
         phC.note ? esc(phC.note) : ""
-      ].filter(Boolean)) + note("המלון סגור ✓ — נשאר רק לתאם הסעה, עריסה ו-early check-in.") + actions(hotelActions(phC))
+      ].filter(Boolean)) + note("המלון סגור ✓ — נשאר רק לתאם הסעה, עריסה ו-early check-in.") + actions(hotelActions("phuket"))
       : kv([
         ["צ'ק-אין", `${esc(dow(toPhuket))} ${mono(dm(toPhuket))} — נוחתים ${mono(dom.arrTime)}, במלון בערך ב-${mono("10:30")} (חדר בד"כ מוכן מ-14:00, לבקש early check-in)`],
         ["צ'ק-אאוט", `${esc(dow(phuketEnd))} ${mono(dm(phuketEnd))} — וממשיכים ברכב ל${esc(dest2Name)} (~1.5 ש')`],
@@ -216,7 +287,7 @@ loadTrip().then(function (trip) {
         "<b>הסעה חזרה לשדה פוקט</b> ב-14.11 — ~1.5 ש' נסיעה, לצאת מוקדם",
         "<b>עריסה + חדר קרוב לבריכת הילדים</b> — לבקש במייל",
         d2C.note ? esc(d2C.note) : ""
-      ].filter(Boolean)) + note("המלון סגור ✓ — כל 13 הלילות של הטיול סגורים. נשארו רק הסעות ובקשות לחדר.") + actions(hotelActions(d2C))
+      ].filter(Boolean)) + note("המלון סגור ✓ — כל 13 הלילות של הטיול סגורים. נשארו רק הסעות ובקשות לחדר.") + actions(hotelActions("second"))
       : kv([
         ["צ'ק-אין", `${esc(dow(phuketEnd))} ${mono(dm(phuketEnd))} — נסיעה מפוקט ברכב פרטי עם כיסא בטיחות, ~1.5 ש'`],
         ["צ'ק-אאוט", `${esc(dow(dest2End))} ${mono(dm(dest2End))} — ${domBack ? `לשדה פוקט (HKT) לטיסה ${mono(domBack.no)} ב-${mono(domBack.depTime)}; לצאת מהמלון עד ${mono(subMin(domBack.depTime, 210))}` : "חוזרים לשדה פוקט"}`],
@@ -260,7 +331,7 @@ loadTrip().then(function (trip) {
       title: "טיסה בינלאומית · בנגקוק → תל אביב",
       sum: `${esc(FLIGHTS.airline)} · ${mono(back.no)} · המראה ${mono(back.depTime)}, נחיתה ${mono(back.arrTime)} למחרת`
     }
-  ];
+  ].filter(Boolean);
 
   /* ---------- שפת המצב: תג אחד בכל הדף ---------- */
   const LABEL = { done: "סגור", todo: "לפעולה", open: "פתוח" };
@@ -399,24 +470,88 @@ loadTrip().then(function (trip) {
       <div class="tkt-code" aria-hidden="true"><i></i><span class="mono">${esc(t.ref || t.no)} · ${esc(t.depDate.replace(/-/g, ""))} · ${esc(t.from.code)}${esc(t.to.code)}</span></div>`;
   };
 
+  /* ---------- קבלה (דיאלוג — אותו מעטפת כמו כרטיס הטיסה) ---------- */
+  // ב-Artifact אין גישה לקובצי PDF (הדפדפן חוסם הורדות), לכן שם מוצגת רק תמונת הקבלה; בפתיחה מקומית יש גם קישור ל-PDF.
+  const ARTIFACT = !!window.TRIP_ARTIFACT;
+  const receiptHtml = key => {
+    const hb = hotels[key], c = HOTEL_CANDS[key], r = hb.receipt;
+    const rows = [
+      ["המלון", c ? c.name : hb.name], ["תיק נסיעה", r.travelFile || hb.ref],
+      ["תאריך", r.issued ? longDate(r.issued) : ""],
+      ["סכום", r.ils ? money(r.ils, "₪") : ""], ["שווי בדולר", r.usd ? money(r.usd, "$") : ""],
+      ["כרטיס", r.card], ["סוכנות", r.agent || "FlyAll"]
+    ].filter(x => x[1]);
+    return `
+      <div class="tkt-top">
+        <div class="tkt-air"><span class="tkt-air-name">${esc(r.agent || "FlyAll")} · קבלה</span><span class="tkt-dir">${esc(c && c.short ? c.short : hb.name)}</span></div>
+        <div class="tkt-no mono">${r.no ? "No. " + esc(r.no) : ""}</div>
+        <div class="tkt-status"><i></i>שולם</div>
+      </div>
+      <dl class="tkt-grid rcpt-grid">${rows.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>
+      ${r.img ? `<img class="rcpt-img" src="${esc(r.img)}" alt="קבלה ${esc(r.no || "")} — ${esc(hb.name)}">` : ""}
+      <div class="actions rcpt-actions">
+        ${r.file && !ARTIFACT ? `<a href="${esc(r.file)}" target="_blank" rel="noopener" class="primary">פתיחת ה-PDF</a>` : ""}
+        ${c && c.flyall ? `<a href="${c.flyall}" target="_blank" rel="noopener">ההזמנה ב-flyall</a>` : ""}
+      </div>`;
+  };
+
   const overlay = document.getElementById("tktOverlay");
   const dialog = overlay.querySelector(".tkt");
   const inner = overlay.querySelector(".tkt-in");
   let lastFocus = null;
-  const openTicket = id => {
-    const t = TICKETS[id]; if (!t) return;
+  const openDialog = (html, label, kind) => {
     lastFocus = document.activeElement;
-    inner.innerHTML = ticketHtml(t);
-    dialog.setAttribute("aria-label", `כרטיס טיסה ${t.no} ${t.from.code} → ${t.to.code}`);
+    inner.innerHTML = html;
+    dialog.classList.toggle("rcpt", kind === "rcpt");
+    dialog.setAttribute("aria-label", label);
     overlay.hidden = false;
     document.body.classList.add("tkt-lock");
     requestAnimationFrame(() => requestAnimationFrame(() => overlay.classList.add("on")));
+    overlay.querySelector(".tkt-close").focus();
+  };
+  const openTicket = id => {
+    const t = TICKETS[id]; if (!t) return;
+    openDialog(ticketHtml(t), `כרטיס טיסה ${t.no} ${t.from.code} → ${t.to.code}`, "tkt");
     // המטוס ממריא רגע אחרי שהכרטיס עלה (SMIL מתחיל מפורשות — לא תלוי בשעון המסמך)
     const fly = inner.querySelector("animateMotion");
     if (fly && fly.beginElement) setTimeout(() => { try { fly.beginElement(); } catch (e) { } }, 350);
-    overlay.querySelector(".tkt-close").focus();
     if (history.replaceState) history.replaceState(null, "", "#" + id);
   };
+  const openReceipt = key => {
+    const hb = hotels[key]; if (!hb || !hb.receipt) return;
+    openDialog(receiptHtml(key), `קבלה — ${hb.name}`, "rcpt");
+  };
+  const insuranceHtml = () => {
+    const rows = [
+      ["חברה", INS.company], ["תוכנית", INS.plan], ["תקופה", `${dm(INS.from)} → ${dm(INS.to)} · ${insDays} ימים`], ["יעד", INS.dest],
+      ["נרכש", INS.purchased ? longDate(INS.purchased) : ""], ["פרמיה", `${money(INS.premiumIls, "₪")} · ${money(INS.premiumUsd, "$")}`],
+      ["סוכן", INS.agent], ["טלפון מגדל", INS.phone]
+    ].filter(x => x[1]);
+    return `
+      <div class="tkt-top">
+        <div class="tkt-air"><span class="tkt-air-name">${esc(INS.company.split(" ")[0])} · פוליסת ביטוח נסיעות</span><span class="tkt-dir">${esc(INS.plan)}</span></div>
+        <div class="tkt-no mono">${esc(INS.policyNo)}</div>
+        <div class="tkt-status"><i></i>בתוקף</div>
+      </div>
+      <dl class="tkt-grid rcpt-grid">${rows.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>
+      <div class="tkt-pax">
+        <h4>מבוטחים</h4>
+        ${INS.insured.map((i, n) => `
+          <div class="tkt-p">
+            <span class="seat mono">${n + 1}</span>
+            <span class="who"><b>${esc(i.name)}</b>${i.ext ? `<small>${esc(i.ext)}</small>` : ""}</span>
+            <span class="bag">${i.usd ? esc("$" + i.usd) : ""}</span>
+          </div>`).join("")}
+      </div>
+      <div class="ins-pages">
+        ${(INS.pages || []).map(pg => `<figure><img src="${esc(pg.img)}" alt="${esc(pg.cap)}" loading="lazy"><figcaption>${esc(pg.cap)}</figcaption></figure>`).join("")}
+      </div>
+      <div class="actions rcpt-actions">
+        ${INS.file && !ARTIFACT ? `<a href="${esc(INS.file)}" target="_blank" rel="noopener" class="primary">פתיחת ה-PDF</a>` : ""}
+        ${(INS.emergency || []).slice(0, 1).map(e => `<a href="${telHref(e.tel)}">חיוג ל-IMA ${esc(e.tel)}</a>`).join("")}
+      </div>`;
+  };
+  const openInsurance = () => { if (INS) openDialog(insuranceHtml(), `פוליסת ביטוח ${INS.policyNo}`, "rcpt"); };
   const closeTicket = () => {
     if (overlay.hidden) return;
     overlay.classList.remove("on");
@@ -442,6 +577,11 @@ loadTrip().then(function (trip) {
       if (head.dataset.ticket) openTicket(head.dataset.ticket);
       else setOpen(node, !node.classList.contains("is-open"));
     });
+  });
+  document.getElementById("tlList").addEventListener("click", e => {
+    const b = e.target.closest("button[data-receipt]");
+    if (b) openReceipt(b.dataset.receipt);
+    if (e.target.closest("button[data-insurance]")) openInsurance();
   });
 
   // פתח/סגור הכול (רק נקודות מלון — טיסות נפתחות ככרטיס)
