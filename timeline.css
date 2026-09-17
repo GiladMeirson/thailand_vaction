@@ -396,10 +396,50 @@ body.tkt-lock{overflow:hidden}
   .tkt-ap .code{font-size:32px}
   .tkt-ap .time{font-size:19px}
   .tkt-top{padding:16px 16px 14px 52px}
-  .tkt-route,.tkt-grid,.tkt-pax{padding-left:16px; padding-right:16px}
+  .tkt-route,.tkt-grid,.tkt-pax,.tkt-seats{padding-left:16px; padding-right:16px}
   .tkt-note{margin-left:16px; margin-right:16px}
   .tkt-p{grid-template-columns:auto 1fr; grid-template-areas:"seat who" "seat bag" "seat ex"}
 }
+
+/* ---------- איפה אנחנו יושבים (seatmap.js) ---------- */
+.tkt-seats{padding:14px 20px 0}
+.tkt-seatbtn{
+  display:flex; align-items:center; gap:8px; width:100%; font:inherit; font-size:13.5px; font-weight:600; color:var(--ink2); cursor:pointer;
+  background:var(--paper2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; text-align:right;
+}
+.tkt-seatbtn:hover{border-color:var(--line2); color:var(--ink)}
+.tkt-seatbtn svg{width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; flex:none}
+.tkt-seatbtn .chev{margin-inline-start:auto; display:inline-flex; transition:transform .2s ease}
+.tkt-seatbtn .chev svg{width:16px; height:16px}
+.tkt-seatbtn[aria-expanded="true"] .chev{transform:rotate(180deg)}
+.tkt-seatbtn[aria-expanded="true"]{border-radius:10px 10px 0 0; border-bottom-color:transparent}
+.tkt-seatmap{border:1px solid var(--line); border-top:0; border-radius:0 0 12px 12px; padding:12px 12px 14px; background:var(--paper)}
+.tkt-seatmap[hidden]{display:none}
+.sm-title{font-size:11px; font-weight:600; letter-spacing:.06em; color:var(--mute)}
+.sm-where{margin:4px 0 10px; font-size:14px; line-height:1.5}
+.sm-where small{display:block; font-size:12.5px; color:var(--mute)}
+.sm-svg{width:100%; height:auto; display:block}
+.sm-svg .hull{fill:var(--paper2); stroke:var(--line2); stroke-width:1.5}
+.sm-svg .col{fill:var(--done-soft)}
+.sm-svg .seat{fill:var(--paper); stroke:var(--line2); stroke-width:1}
+.sm-svg .seat.me{fill:var(--done); stroke:var(--done-ink)}
+.sm-svg .ltr,.sm-svg .rown,.sm-svg .fwd{font-family:"IBM Plex Mono",monospace; font-size:8px; fill:var(--mute)}
+.sm-svg .rown.me{fill:var(--done-ink); font-weight:600; font-size:9px}
+.sm-svg .fwd{font-family:inherit; font-size:9px}
+.sm-rowh{margin:14px 0 6px; font-size:11px; font-weight:600; letter-spacing:.06em; color:var(--mute)}
+.sm-row{display:flex; align-items:center; gap:4px; direction:ltr}
+.sm-row .blk{display:flex; gap:3px; min-width:0}
+.sm-row .s{
+  flex:1 1 0; min-width:0; height:40px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px;
+  border:1px solid var(--line2); border-radius:7px 7px 4px 4px; background:var(--paper2);
+  font-family:"IBM Plex Mono",monospace; font-size:12px; font-weight:600; color:var(--ink2);
+}
+.sm-row .s.me{background:var(--done); border-color:var(--done-ink); color:#fff}
+.sm-row .s small{font-family:"Assistant",sans-serif; font-size:9.5px; font-weight:600; line-height:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%}
+.sm-row .aisle,.sm-row .win{flex:none; font-size:9.5px; color:var(--mute); writing-mode:vertical-rl; transform:rotate(180deg); line-height:1; text-align:center}
+.sm-note{margin:12px 0 0; font-size:12px; line-height:1.5; color:var(--mute)}
+.sm-link{display:inline-block; margin-top:8px; font-size:12.5px; font-weight:600; color:var(--ink2); text-decoration:none; border-bottom:1px solid var(--line2)}
+.sm-link:hover{color:var(--ink); border-color:var(--ink)}
 
 @media (prefers-reduced-motion: reduce){
   *{transition:none !important; animation:none !important}

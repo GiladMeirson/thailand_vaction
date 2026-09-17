@@ -466,6 +466,15 @@ loadTrip().then(function (trip) {
             ${p.extra ? `<span class="ex">${esc(p.extra)}</span>` : ""}
           </div>`).join("")}
       </div>
+      ${window.seatMapHtml ? `
+      <div class="tkt-seats">
+        <button class="tkt-seatbtn" type="button" aria-expanded="false" aria-controls="tktSeatmap">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v9a3 3 0 0 0 3 3h7"/><path d="M5 13h9a2 2 0 0 1 2 2v3H9a4 4 0 0 1-4-4z"/><path d="M17 20v-4"/></svg>
+          איפה אנחנו יושבים?
+          <span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span>
+        </button>
+        <div class="tkt-seatmap" id="tktSeatmap" hidden>${window.seatMapHtml(t)}</div>
+      </div>` : ""}
       ${t.note ? `<p class="tkt-note">${esc(t.note)}</p>` : ""}
       <div class="tkt-code" aria-hidden="true"><i></i><span class="mono">${esc(t.ref || t.no)} · ${esc(t.depDate.replace(/-/g, ""))} · ${esc(t.from.code)}${esc(t.to.code)}</span></div>`;
   };
@@ -560,7 +569,15 @@ loadTrip().then(function (trip) {
     if (reduced()) done(); else setTimeout(done, 240);
     if (lastFocus && lastFocus.focus) lastFocus.focus();
   };
-  overlay.addEventListener("click", e => { if (e.target.closest(".tkt-close") || e.target.classList.contains("tkt-scrim")) closeTicket(); });
+  overlay.addEventListener("click", e => {
+    if (e.target.closest(".tkt-close") || e.target.classList.contains("tkt-scrim")) return closeTicket();
+    const sb = e.target.closest(".tkt-seatbtn");
+    if (sb) {
+      const on = sb.getAttribute("aria-expanded") !== "true", panel = overlay.querySelector(".tkt-seatmap");
+      sb.setAttribute("aria-expanded", String(on));
+      if (panel) { panel.hidden = !on; if (on) setTimeout(() => panel.scrollIntoView({ behavior: reduced() ? "auto" : "smooth", block: "nearest" }), 30); }
+    }
+  });
   document.addEventListener("keydown", e => { if (e.key === "Escape") closeTicket(); });
 
   /* ---------- אינטראקציה: לחיצה בלבד ---------- */

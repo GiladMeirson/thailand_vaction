@@ -56,9 +56,10 @@ mkdirSync("dist", { recursive: true });
 if (existsSync("timeline.html")) {
   const tcss = readFileSync("timeline.css", "utf8");
   const tjs = readFileSync("timeline.js", "utf8");
-  const { head, body } = split(readFileSync("timeline.html", "utf8"), "timeline\\.css", ["trip\\.js", "data\\.js", "trip-loader\\.js", "timeline\\.js"]);
+  const sjs = readFileSync("seatmap.js", "utf8");
+  const { head, body } = split(readFileSync("timeline.html", "utf8"), "timeline\\.css", ["trip\\.js", "data\\.js", "trip-loader\\.js", "seatmap\\.js", "timeline\\.js"]);
   const tbody = body.replace('href="index.html"', 'href="https://claude.ai/code/artifact/655d2aa2-95d2-4ef7-8ba4-0598ac61e874"');
-  let out = `${head}\n<style>\n${tcss}\n</style>\n${tbody}\n${artifactFlag}${trip}<script>\n${data}\n</script>\n<script>\n${loader}\n</script>\n<script>\n${tjs}\n</script>\n`;
+  let out = `${head}\n<style>\n${tcss}\n</style>\n${tbody}\n${artifactFlag}${trip}<script>\n${data}\n</script>\n<script>\n${loader}\n</script>\n<script>\n${sjs}\n</script>\n<script>\n${tjs}\n</script>\n`;
   out = inlineImages(out, ["assets"]);
   writeFileSync("dist/timeline.html", out);
   console.log("dist/timeline.html —", (out.length / 1024).toFixed(1), "KB");
