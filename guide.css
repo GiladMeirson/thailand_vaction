@@ -1,0 +1,274 @@
+/* guide.css — "המסע" · עיצוב ערב אנדמן.
+   זהות נפרדת משאר האפליקציה: רקע כהה-טורקיז, טיפוגרפיה Secular One + Rubik,
+   מנגו זהוב כצבע ראשי ואקווה כמשני. מובייל-first, RTL. */
+
+:root {
+  --bg:    #0B1618;
+  --bg2:   #0F2126;
+  --card:  #14282E;
+  --card2: #1A333A;
+  --line:  rgba(255,255,255,.10);
+  --line2: rgba(255,255,255,.16);
+  --ink:   #EDF4F2;
+  --ink2:  #9BB2B1;
+  --ink3:  #6F8A8A;
+  --gold:  #F3B054;
+  --aqua:  #55CFC0;
+  --coral: #FF8468;
+  --shadow: 0 18px 44px rgba(0,0,0,.45);
+  --r:     18px;
+  --pad:   16px;
+}
+
+* { box-sizing: border-box; }
+/* הכיוון נקבע ב-CSS ולא רק ב-<html dir> — הבאנדל ל-Artifact לא כולל את תגית ה-html */
+html, body { direction: rtl; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 16px/1.65 Rubik, system-ui, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+h1, h2, h3, h4 { font-family: "Secular One", Rubik, sans-serif; font-weight: 400; line-height: 1.15; margin: 0; letter-spacing: -.01em; }
+p { margin: 0; }
+ul { margin: 0; padding: 0; list-style: none; }
+a { color: inherit; }
+img { display: block; max-width: 100%; }
+
+#g { max-width: 860px; margin: 0 auto; }
+.eyebrow {
+  font: 500 12px/1 Rubik, sans-serif; letter-spacing: .14em;
+  color: var(--ink3); text-transform: none; margin-bottom: 12px;
+}
+
+/* ───────────────────────── הירו ───────────────────────── */
+.hero { position: relative; overflow: hidden; padding: 54px var(--pad) 40px; isolation: isolate; }
+.hero::after {
+  content: ""; position: absolute; inset: 0; z-index: -1;
+  background:
+    radial-gradient(120% 90% at 82% 12%, rgba(243,176,84,.22), transparent 58%),
+    radial-gradient(120% 90% at 10% 0%, rgba(85,207,192,.16), transparent 60%),
+    linear-gradient(180deg, #0E2229 0%, var(--bg) 96%);
+}
+.hero-art { position: absolute; inset: 0; z-index: -1; opacity: .5; }
+.hero-art svg { width: 100%; height: 100%; }
+.hero-art .waves path { fill: none; stroke: rgba(85,207,192,.30); stroke-width: .7; }
+.hero-art .sun { fill: none; stroke: rgba(243,176,84,.45); stroke-width: .8; }
+
+.hero .kick {
+  display: inline-block; font-size: 12px; letter-spacing: .18em; color: var(--gold);
+  border: 1px solid rgba(243,176,84,.35); border-radius: 999px; padding: 5px 12px; margin-bottom: 18px;
+}
+.hero h1 { font-size: clamp(46px, 15vw, 82px); line-height: .95; }
+.hero h1 em { display: block; font-style: normal; color: var(--gold); }
+.hero .lede { margin-top: 14px; color: var(--ink2); font-size: 16px; max-width: 30ch; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+.facts li {
+  display: flex; align-items: baseline; gap: 6px;
+  background: rgba(255,255,255,.05); border: 1px solid var(--line);
+  border-radius: 999px; padding: 7px 13px; font-size: 13px; color: var(--ink2);
+}
+.facts b { font-family: "Secular One", sans-serif; font-size: 15px; color: var(--ink); }
+
+/* ───────────────────── ניווט יעדים (דביק) ───────────────────── */
+.chapnav {
+  position: sticky; top: 0; z-index: 40;
+  display: flex; gap: 8px; padding: 10px var(--pad);
+  overflow-x: auto; scrollbar-width: none;
+  background: rgba(11,22,24,.82); backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--line);
+}
+.chapnav::-webkit-scrollbar { display: none; }
+.chapnav a {
+  flex: 0 0 auto; text-decoration: none; font-size: 13.5px; color: var(--ink2);
+  border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px;
+  display: flex; align-items: center; gap: 7px; transition: .18s;
+}
+.chapnav a i { width: 7px; height: 7px; border-radius: 50%; background: currentColor; opacity: .75; }
+.chapnav a.on { color: var(--bg); background: var(--gold); border-color: var(--gold); font-weight: 500; }
+.chapnav a.on i { background: rgba(11,22,24,.6); opacity: 1; }
+
+/* ─────────────────── רצועת הלילות ─────────────────── */
+.nights { padding: 30px var(--pad) 8px; }
+.ribbon { display: flex; gap: 3px; height: 54px; }
+.ribbon .d {
+  flex: 1 1 0; min-width: 0; border-radius: 6px; position: relative; overflow: hidden;
+  background: var(--card); display: flex; align-items: flex-end; justify-content: center;
+  padding-bottom: 5px; font-size: 10px; color: rgba(255,255,255,.55);
+}
+.ribbon .d::before { content: ""; position: absolute; inset: 0 0 auto; height: 4px; background: currentColor; opacity: .9; }
+.ribbon .d.bangkok { color: var(--coral); }
+.ribbon .d.phuket  { color: var(--aqua); }
+.ribbon .d.khaolak { color: var(--gold); }
+.ribbon .d.air     { color: var(--ink3); }
+.ribbon .d.air::before { background: repeating-linear-gradient(90deg, currentColor 0 4px, transparent 4px 8px); }
+.ribbon .d.today { outline: 1.5px solid var(--gold); outline-offset: 1px; }
+.ribbon-key { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 12px; font-size: 12.5px; color: var(--ink2); }
+.ribbon-key span { display: flex; align-items: center; gap: 6px; }
+.ribbon-key i { width: 16px; height: 4px; border-radius: 2px; background: currentColor; }
+.ribbon-key .bangkok { color: var(--coral); }
+.ribbon-key .phuket  { color: var(--aqua); }
+.ribbon-key .khaolak { color: var(--gold); }
+.ribbon-key .air     { color: var(--ink3); }
+.ribbon-key b { color: var(--ink); font-weight: 500; }
+
+/* ───────────────────── טיסות ───────────────────── */
+.leg {
+  margin: 26px var(--pad); padding: 16px 18px;
+  border: 1px dashed var(--line2); border-radius: 14px;
+  background: linear-gradient(180deg, rgba(255,255,255,.035), transparent);
+}
+.leg-top { display: flex; align-items: center; gap: 10px; }
+.leg-codes { display: flex; align-items: center; gap: 10px; font-family: "Secular One", sans-serif; font-size: 20px; }
+.leg-codes .arrow { flex: 1; height: 1px; background: repeating-linear-gradient(90deg, var(--line2) 0 5px, transparent 5px 10px); position: relative; min-width: 42px; }
+.leg-codes .arrow svg { position: absolute; top: 50%; right: 50%; transform: translate(50%, -50%) scaleX(-1); width: 17px; height: 17px; fill: var(--gold); background: var(--bg); padding: 0 3px; }
+.leg-when { margin-top: 8px; color: var(--ink2); font-size: 13.5px; }
+.leg-when b { color: var(--ink); font-weight: 500; }
+.leg-tag { font-size: 11.5px; letter-spacing: .08em; color: var(--ink3); }
+.leg-note { margin-top: 8px; font-size: 13px; color: var(--ink3); line-height: 1.55; }
+
+/* ───────────────────── פרק יעד ───────────────────── */
+.chapter { padding: 12px var(--pad) 8px; }
+.ch-head { display: flex; align-items: flex-start; gap: 14px; margin: 18px 0 20px; }
+.ch-num {
+  font-family: "Secular One", sans-serif; font-size: 56px; line-height: .8;
+  color: transparent; -webkit-text-stroke: 1.2px var(--line2); flex: 0 0 auto;
+}
+.ch-head h2 { font-size: clamp(30px, 8vw, 40px); }
+.ch-head .ch-when { color: var(--gold); font-size: 13.5px; margin-top: 6px; letter-spacing: .02em; }
+.ch-head .ch-sub { color: var(--ink3); font-size: 13.5px; margin-top: 3px; }
+
+/* כרטיס המלון */
+.stay {
+  border: 1px solid var(--line); border-radius: var(--r); overflow: hidden;
+  background: var(--card); box-shadow: var(--shadow);
+}
+.stay-img { position: relative; aspect-ratio: 16 / 9; background: var(--card2); }
+.stay-img img { width: 100%; height: 100%; object-fit: cover; }
+.stay-img::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, rgba(11,22,24,.86)); }
+.stay-img .label {
+  position: absolute; top: 12px; inset-inline-start: 12px; z-index: 2;
+  background: rgba(11,22,24,.72); backdrop-filter: blur(6px);
+  border: 1px solid var(--line2); border-radius: 999px;
+  font-size: 11.5px; letter-spacing: .1em; color: var(--gold); padding: 5px 11px;
+}
+.stay-img h3 {
+  position: absolute; z-index: 2; inset-inline: 16px; bottom: 14px;
+  font-size: clamp(18px, 5vw, 23px); text-shadow: 0 2px 14px rgba(0,0,0,.6);
+}
+.stay-body { padding: 16px 18px 18px; }
+.stay-area { color: var(--ink2); font-size: 14px; }
+.stay-kv { display: grid; grid-template-columns: auto 1fr; gap: 9px 14px; margin: 16px 0 0; font-size: 14px; }
+.stay-kv dt { color: var(--ink3); font-size: 13px; }
+.stay-kv dd { margin: 0; color: var(--ink); min-width: 0; overflow-wrap: anywhere; }
+.stay-note { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); color: var(--ink2); font-size: 13.5px; line-height: 1.6; }
+
+.links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.links a {
+  text-decoration: none; font-size: 13.5px; padding: 9px 14px; border-radius: 10px;
+  border: 1px solid var(--line2); color: var(--ink); display: inline-flex; align-items: center; gap: 7px;
+  transition: .18s;
+}
+.links a.primary { background: var(--gold); border-color: var(--gold); color: #10201F; font-weight: 500; }
+.links a svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ───────────────────── אטרקציות ───────────────────── */
+.sec-head { display: flex; align-items: baseline; gap: 10px; margin: 34px 0 14px; }
+.sec-head h3 { font-size: 21px; }
+.sec-head span { color: var(--ink3); font-size: 13px; }
+.chap-intro { color: var(--ink2); font-size: 13.5px; line-height: 1.6; margin-bottom: 16px; border-inline-start: 2px solid var(--line2); padding-inline-start: 12px; }
+
+.att-grid { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); }
+.att {
+  min-width: 0;
+  border: 1px solid var(--line); border-radius: var(--r); overflow: hidden;
+  background: var(--card); display: flex; flex-direction: column;
+}
+.att-map { position: relative; aspect-ratio: 2 / 1; background: var(--bg2); }
+.att-map .leaflet-container { background: var(--bg2); font: inherit; }
+/* אריחי OpenStreetMap בהירים — הופכים אותם למפה כהה שמתאימה לדף */
+.att-map .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(.9) contrast(.84) saturate(.4); }
+.att-map .leaflet-tooltip { background: #14282E; color: var(--ink); border: 1px solid var(--line2); box-shadow: none; }
+.att-map .leaflet-tooltip-top::before { border-top-color: var(--line2); }
+.att-map svg.schem { width: 100%; height: 100%; display: block; }
+.att-map svg.schem .route { fill: none; stroke: var(--gold); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.att-map svg.schem .grid { stroke: rgba(255,255,255,.055); stroke-width: 1; }
+.att-map .ride {
+  position: absolute; z-index: 500; bottom: 10px; inset-inline-start: 10px;
+  display: flex; align-items: center; gap: 8px; pointer-events: none;
+  background: rgba(11,22,24,.82); backdrop-filter: blur(8px);
+  border: 1px solid var(--line2); border-radius: 999px; padding: 6px 12px 6px 10px;
+}
+.att-map .ride svg { width: 16px; height: 16px; fill: var(--gold); flex: 0 0 auto; }
+.att-map .ride b { font-family: "Secular One", sans-serif; font-size: 15px; }
+.att-map .ride span { font-size: 12px; color: var(--ink2); }
+.att-map .zoom {
+  position: absolute; z-index: 500; bottom: 10px; inset-inline-end: 10px;
+  display: flex; align-items: center; gap: 5px; text-decoration: none;
+  background: rgba(11,22,24,.82); backdrop-filter: blur(8px); border: 1px solid var(--line2);
+  border-radius: 999px; padding: 6px 11px; font-size: 12px; color: var(--ink);
+}
+.att-map .zoom svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+.att-body { padding: 15px 16px 17px; display: flex; flex-direction: column; gap: 9px; flex: 1; }
+.att-top { display: flex; align-items: flex-start; gap: 9px; }
+.att-top h4 { font-size: 19px; flex: 1; }
+.cat {
+  flex: 0 0 auto; font-size: 11.5px; padding: 4px 9px; border-radius: 7px;
+  background: rgba(85,207,192,.13); color: var(--aqua); border: 1px solid rgba(85,207,192,.22);
+}
+.cat.baby { background: rgba(243,176,84,.13); color: var(--gold); border-color: rgba(243,176,84,.24); }
+.att-en { overflow-wrap: anywhere; font-size: 12px; color: var(--ink3); letter-spacing: .01em; margin-top: -4px; }
+.att-blurb { font-size: 14.5px; line-height: 1.66; color: #DCE7E5; }
+.att-meta { display: flex; flex-direction: column; gap: 6px; margin-top: 2px; }
+.att-meta p { display: flex; gap: 8px; font-size: 13px; color: var(--ink2); line-height: 1.55; }
+.att-meta i { flex: 0 0 auto; font-style: normal; opacity: .85; }
+.att-peak { color: var(--ink3); font-size: 12.5px; }
+.att .links { margin-top: auto; padding-top: 6px; }
+.att .links a { font-size: 13px; padding: 8px 12px; }
+
+.empty-att {
+  border: 1px dashed var(--line2); border-radius: 14px; padding: 18px;
+  color: var(--ink3); font-size: 13.5px; line-height: 1.6;
+}
+
+/* ───────────────────── סיום ───────────────────── */
+.foot { padding: 40px var(--pad) 54px; color: var(--ink3); font-size: 12.5px; line-height: 1.7; border-top: 1px solid var(--line); margin-top: 40px; }
+.foot-note { margin-top: 6px; }
+
+.load-err { margin: 40px var(--pad); padding: 16px; border: 1px solid var(--coral); border-radius: 12px; color: var(--coral); }
+
+/* ───────────────────── תנועה ───────────────────── */
+.rise { opacity: 0; transform: translateY(14px); transition: opacity .55s ease, transform .55s cubic-bezier(.2,.7,.3,1); }
+.rise.in { opacity: 1; transform: none; }
+
+@media (hover: hover) {
+  .links a:hover { border-color: var(--gold); color: var(--gold); }
+  .links a.primary:hover { color: #10201F; filter: brightness(1.07); }
+  .chapnav a:hover { border-color: var(--line2); color: var(--ink); }
+  .chapnav a.on:hover { color: var(--bg); }
+}
+
+@media (min-width: 720px) {
+  :root { --pad: 26px; }
+  .att-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hero { padding-top: 70px; }
+  .ch-num { font-size: 72px; }
+  .stay { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); }
+  .stay-img { aspect-ratio: auto; min-height: 260px; }
+  .stay-img h3 { font-size: 22px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise { transition: none; opacity: 1; transform: none; }
+  * { scroll-behavior: auto !important; }
+}
+
+@media print {
+  body { background: #fff; color: #111; }
+  .chapnav, .att-map, .hero-art { display: none; }
+  .att, .stay, .leg { break-inside: avoid; border-color: #ccc; background: #fff; color: #111; }
+}

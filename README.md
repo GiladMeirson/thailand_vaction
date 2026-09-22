@@ -10,7 +10,11 @@
 | `data.js` | מחקר קבוע: שלבי משימות, קטלוג מלונות, אטרקציות, תקציב משוער, מזג אוויר. |
 | `index.html` · `styles.css` · `app.js` | החמ"ל. `trip-loader.js` מגשר אל `window.TRIP`. |
 | `timeline.html` · `timeline.css` · `timeline.js` | דף ציר הזמן (אותו `trip.js`). |
-| `build.mjs` | מאגד הכול ל-`dist/artifact.html` + `dist/timeline.html` (מטמיע את `trip.js` בתוך ה-HTML). |
+| `guide.html` · `guide.css` · `guide.js` | **דף "המסע"** — הדף לשיתוף (אשתי/משפחה): טיסות, איפה ישנים ומה עושים בכל יעד. **בלי מחירים בכלל** — גם לא בקוד המקור של הבאנדל (`build.mjs` מזריק גרסה מנוקה של `trip.js`). עיצוב נפרד ("ערב אנדמן", כהה). |
+| `attractions.js` | **האטרקציות — הקובץ שעורכים ידנית.** לכל יעד (bangkok / phuket / khaolak) רשימה של מקומות: שם, קואורדינטות, משפט הסבר, קטגוריה, טיפ. הסבר מלא בהערה בראש הקובץ. |
+| `routes.js` | **קובץ מחושב — לא לערוך.** מרחק, זמן נסיעה במונית והמסלול עצמו מהמלון של כל יעד לכל אטרקציה. נוצר על ידי `node tools/routes.mjs`. |
+| `tools/routes.mjs` | מחשב את `routes.js` מול OSRM (OpenStreetMap, בחינם ובלי מפתח). מריצים אחרי כל שינוי ב-`attractions.js`. |
+| `build.mjs` | מאגד הכול ל-`dist/artifact.html` + `dist/timeline.html` + `dist/guide.html` (מטמיע את `trip.js` בתוך ה-HTML). |
 | `serve.mjs` | שרת מקומי לפיתוח (אופציונלי — לא נדרש יותר). |
 | `assets/` | פוליסת הביטוח (`insurance-migdal.pdf` + תמונת JPG לכל עמוד, `insurance-migdal-p*.jpg`) וקבלות המלונות מ-flyall (`receipt-*.pdf`) + תמונת JPG של כל קבלה (`receipt-*.jpg`, נוצרת מה-PDF) — התמונה מוטמעת ב-`dist/timeline.html` כי ב-Artifact אי אפשר לפתוח PDF. הקישור מהמלון לקבלה מוגדר ב-`hotels.*.receipt` ב-`trip.js`. |
 
@@ -19,6 +23,15 @@
 1. סגרתם משהו (מלון, טיסה, תשלום, משימה)? עורכים את `trip.js` ומעדכנים `updated`.
 2. בדיקה מקומית: פתיחה של `index.html` בדפדפן (גם ישירות מ-`file://`). אפשר גם `node serve.mjs` → http://localhost:8787.
 3. פרסום: `node build.mjs` ואז פרסום `dist/artifact.html` מחדש לאותה כתובת Artifact.
+
+## הוספת אטרקציה לדף "המסע"
+
+1. מוסיפים אובייקט לרשימה של היעד ב-`attractions.js` (חובה: `id`, `name`, `en`, `lat`, `lng`, `blurb`).
+   הכי קל להשיג קואורדינטות: גוגל מפות → לחיצה ימנית על המקום → מעתיקים `13.72832, 100.53781`.
+2. `node tools/routes.mjs` — מחשב מרחק, זמן נסיעה ומסלול מהמלון של אותו יעד (מוסיף רק מה שחדש; `--force` מחשב הכול מחדש).
+3. פותחים את `guide.html` בדפדפן. לפרסום: `node build.mjs` → `dist/guide.html`.
+
+אפשר לדרוס את זמן הנסיעה ידנית עם `"travel": { "km": 12.4, "min": 25 }`, ולהוסיף `"peak": 1.8` כדי שתוצג גם הערכה לשעות עומס.
 
 ## מזהים שימושיים ב-trip.js
 

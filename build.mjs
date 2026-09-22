@@ -52,6 +52,35 @@ mkdirSync("dist", { recursive: true });
   console.log("dist/artifact.html —", (out.length / 1024).toFixed(1), "KB");
 }
 
+// גרסה מנוקה של trip.js לדף השיתוף: בלי מחירים, קבלות, תשלומים וביטוח — גם לא בקוד המקור.
+const tripForGuide = () => {
+  const w = {};
+  new Function("window", readFileSync("trip.js", "utf8"))(w);
+  const t = w.TRIP;
+  delete t.costs; delete t.payments; delete t.insurance; delete t.tasksDone; delete t.myTasks; delete t.savedAttractions;
+  delete t.flights.intl.paid;
+  (t.flights.domestic || []).forEach(f => { delete f.paid; });
+  Object.values(t.hotels || {}).forEach(h => { delete h.usd; delete h.receipt; });
+  t.candidates = (t.candidates || []).filter(c => c.booked).map(c => {
+    const { usd, src, flyall, ...rest } = c;   // eslint-disable-line no-unused-vars
+    return rest;
+  });
+  return `<script>\nwindow.TRIP = ${JSON.stringify(t, null, 1)};\n</script>\n`;
+};
+
+// ---- באנדל שלישי: "המסע" (guide) — הדף לשיתוף, בלי מחירים ----
+if (existsSync("guide.html")) {
+  const gcss = readFileSync("guide.css", "utf8");
+  const gjs = readFileSync("guide.js", "utf8");
+  const att = readFileSync("attractions.js", "utf8");
+  const routes = existsSync("routes.js") ? readFileSync("routes.js", "utf8") : "window.ROUTES = {};";
+  const { head, body } = split(readFileSync("guide.html", "utf8"), "guide\\.css", ["trip\\.js", "trip-loader\\.js", "attractions\\.js", "routes\\.js", "guide\\.js"]);
+  let out = `${head}\n<style>\n${gcss}\n</style>\n${body}\n${artifactFlag}${tripForGuide()}<script>\n${loader}\n</script>\n<script>\n${att}\n</script>\n<script>\n${routes}\n</script>\n<script>\n${gjs}\n</script>\n`;
+  out = inlineImages(out, ["img"]);
+  writeFileSync("dist/guide.html", out);
+  console.log("dist/guide.html —", (out.length / 1024).toFixed(1), "KB");
+}
+
 // ---- באנדל שני: ציר הזמן ----
 if (existsSync("timeline.html")) {
   const tcss = readFileSync("timeline.css", "utf8");

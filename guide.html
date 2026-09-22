@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="המסע לתאילנד — איפה ישנים, איך מגיעים ומה עושים בכל יעד">
+<meta name="theme-color" content="#0B1618">
+<title>המסע · תאילנד</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Secular+One&family=Rubik:wght@300;400;500;600&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="guide.css">
+</head>
+<body>
+<div id="g">
+
+  <header class="hero">
+    <div class="hero-art" aria-hidden="true">
+      <svg viewBox="0 0 400 220" preserveAspectRatio="xMidYMid slice">
+        <g class="waves">
+          <path d="M-20 150 Q 60 130 140 150 T 300 150 T 460 150"/>
+          <path d="M-20 168 Q 60 148 140 168 T 300 168 T 460 168"/>
+          <path d="M-20 186 Q 60 166 140 186 T 300 186 T 460 186"/>
+          <path d="M-20 204 Q 60 184 140 204 T 300 204 T 460 204"/>
+        </g>
+        <circle class="sun" cx="310" cy="72" r="34"/>
+      </svg>
+    </div>
+    <div class="hero-in">
+      <span class="kick" id="heroKick">תאילנד · 2026</span>
+      <h1>המסע<em>שלנו</em></h1>
+      <p class="lede" id="heroLede"></p>
+      <ul class="facts" id="heroFacts"></ul>
+    </div>
+  </header>
+
+  <nav class="chapnav" id="chapNav" aria-label="ניווט בין היעדים"></nav>
+
+  <section class="nights" aria-label="איפה ישנים בכל לילה">
+    <h2 class="eyebrow">איפה ישנים בכל לילה</h2>
+    <div class="ribbon" id="ribbon"></div>
+    <div class="ribbon-key" id="ribbonKey"></div>
+  </section>
+
+  <main id="flow"></main>
+
+  <footer class="foot">
+    <p class="foot-line">זמני הנסיעה מחושבים מהמלון של כל יעד לפי מפות OpenStreetMap — נסיעה רגילה במונית, בלי פקקים.</p>
+    <p class="foot-note" id="footUpdated"></p>
+  </footer>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="trip.js"></script>
+<script src="trip-loader.js"></script>
+<script src="attractions.js"></script>
+<script src="routes.js"></script>
+<script src="guide.js"></script>
+</body>
+</html>
