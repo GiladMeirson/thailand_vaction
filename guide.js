@@ -47,7 +47,8 @@ loadTrip().then(function (trip) {
     plane: `<svg viewBox="0 0 24 24"><path d="M21 15.5 13.5 11V4.8a1.5 1.5 0 0 0-3 0V11L3 15.5V17l7.5-2.2v4L8 20.3V21.5l4-1 4 1v-1.2l-2.5-1.5v-4L21 17z"/></svg>`,
     pin: `<svg viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg>`,
     ext: `<svg viewBox="0 0 24 24"><path d="M14 4h6v6"/><path d="M20 4 11 13"/><path d="M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/></svg>`,
-    expand: `<svg viewBox="0 0 24 24"><path d="M9 4H4v5"/><path d="M4 4l6 6"/><path d="M15 20h5v-5"/><path d="M20 20l-6-6"/></svg>`
+    expand: `<svg viewBox="0 0 24 24"><path d="M9 4H4v5"/><path d="M4 4l6 6"/><path d="M15 20h5v-5"/><path d="M20 20l-6-6"/></svg>`,
+    photo: `<svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M8 6l1.6-2.2h4.8L16 6"/><circle cx="12" cy="13" r="3.4"/></svg>`
   };
 
   /* ---------- הפרקים: יעד = מלון + אטרקציות ---------- */
@@ -159,8 +160,12 @@ loadTrip().then(function (trip) {
     ].filter(Boolean);
     return `
       <article class="att rise">
-        <div class="att-map" data-att="${esc(a.id)}">
-          ${ride && ride.poly ? schemSvg(ride.poly) : `<svg class="schem" viewBox="0 0 320 160"></svg>`}
+        <div class="att-vis" data-view="${a.img ? "photo" : "map"}">
+          ${a.img ? `<div class="att-photo"><img src="${esc(a.img)}" alt="${esc(a.name)}" loading="lazy"></div>` : ""}
+          <div class="att-map" data-att="${esc(a.id)}">
+            ${ride && ride.poly ? schemSvg(ride.poly) : `<svg class="schem" viewBox="0 0 320 160"></svg>`}
+          </div>
+          ${a.img ? `<button type="button" class="flip" data-flip aria-label="החלפה בין תמונה למפה"><span class="to-map">${ICON.pin}מפה</span><span class="to-photo">${ICON.photo}תמונה</span></button>` : ""}
           ${ride ? `<span class="ride">${ICON.car}<b>${ride.min} דק'</b><span>במונית · ${ride.km} ק"מ</span></span>` : ""}
           ${hotel ? `<a class="zoom" href="${esc(navUrl(hotel, a))}" target="_blank" rel="noopener">${ICON.expand}מסלול</a>` : ""}
         </div>
@@ -177,6 +182,7 @@ loadTrip().then(function (trip) {
             <a href="${esc(mapUrl({ lat: a.lat, lng: a.lng, q: a.en || a.name }))}" target="_blank" rel="noopener">${ICON.pin}במפה</a>
             ${a.url ? `<a href="${esc(a.url)}" target="_blank" rel="noopener">${ICON.ext}אתר</a>` : ""}
           </div>
+          ${a.credit ? `<p class="att-credit">📷 ${esc(a.credit)}</p>` : ""}
         </div>
       </article>`;
   };
@@ -287,6 +293,7 @@ loadTrip().then(function (trip) {
       L.circleMarker([rec.a.lat, rec.a.lng], { radius: 7, color: "#0B1618", weight: 2, fillColor: "#F3B054", fillOpacity: 1 })
         .bindTooltip(rec.a.name, { direction: "top", opacity: .9 }).addTo(map);
       map.fitBounds(L.latLngBounds(line).pad(.12), { animate: false });
+      box._map = map;
       const svg = box.querySelector("svg.schem");
       if (svg) svg.remove();
       setTimeout(() => map.invalidateSize(), 120);
@@ -306,8 +313,22 @@ loadTrip().then(function (trip) {
       io.unobserve(e.target);
       if (tilesOk) upgradeMap(e.target); else pending.push(e.target);
     }), { rootMargin: "300px 0px" });
-    document.querySelectorAll(".att-map").forEach(b => io.observe(b));
+    document.querySelectorAll('.att-vis[data-view="map"] .att-map').forEach(b => io.observe(b));  // כרטיס שפותח בתמונה טוען מפה רק בלחיצה
   }
+
+  /* ---------- מעבר בין תמונה למפה בכרטיס אטרקציה ---------- */
+  el("flow").addEventListener("click", ev => {
+    const btn = ev.target.closest("[data-flip]");
+    if (!btn) return;
+    const vis = btn.closest(".att-vis");
+    const toMap = vis.dataset.view !== "map";
+    vis.dataset.view = toMap ? "map" : "photo";
+    if (toMap) {                                   // המפה נטענת רק כשמסתכלים עליה
+      const box = vis.querySelector(".att-map");
+      if (tilesOk) upgradeMap(box); else if (!box.dataset.up) pending.push(box);
+      const m = box._map; if (m) setTimeout(() => m.invalidateSize(), 60);
+    }
+  });
 
   /* ---------- כניסה רכה + ניווט פעיל ---------- */
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;

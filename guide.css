@@ -187,7 +187,23 @@ img { display: block; max-width: 100%; }
   border: 1px solid var(--line); border-radius: var(--r); overflow: hidden;
   background: var(--card); display: flex; flex-direction: column;
 }
-.att-map { position: relative; aspect-ratio: 2 / 1; background: var(--bg2); }
+/* אזור התצוגה של הכרטיס: תמונה ומפה באותו מקום, כפתור קטן מחליף ביניהן */
+.att-vis { position: relative; aspect-ratio: 2 / 1; background: var(--bg2); overflow: hidden; }
+.att-photo, .att-map { position: absolute; inset: 0; transition: opacity .3s ease; }
+.att-photo img { width: 100%; height: 100%; object-fit: cover; }
+.att-vis[data-view="photo"] .att-map { opacity: 0; pointer-events: none; }
+.att-vis[data-view="map"] .att-photo { opacity: 0; pointer-events: none; }
+.att-vis .flip {
+  position: absolute; z-index: 500; top: 10px; inset-inline-end: 10px;
+  display: flex; align-items: center; gap: 6px; cursor: pointer;
+  background: rgba(11,22,24,.8); backdrop-filter: blur(8px); border: 1px solid var(--line2);
+  border-radius: 999px; padding: 6px 11px; font: 500 12px Rubik, sans-serif; color: var(--ink);
+}
+.att-vis .flip svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.att-vis .flip span { display: none; align-items: center; gap: 6px; }
+.att-vis[data-view="photo"] .flip .to-map,
+.att-vis[data-view="map"] .flip .to-photo { display: flex; }
+.att-map { background: var(--bg2); }
 .att-map .leaflet-container { background: var(--bg2); font: inherit; }
 /* אריחי OpenStreetMap בהירים — הופכים אותם למפה כהה שמתאימה לדף */
 .att-map .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(.9) contrast(.84) saturate(.4); }
@@ -196,22 +212,22 @@ img { display: block; max-width: 100%; }
 .att-map svg.schem { width: 100%; height: 100%; display: block; }
 .att-map svg.schem .route { fill: none; stroke: var(--gold); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
 .att-map svg.schem .grid { stroke: rgba(255,255,255,.055); stroke-width: 1; }
-.att-map .ride {
+.att-vis .ride {
   position: absolute; z-index: 500; bottom: 10px; inset-inline-start: 10px;
   display: flex; align-items: center; gap: 8px; pointer-events: none;
   background: rgba(11,22,24,.82); backdrop-filter: blur(8px);
   border: 1px solid var(--line2); border-radius: 999px; padding: 6px 12px 6px 10px;
 }
-.att-map .ride svg { width: 16px; height: 16px; fill: var(--gold); flex: 0 0 auto; }
-.att-map .ride b { font-family: "Secular One", sans-serif; font-size: 15px; }
-.att-map .ride span { font-size: 12px; color: var(--ink2); }
-.att-map .zoom {
+.att-vis .ride svg { width: 16px; height: 16px; fill: var(--gold); flex: 0 0 auto; }
+.att-vis .ride b { font-family: "Secular One", sans-serif; font-size: 15px; }
+.att-vis .ride span { font-size: 12px; color: var(--ink2); }
+.att-vis .zoom {
   position: absolute; z-index: 500; bottom: 10px; inset-inline-end: 10px;
   display: flex; align-items: center; gap: 5px; text-decoration: none;
   background: rgba(11,22,24,.82); backdrop-filter: blur(8px); border: 1px solid var(--line2);
   border-radius: 999px; padding: 6px 11px; font-size: 12px; color: var(--ink);
 }
-.att-map .zoom svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.att-vis .zoom svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
 .att-body { padding: 15px 16px 17px; display: flex; flex-direction: column; gap: 9px; flex: 1; }
 .att-top { display: flex; align-items: flex-start; gap: 9px; }
@@ -228,6 +244,7 @@ img { display: block; max-width: 100%; }
 .att-meta i { flex: 0 0 auto; font-style: normal; opacity: .85; }
 .att-peak { color: var(--ink3); font-size: 12.5px; }
 .att .links { margin-top: auto; padding-top: 6px; }
+.att-credit { font-size: 11px; color: #5C7473; margin-top: 2px; }
 .att .links a { font-size: 13px; padding: 8px 12px; }
 
 .empty-att {
